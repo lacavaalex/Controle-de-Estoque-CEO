@@ -1,0 +1,14 @@
+O que foi difícil
+A curva de aprendizado com o ecossistema do Git e GitHub foi, sem dúvida, o ponto onde mais travei. A lógica de programação eu conseguia visualizar, mas o fluxo de versionamento me gerou muita confusão no início. Um dos momentos mais complicados foi configurar o git origin; eu não entendia exatamente a relação entre a minha pasta local e o repositório remoto. Tentei dar alguns git push que simplesmente não funcionavam porque eu ainda não tinha compreendido que o Git exige um rastro de commits locais antes de permitir o envio para a nuvem.
+
+Outro ponto de bastante tentativa e erro foi o arquivo .gitignore. No começo, eu não entendia por que o GitHub Desktop queria subir milhares de arquivos da pasta node_modules. Foi preciso entender que o repositório deve ser "limpo" e que as dependências não devem ser rastreadas. Além disso, a gestão das branches foi um desafio à parte. Teve um momento em que eu achava que tinha perdido o código porque estava na branch errada, e entender como o HEAD se move entre as versões foi um exercício de paciência e atenção que exigiu muito mais do que apenas decorar comandos.
+
+O que ficou claro
+Ficou muito clara a importância do Commit Semântico como ferramenta de comunicação. Antes, eu via as mensagens de commit como algo descartável, mas ao usar o padrão de feat e refactor para organizar a tradução do sistema e a lógica de lotes, percebi que o histórico do GitHub vira um diário de bordo.
+
+Também entendi de vez o papel do Remote. Agora faz sentido que o GitHub não é apenas um "Google Drive para código", mas sim um sistema de sincronização. Entendi que o commit é o meu "salvamento" local (o meu checkpoint) e o push é a publicação desse trabalho para o restante do time. Essa separação de responsabilidades hoje parece óbvia, mas foi uma das maiores viradas de chave durante esse exercício.
+
+O que ainda é confuso
+O conceito de Pull Request (PR) e a resolução de conflitos de integração ainda me deixam bastante inseguro. Eu consigo subir o meu código para a minha branch, mas a ideia de fazer o "Merge" com a branch principal (main) ainda me dá receio. Tenho medo de que, ao tentar integrar o código, eu acabe sobrescrevendo algo importante ou criando um conflito que eu não saiba resolver pelo terminal.
+
+Além disso, a manipulação de estados aninhados no React, embora esteja funcionando na minha máquina, ainda parece um pouco difícil para mim. Usar o spread operator para atualizar lotes dentro de arrays que estão dentro de objetos de produtos é uma lógica que eu ainda preciso consultar para não errar. É um processo que funciona, mas que eu ainda não sinto que domino com a fluidez necessária para explicar para outra pessoa.
