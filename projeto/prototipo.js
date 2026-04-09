@@ -91,7 +91,7 @@ function aplicarFEFO(lotes, quantidadeNecessaria) {
 /** Dados Iniciais (Exemplos) */
 const PRODUTOS_INICIAIS = [
   {
-    id: 1, name: "Lidocaína", brand: "Dentsply", dosage: "2%", unit: "Ampola",
+    id: 1, name: "Lidocaína 2% (Premium)", brand: "Dentsply", dosage: "2%", unit: "Ampola",
     lotes: [
       { id: "b1", codigoLote: "LID-2024-A", qtd: 30, validade: "2025-08-10" },
       { id: "b2", codigoLote: "LID-2024-B", qtd: 18, validade: "2026-03-20" },
