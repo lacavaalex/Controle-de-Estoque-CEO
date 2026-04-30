@@ -1,0 +1,42 @@
+Architecture Decision (AD): Utilização de Monolitos para Arquitetura do CEO-UFPE
+Data: 05/04/2026
+Responsável: Wallyson Silva  
+Status: Aceito
+
+#Contexto
+​Ao projetar a arquitetura para o Sistema de Controle de Estoque da Unidade de Dispensação do Departamento de Odontologia (UFPE), foi necessário decidir a abordagem arquitetural ideal. O sistema precisa gerenciar o catálogo de materiais, controle de lotes, alertas de vencimento e o fluxo de solicitações remotas entre o Centro de Especialidades Odontológicas (CEO) e a Unidade de Dispensação.
+
+​#Decisão
+
+​Decidimos adotar uma arquitetura monolítica para o sistema de controle de estoque.
+
+​#Justificativa
+
+​A decisão de usar uma arquitetura de monólito foi baseada nas seguintes razões:
+
+​Simplicidade de Desenvolvimento e Deploy: Como o projeto atende inicialmente a um subdepartamento específico (CEO) e uma unidade fornecedora, o monólito permite um desenvolvimento mais ágil e uma implantação simplificada em ambiente único.
+​Facilidade de Testes e Depuração: Em uma base de código unificada, é mais simples realizar testes de integração e rastrear o fluxo de dados entre os perfis de Gestão, Almoxarife e Trabalhador do CEO.
+​Baixo Overhead Operacional: Evita a complexidade de orquestração de redes, latência entre serviços e gestão de múltiplas infraestruturas, o que é ideal para o cronograma de 2 meses do projeto.
+​Integridade de Dados: Facilita a manutenção da consistência transacional do banco de dados ao lidar com movimentações de estoque e baixas automáticas em lotes específicos.
+​Eficiência para a Equipe: Permite que os desenvolvedores foquem na lógica de negócio e na experiência das personas (Marina, Dr. Rafael e Profa. Helena) sem se preocupar com a complexidade de comunicação entre microsserviços.
+
+#Alternativas Consideradas
+
+​Outras alternativas consideradas incluíram:
+
+​Microsserviços: Embora ofereça escalabilidade independente, adicionaria uma complexidade desnecessária de monitoramento e integração para um sistema que possui um escopo de usuários bem definido e local.
+​Arquitetura Serverless: Poderia oferecer economia de custos, mas traria dificuldades para manter o histórico complexo de movimentações e a lógica de alertas diários de vencimento de forma centralizada.
+
+​#Consequências
+
+​A escolha de uma arquitetura monolítica traz as seguintes consequências:
+
+​Acoplamento entre Módulos: Alterações em funcionalidades de alertas podem exigir o redeploy de todo o sistema, incluindo a parte de solicitações.
+​Barreira de Escalabilidade: Caso o sistema seja expandido futuramente para todas as subunidades da UFPE simultaneamente, o monólito poderá enfrentar gargalos de performance que exigiriam um refactoring.
+​Tempo de Build: Conforme novas funcionalidades (como dashboards gráficos ou integração com o SIGAA) forem adicionadas em turmas futuras, o tempo de compilação e teste tende a aumentar.
+
+
+#Referências
+Dev Community - Arquitetura Monolítica: Uma Visão Geral https://dev.to/iamthiago/arquitetura-monolitica-uma-visao-geral-l9j
+IBM - O que é arquitetura monolítica? https://www.ibm.com/think/topics/monolithic-architecture
+AWS Amazon - Monolito versus Microsserviços https://aws.amazon.com/pt/compare/the-difference-between-monolithic-and-microservices-architecture/
