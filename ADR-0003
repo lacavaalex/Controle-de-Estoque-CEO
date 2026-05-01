@@ -1,0 +1,45 @@
+Título: Gerenciamento de Configurações e Credenciais (.env)
+Data: 21/04/2026
+Responsável: Bruno Silva
+Status: Aceito
+
+#Contexto
+Durante a configuração do boilerplate do projeto em ExpressJS e a integração com o banco de dados, foi necessário definir uma estratégia para armazenar informações sensíveis da aplicação. O sistema requer o uso de credenciais como strings de conexão, chaves de segurança e portas que não podem ser expostas diretamente no código-fonte por questões de segurança e integridade do projeto.
+
+#Decisão
+Foi decidido utilizar o padrão de Variáveis de Ambiente através de um arquivo .env e a biblioteca dotenv. Esta abordagem separa as configurações da infraestrutura do código-fonte, garantindo que o comportamento da aplicação possa ser alterado sem a necessidade de modificar arquivos de lógica de negócio.
+
+#Justificativa
+A decisão de usar variáveis de ambiente baseou-se nas seguintes razões:
+
+Segurança e Proteção de Dados: O uso do arquivo .env em conjunto com o .gitignore impede que senhas e credenciais críticas do banco de dados sejam enviadas para o repositório público no GitHub, evitando vazamentos.
+
+Portabilidade do Ambiente: Permite que cada desenvolvedor possua suas próprias configurações locais de banco de dados e portas de rede, facilitando o desenvolvimento colaborativo sem gerar conflitos de código.
+
+Conformidade com Boas Práticas: O gerenciamento de configurações via ambiente é um requisito fundamental para aplicações modernas e cloud-native, permitindo que o sistema seja escalado e movido entre servidores de teste e produção de forma transparente.
+
+Isolamento de Dependências: Utilizar o pacote dotenv garante que as variáveis sejam carregadas no início do ciclo de vida da aplicação (Node.js), tornando-as disponíveis globalmente de forma performática.
+
+#Alternativas Consideradas
+Foram consideradas as seguintes alternativas:
+
+Hardcoding (Valores fixos no código): Foi descartado por ser uma prática insegura que expõe dados sensíveis e obriga o redeploy de toda a aplicação para uma simples mudança de porta ou senha.
+
+Configuração via Arquivos JSON: Embora organizada, a manutenção de arquivos JSON de configuração dentro do repositório ainda apresentaria riscos de exposição de dados caso não fossem devidamente criptografados.
+
+#Consequências
+A escolha das Variáveis de Ambiente traz as seguintes consequências:
+
+Gestão de Ambientes: A equipe deve manter um arquivo .env.example atualizado para garantir que novos desenvolvedores saibam quais variáveis são obrigatórias para rodar o projeto.
+
+Dependência do Arquivo Local: A aplicação não iniciará corretamente se o arquivo .env não estiver presente ou se variáveis obrigatórias estiverem faltando, exigindo validação no código.
+
+Segurança no Deploy: No ambiente de produção, as variáveis deverão ser configuradas diretamente no provedor de hospedagem ou via segredos do sistema operacional.
+
+#Referências
+
+Node.js Documentation (Process Env): https://nodejs.org/api/process.html#processenv
+
+Microsoft Azure - Best practices for secrets: https://learn.microsoft.com/en-us/azure/security/fundamentals/identity-management-best-practices
+
+IBM Cloud - Twelve-Factor App Config: https://www.ibm.com/cloud/architecture/content/course/12-factor-app/config/
