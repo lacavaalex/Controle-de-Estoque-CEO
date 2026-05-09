@@ -1,0 +1,52 @@
+[
+  {
+    "id": "001",
+    "name": "Luva de Procedimento (caixa)",
+    "quantity": 105
+  },
+  {
+    "id": "002",
+    "name": "Máscara Descartável (caixa)",
+    "quantity": 30
+  },
+  {
+    "id": "003",
+    "name": "Resina Composta A2",
+    "quantity": 48
+  },
+  {
+    "id": "004",
+    "name": "Anestésico Lidocaína 2%",
+    "quantity": 8
+  },
+  {
+    "id": "005",
+    "name": "Fio de Sutura 3-0",
+    "quantity": 20
+  },
+  {
+    "id": "006",
+    "name": "Broca Carbide FG (kit)",
+    "quantity": 15
+  },
+  {
+    "id": "007",
+    "name": "Papel Grau Cirúrgico (rolo)",
+    "quantity": 6
+  },
+  {
+    "id": "008",
+    "name": "Ácido Fosfórico 37% (seringa)",
+    "quantity": 25
+  },
+  {
+    "id": "009",
+    "name": "Gaze Estéril (pacote)",
+    "quantity": 40
+  },
+  {
+    "id": "010",
+    "name": "Amalgama Encapsulado (caixa)",
+    "quantity": 106
+  }
+]
