@@ -1,28 +1,46 @@
 import type { Item } from "../entities/Item.js";
 import type { IItemService } from "../interfaces/service-interfaces/IItemService.js";
 import type { IItemRepository } from "../interfaces/repository-interfaces/IItemRepo.js";
+import type { CategoriaItem } from "../entities/enums.js";
 
-export class ItemService implements IItemService{
-    constructor(private itemRepository: IItemRepository) {}
+export class ItemService implements IItemService {
+  constructor(private itemRepository: IItemRepository) {}
 
-    async addStock(id: string, quantity: number): Promise<Item> {
-        const item = await this.itemRepository.getItemById(id);
+  listAll(filtros?: { nome?: string; lote?: string; categoria?: CategoriaItem }): Promise<Item[]> {
+    return this.itemRepository.findAll(filtros);
+  }
 
-        // Validações do ID e Quantidade
-        if (item === null) throw new Error(`Nenhum item com o id ${id} foi encontrado`);
-        if (typeof quantity !== "number" || Number.isNaN(quantity)) {
-            throw new Error("Quantidade inválida");
-        }
-        if (quantity < 1 || quantity > 300) throw new Error('Não é possível adicionar uma quantidade menor que 1 ou maior que 300');
-        
-        // Operação no BD
-        const newQuantity = item.quantity + quantity;
-        await this.itemRepository.updateItem(id, {quantity: newQuantity});
+  getById(id: number): Promise<Item | null> {
+    return this.itemRepository.findById(id);
+  }
 
-        // Verificação se a operação ocorreu adequadamente
-        const updatedItem = await this.itemRepository.getItemById(id);
-        if (updatedItem === null) throw new Error('Estoque do item não pôde ser atualizado')
-
-        return updatedItem;
+  async addStock(id: number, quantidade: number): Promise<Item> {
+    if (typeof quantidade !== "number" || Number.isNaN(quantidade) || quantidade < 1) {
+      throw new Error("Quantidade inválida: deve ser um número inteiro positivo.");
     }
+    if (quantidade > 9999) {
+      throw new Error("Quantidade inválida: máximo de 9999 por entrada.");
+    }
+
+    const item = await this.itemRepository.findById(id);
+    if (item === null) throw new Error(`Item ${id} não encontrado.`);
+
+    const atualizado = await this.itemRepository.update(id, {
+      quantidade: item.quantidade + quantidade,
+    });
+    if (atualizado === null) throw new Error("Não foi possível atualizar o estoque.");
+    return atualizado;
+  }
+
+  create(item: Omit<Item, "id">): Promise<Item> {
+    return this.itemRepository.create(item);
+  }
+
+  update(id: number, dados: Partial<Omit<Item, "id">>): Promise<Item | null> {
+    return this.itemRepository.update(id, dados);
+  }
+
+  delete(id: number): Promise<boolean> {
+    return this.itemRepository.delete(id);
+  }
 }
