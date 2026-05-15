@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 // Importando as nossas páginas
 import Login from './pages/Login';
 import Cadastro from './pages/Cadastro';
+import Dashboard from './pages/Dashboard';
 
 // Função principal que o Vite usa para renderizar o app no navegador
 function App() {
@@ -14,6 +15,9 @@ function App() {
       <Routes>
         {/* Definindo que o caminho vazio (/) mostra o Login */}
         <Route path="/" element={<Login />} />
+        
+        {/* Definindo que o caminho (/dashboard) mostra o Dashboard */}
+        <Route path="/dashboard" element={<Dashboard />} />
         
         {/* Definindo que o caminho (/cadastro) mostra o Cadastro */}
         <Route path="/cadastro" element={<Cadastro />} />

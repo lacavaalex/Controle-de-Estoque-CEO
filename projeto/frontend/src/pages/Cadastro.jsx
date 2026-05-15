@@ -4,25 +4,25 @@ import '../App.css';
 
 // Função para criar a tela de cadastro de novos alunos/usuários
 function Cadastro() {
-  // Criando as variáveis para guardar o que o usuário digita nos campos
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [cargo, setCargo] = useState('almoxarife');
 
-  // Esta função serve para enviar os dados para o nosso servidor Node
   const registrarUsuario = async (e) => {
-    // Evita que a página dê refresh e a gente perca o estado do React
     e.preventDefault();
     
-    // Verificação básica de segurança: as senhas precisam ser iguais
-    if (senha !== confirmarSenha) {
-      alert("As senhas não batem, jovem!");
-      return;
-    }
+    // Recupera o gestor logado do localStorage (você deve salvar isso no Login)
+    const gestorLogado = JSON.parse(localStorage.getItem('usuario_ceo'));
 
-    // Criando um objeto com as informações para mandar via rede
-    const dadosParaEnviar = { nome, email, senha };
+    const dadosParaEnviar = { 
+      nome, 
+      email, 
+      senha, 
+      cargo, // Define o papel do novo usuário
+      quemEstaCadastrando: gestorLogado?.email 
+    };
 
     try {
       // Tentando fazer a conexão com o servidor na porta 3001
@@ -86,6 +86,16 @@ function Cadastro() {
             onChange={(e) => setConfirmarSenha(e.target.value)}
             required 
           />
+          <select 
+            value={cargo} 
+            onChange={(e) => setCargo(e.target.value)}
+            style={{ width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '4px' }}
+          >
+            <option value="almoxarife">Almoxarife</option>
+            <option value="solicitante">Solicitante</option>
+            <option value="gestor">Outro Gestor</option>
+          </select>
+
           <button type="submit">Finalizar Cadastro</button>
         </form>
         <p style={{ marginTop: '15px' }}>

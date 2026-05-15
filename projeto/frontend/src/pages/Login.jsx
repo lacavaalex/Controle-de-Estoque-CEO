@@ -1,21 +1,41 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // Importando o Link para mudar de página sem dar refresh
 import '../App.css'; // Usando o CSS global para estilizar a página
+import { useNavigate, Link } from 'react-router-dom';
 
 // Função principal que desenha a tela de Login
 function Login() {
   // Criando estados para o React monitorar o que é digitado nos campos
+  const navigate = useNavigate(); // Hook para navegar entre páginas
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
 
   // Função que lida com o clique no botão de "Entrar"
-  const entrarNoSistema = (e) => {
-    e.preventDefault(); // Comando essencial para o formulário não recarregar a página
-    
-    // Mostrando no console os dados capturados para testar se está funcionando
-    console.log('--- Tentativa de Login ---');
-    console.log('Email digitado:', email);
-    console.log('Senha digitada:', senha);
+  const entrarNoSistema = async (e) => {
+    e.preventDefault();
+    try {
+      const resposta = await fetch('http://localhost:3001/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, senha })
+      });
+
+      // TESTE: Se o servidor deu log de sucesso, o status deve ser 200
+      console.log("Status da resposta:", resposta.status);
+
+      const dados = await resposta.json();
+      console.log("Dados recebidos:", dados);
+
+      if (resposta.ok) {
+        localStorage.setItem('usuario_ceo', JSON.stringify(dados.usuario));
+        console.log("Navegando para dashboard...");
+        navigate('/dashboard'); 
+      } else {
+        alert(dados.mensagem);
+      }
+    } catch (error) {
+      console.error("Erro detalhado:", error); // Isso vai te dizer se é JSON ou Rede
+      alert("Erro de conexão! Olhe o console do navegador (F12).");
+    }
   };
 
   return (
@@ -45,9 +65,6 @@ function Login() {
           <button type="submit">Entrar no Sistema</button>
         </form>
 
-        <p style={{marginTop: '15px', fontSize: '14px'}}>
-          Ainda não tem conta? <Link to="/cadastro" style={{color: '#646cff'}}>Cadastre-se aqui</Link>
-        </p>
       </div>
     </div>
   );

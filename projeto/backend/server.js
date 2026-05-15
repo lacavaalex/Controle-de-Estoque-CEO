@@ -1,34 +1,69 @@
-// No padrão "module", usamos import no lugar do require
-import express from 'express'; // Importando o framework para criar o servidor
-import cors from 'cors'; // Importando o liberador de acessos (CORS)
+import express from 'express';
+import cors from 'cors';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
+const PORT = 3001;
+const PATH_DB = path.join(__dirname, 'usuarios.json');
 
-// Configurações para o servidor entender os dados do formulário
-app.use(cors()); // Libera o acesso para o nosso frontend (React)
-app.use(express.json()); // Serve para o servidor conseguir ler o formato JSON
+app.use(cors());
+app.use(express.json());
 
-// Criando uma lista vazia para salvar os usuários (nosso banco de dados fake)
-let bancoDeDadosFake = [];
+// Rota de Login
+app.post('/login', async (req, res) => {
+  const { email, senha } = req.body;
+  console.log(`Tentativa de login: ${email}`);
 
-// Rota que recebe os dados do formulário de cadastro do React
-app.post('/registrar', (req, res) => {
-  const dadosRecebidos = req.body; // Pega o nome, email e senha enviados
-  
-  // Guardando o novo usuário na nossa lista
-  bancoDeDadosFake.push(dadosRecebidos);
-  
-  // Mostra no terminal do VS Code quem se cadastrou
-  console.log('--- Usuário Cadastrado com Sucesso ---');
-  console.log('Nome:', dadosRecebidos.nome);
-  console.log('Email:', dadosRecebidos.email);
-  console.log('Total no banco:', bancoDeDadosFake.length);
+  try {
+    const data = await fs.readFile(PATH_DB, 'utf-8');
+    const json = JSON.parse(data);
 
-  // Manda a resposta de volta para o frontend
-  res.status(201).json({ mensagem: "Usuário salvo com sucesso no servidor!" });
+    const usuario = json.usuarios.find(u => u.email === email && u.senha === senha);
+
+    if (usuario) {
+      console.log("Login bem-sucedido!");
+      // Não enviamos a senha de volta por segurança
+      const { senha: _, ...usuarioSemSenha } = usuario;
+      res.json({ usuario: usuarioSemSenha });
+    } else {
+      console.log("Credenciais inválidas.");
+      res.status(401).json({ mensagem: "E-mail ou senha incorretos!" });
+    }
+  } catch (error) {
+    console.error("Erro ao ler o arquivo JSON:", error);
+    res.status(500).json({ mensagem: "Erro interno no servidor do CEO" });
+  }
 });
 
-// Fazendo o servidor rodar na porta 3001
-app.listen(3001, () => {
-  console.log('Servidor do CEO rodando liso na porta 3001!');
+// Rota de Registro
+app.post('/registrar', async (req, res) => {
+  const { nome, email, senha, cargo, quemEstaCadastrando } = req.body;
+
+  try {
+    const data = await fs.readFile(PATH_DB, 'utf-8');
+    const json = JSON.parse(data);
+
+    const autorizador = json.usuarios.find(u => u.email === quemEstaCadastrando);
+
+    if (!autorizador || autorizador.cargo !== 'gestor') {
+      return res.status(403).json({ 
+        mensagem: "Acesso Negado: Apenas Gestores do CEO podem cadastrar." 
+      });
+    }
+
+    json.usuarios.push({ nome, email, senha, cargo });
+    await fs.writeFile(PATH_DB, JSON.stringify(json, null, 4));
+    res.status(201).json({ mensagem: "Usuário cadastrado com sucesso!" });
+  } catch (error) {
+    res.status(500).json({ mensagem: "Erro no servidor" });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Servidor do CEO rodando em http://localhost:${PORT}`);
 });

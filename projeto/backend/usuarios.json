@@ -1,0 +1,22 @@
+{
+    "info": {
+        "projeto": "CEO Estoque UFPE",
+        "versao_documentacao": "1.0",
+        "data_criacao": "2026-05-14",
+        "contexto": "Hospital Odontológico da UFPE"
+    },
+    "usuarios": [
+        {
+            "nome": "Gestor",
+            "email": "gestor@ufpe.br",
+            "senha": "adminadmin",
+            "cargo": "gestor"
+        },
+        {
+            "nome": "alex",
+            "email": "alex@upfe.br",
+            "senha": "alex",
+            "cargo": "almoxarife"
+        }
+    ]
+}
