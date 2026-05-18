@@ -25,4 +25,25 @@ export class ItemService implements IItemService{
 
         return updatedItem;
     }
+
+    // Metódo de renomeação de item
+
+    async changeItemName(id: string, name: string): Promise<Item> {
+        const item = await this.itemRepository.getItemById(id)
+
+        if (item === null) throw new Error(`Nenhum item com o id ${id} foi encontrado`);
+        if (typeof name !== "string" || name.trim() === "") {
+            throw new Error("Nome inválido");
+        }
+        
+        // Operação no BD
+        const newName = name;
+        await this.itemRepository.updateItem(id, {name: newName});
+
+        // Verfirica se a operação ocorreu corretamente
+        const renamedItem = await this.itemRepository.getItemById(id);
+        if (renamedItem === null) throw new Error('O item não pôde ser renomeado')
+
+        return renamedItem
+    }
 }
