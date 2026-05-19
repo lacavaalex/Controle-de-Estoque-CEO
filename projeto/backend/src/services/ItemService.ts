@@ -5,6 +5,7 @@ import type { IItemRepository } from "../interfaces/repository-interfaces/IItemR
 export class ItemService implements IItemService{
     constructor(private itemRepository: IItemRepository) {}
 
+    // Dá entrada de um item do inventário
     async addStock(id: string, quantity: number): Promise<Item> {
         const item = await this.itemRepository.getItemById(id);
 
@@ -45,5 +46,23 @@ export class ItemService implements IItemService{
         if (renamedItem === null) throw new Error('O item não pôde ser renomeado')
 
         return renamedItem
+    }
+
+    // Cria um novo item no inventário
+    async createItem(newName: string) {
+        const items = await this.itemRepository.getAllItems()
+
+        const verifyExistsItem = items.find((i) => i.name === newName)
+
+        if (verifyExistsItem !== undefined){
+            throw new Error("Item já existente")
+        }
+
+        const newID = items.length
+        const formattedNewID = String(newID).padStart(3, "0")
+
+        const newItem: Item = {id: formattedNewID, name: newName, quantity: 0}
+
+        return newItem
     }
 }
