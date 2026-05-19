@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../App.css';
+import '../styles/Dashboard.css';
 
 function Dashboard() {
+  const [isRetracted, setIsRetracted] = useState(false);
   const navigate = useNavigate();
-  // Recupera o usuário que salvamos no login
-  const usuario = JSON.parse(localStorage.getItem('usuario_ceo'));
+  
+  const usuarioLogado = localStorage.getItem('usuario_ceo');
+  const usuario = usuarioLogado ? JSON.parse(usuarioLogado) : { nome: 'Usuário', cargo: 'gestor' };
 
   const logout = () => {
     localStorage.removeItem('usuario_ceo');
@@ -13,29 +15,48 @@ function Dashboard() {
   };
 
   return (
-    <div className="container-principal">
-      <div className="card-form" style={{ width: '600px' }}>
-        <h1>Estoque CEO</h1>
-        <p>Usuário: <strong>{usuario?.nome}</strong>!</p>
-        <p>Cargo: <span className="tag-gestor" style={{color: '#990000', fontWeight: 'bold'}}>{usuario?.cargo}</span></p>
-
-        <div style={{ marginTop: '30px', display: 'grid', gap: '10px' }}>
-          {/* Botão visível para todos */}
-          <button onClick={() => alert('Em breve: Lista de Materiais')}>Ver Estoque</button>
-
-          {/* REGRA: Apenas Gestor vê este botão */}
-          {usuario?.cargo === 'gestor' && (
-            <button 
-              onClick={() => navigate('/cadastro')}
-              style={{ backgroundColor: '#28a745' }}
-            >
-              + Cadastrar Novo Usuário
-            </button>
-          )}
-
-          <button onClick={logout} style={{ backgroundColor: '#444', marginTop: '20px' }}>Sair</button>
+    <div className={`dashboard-layout ${isRetracted ? 'retracted' : ''}`}>
+      <aside className="sidebar">
+        <div className="sidebar-header">
+          {!isRetracted && <span style={{ fontWeight: 'bold', color: '#990000', fontSize: '18px' }}>CEO UFPE</span>}
+          <button 
+            onClick={() => setIsRetracted(!isRetracted)} 
+            style={{ width: 'auto', background: 'none', color: '#333', padding: '5px', border: 'none', cursor: 'pointer' }}
+          >
+            {isRetracted ? '→' : '←'}
+          </button>
         </div>
-      </div>
+
+        <nav className="menu">
+          <div className="menu-item">
+             <span style={{ marginRight: isRetracted ? '0' : '10px' }}>📦</span> 
+             {!isRetracted && <span>Estoque</span>}
+          </div>
+          {usuario?.cargo === 'gestor' && (
+            <div className="menu-item" onClick={() => navigate('/cadastro')}>
+              <span style={{ marginRight: isRetracted ? '0' : '10px' }}>👤</span> 
+              {!isRetracted && <span>Cadastrar Usuário</span>}
+            </div>
+          )}
+        </nav>
+
+        <div className="user-section" style={{ marginTop: 'auto', padding: '20px', borderTop: '1px solid #f0f0f0' }}>
+          <button onClick={logout} style={{ backgroundColor: '#444', color: '#fff', border: 'none', padding: '10px', borderRadius: '4px', cursor: 'pointer', width: '100%' }}>
+            {isRetracted ? 'Sair' : 'Sair do Sistema'}
+          </button>
+        </div>
+      </aside>
+
+      <main className="content">
+        <header>
+          <h1>Painel de Controle</h1>
+          <hr style={{ border: '0', borderTop: '1px solid #e0e0e0', margin: '20px 0' }} />
+        </header>
+        
+        <div className="placeholder-real">
+          <p>Welcome ao sistema de gestão do CEO. Selecione uma opção no menu lateral para começar a gerenciar o inventário.</p>
+        </div>
+      </main>
     </div>
   );
 }
