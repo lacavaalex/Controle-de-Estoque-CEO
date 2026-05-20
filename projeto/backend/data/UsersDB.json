@@ -1,0 +1,24 @@
+{
+  "usuarios": [
+    {
+      "id": "000",
+      "nome": "Gestor",
+      "email": "gestor@ufpe.br",
+      "senha": "adminadmin",
+      "cargo": "gestor"
+    },
+    {
+      "nome": "alex",
+      "email": "alex@ufpe.br",
+      "senha": "alex",
+      "cargo": "almoxarife"
+    },
+    {
+      "id": "002",
+      "nome": "Novo Solicitante",
+      "email": "solicitante@ufpe.br",
+      "cargo": "solicitante",
+      "senha": "senha123"
+    }
+  ]
+}
