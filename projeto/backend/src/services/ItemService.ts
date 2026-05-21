@@ -17,35 +17,59 @@ export class ItemService implements IItemService{
         if (quantity < 1 || quantity > 300) throw new Error('Não é possível adicionar uma quantidade menor que 1 ou maior que 300');
         
         // Operação no BD
-        const newQuantity = item.quantity + quantity;
-        await this.itemRepository.updateItem(id, {quantity: newQuantity});
-
-        // Verificação se a operação ocorreu adequadamente
-        const updatedItem = await this.itemRepository.getItemById(id);
-        if (updatedItem === null) throw new Error('Estoque do item não pôde ser atualizado')
-
-        return updatedItem;
+        try {
+            const newQuantity = item.quantity + quantity
+            await this.itemRepository.updateItem(id, {quantity: newQuantity})
+            item.quantity = newQuantity
+            return item
+        } catch (error) {
+            throw new Error('Erro ao tentar dar entrada no item')
+        }
     }
 
     // Metódo de renomeação de item
-
     async changeItemName(id: string, name: string): Promise<Item> {
-        const item = await this.itemRepository.getItemById(id)
-
-        if (item === null) throw new Error(`Nenhum item com o id ${id} foi encontrado`);
-        if (typeof name !== "string" || name.trim() === "") {
-            throw new Error("Nome inválido");
-        }
+        // Validação se o nome é válido
+        if (typeof name !== "string" || name.trim() === "") throw new Error("Nome inválido")
         
+        // Validação se o item existe 
+        const items = await this.itemRepository.getAllItems()
+        const item = items.find(item => item.id === id)
+        if (item === undefined) throw new Error(`Nenhum item com o id ${id} foi encontrado`);
+        
+        // Validação se já existe um item com o mesmo nome que está tentando atualizar
+        const hasName = items.some((item) => {item.name === name})
+        if (hasName === true) throw new Error('Já existe um item com o mesmo nome no estoque')
+
         // Operação no BD
-        const newName = name;
-        await this.itemRepository.updateItem(id, {name: newName});
+        try {
+            await this.itemRepository.updateItem(id, {name: name})
+            return item
+        } catch(error){
+            throw new Error('Erro ao tentar atualizar item')
+        }
+    }
 
-        // Verfirica se a operação ocorreu corretamente
-        const renamedItem = await this.itemRepository.getItemById(id);
-        if (renamedItem === null) throw new Error('O item não pôde ser renomeado')
+    // Cria um novo item no inventário
+    async createItem(newName: string) {
+        const items = await this.itemRepository.getAllItems()
 
-        return renamedItem
+        // Verifica se o item existe
+        const verifyExistsItem = items.find((i) => i.name === newName)
+        if (verifyExistsItem !== undefined) throw new Error("Item já existente")
+
+        // Cria novo item
+        const newID = items.length
+        const formattedNewID = String(newID).padStart(3, "0")
+        const newItem: Item = {id: formattedNewID, name: newName, quantity: 0}
+
+        // Add novo item no banco
+        try {
+            await this.itemRepository.createItem(newItem)
+            return newItem
+        } catch {
+            throw new Error('Erro ao inserir item no banco de dados')
+        }
     }
 
     // Cria um novo item no inventário
