@@ -1,0 +1,141 @@
+// CEO Estoque UFPE — Schema DBML
+// Cole em https://dbdiagram.io/d para diagrama visual → Export PNG/PDF
+// Fonte: docs/PO/06-dominio-regras/03-modelo-conceitual.md
+
+Enum role_usuario {
+  gestao      [note: "RN01"]
+  almoxarife  [note: "RN01"]
+  dentista    [note: "RN01"]
+}
+
+Enum categoria_item {
+  EPI                  [note: "RN02"]
+  "Anestésico"         [note: "RN02"]
+  "Material Restaurador" [note: "RN02"]
+  Instrumentais        [note: "RN02"]
+  "Higienização"       [note: "RN02"]
+  "Material Cirúrgico" [note: "RN02"]
+  Outros               [note: "RN02"]
+}
+
+Enum unidade_medida {
+  caixa
+  tubo
+  seringa
+  kit
+  pacote
+  rolo
+  unidade
+  frasco
+  "bastão"
+  folha
+  par
+}
+
+Enum status_solicitacao {
+  pendente  [note: "RN10"]
+  aprovada  [note: "RN10"]
+  negada    [note: "RN10"]
+}
+
+Enum tipo_movimentacao {
+  entrada
+  saida
+  ajuste
+}
+
+Enum local_estoque {
+  "Dispensação"
+  CEO
+}
+
+Table usuario [note: "§2.1 — Usuário do sistema"] {
+  id         bigserial    [pk, increment]
+  nome       varchar(150) [not null]
+  email      varchar(150) [not null, unique, note: "CHECK @ufpe.br — RF01.1, PR04"]
+  senha_hash varchar(255) [not null, note: "RNF03.3 — bcrypt/argon2 em produção"]
+  cargo      varchar(100) [not null]
+  role       role_usuario [not null, note: "RN01, INV06"]
+  unidade    varchar(120) [not null]
+  avatar     char(2)      [note: "§2.1: iniciais opcionais"]
+}
+
+Table item [note: "§2.2 — Material consumível da Dispensação"] {
+  id             bigserial      [pk, increment]
+  nome           varchar(150)   [not null]
+  categoria      categoria_item [not null, note: "RN02"]
+  lote           varchar(40)    [not null]
+  quantidade     integer        [not null, default: 0, note: ">=0 — INV05"]
+  unidade        unidade_medida [not null]
+  estoque_minimo integer        [not null, default: 0, note: "§2.2"]
+  estoque_maximo integer        [not null, default: 9999, note: "§2.2 >= minimo"]
+  validade       date           [not null, note: "ISO YYYY-MM-DD — RN05, K1"]
+  localizacao    varchar(80)
+  fornecedor     varchar(120)
+
+  indexes {
+    validade         [name: "idx_item_validade",  note: "RN05 — RF06.2"]
+    nome             [name: "idx_item_nome",       note: "RF03.5"]
+    lote             [name: "idx_item_lote",       note: "RF03.5"]
+    (nome, lote)     [unique, note: "mesmo lote do mesmo item é único"]
+  }
+}
+
+Table estoque_ceo [note: "§2.3 — Saldo no subdepartamento CEO"] {
+  id             bigserial      [pk, increment]
+  item_id        bigint         [not null, unique, note: "INV04 — 1 saldo por item no CEO"]
+  nome           varchar(150)   [not null, note: "denorm §2.3"]
+  categoria      categoria_item [not null, note: "denorm §2.3"]
+  quantidade     integer        [not null, default: 0, note: ">=0 — INV05"]
+  unidade        unidade_medida [not null, note: "denorm §2.3"]
+  estoque_minimo integer        [not null, default: 0, note: "§2.3: mínimo próprio do CEO"]
+
+  indexes {
+    item_id [name: "idx_estoque_ceo_item", note: "§2.3 lookup"]
+  }
+}
+
+Table solicitacao [note: "§2.4 — Pedido formal de material (Dentista → Almoxarife)"] {
+  id                    varchar(10)        [pk, note: "SOL-NNN — RF05.11"]
+  item_id               bigint             [not null, ref: > item.id]
+  item_nome             varchar(150)       [not null, note: "denorm §2.4"]
+  solicitante           varchar(150)       [not null, note: "nome — TODO fase2: FK usuario.id"]
+  cargo                 varchar(100)       [not null, note: "denorm §2.4"]
+  data_solicitacao      timestamptz        [not null, default: `now()`, note: "K1 KPI"]
+  quantidade_solicitada integer            [not null, note: ">=1 — RN09"]
+  unidade               unidade_medida     [not null]
+  justificativa         text               [not null, note: ">=10 chars trim — RN09"]
+  status                status_solicitacao [not null, default: "pendente", note: "RN10"]
+  data_conclusao        timestamptz        [note: "NOT NULL se aprovada/negada — INV02/03"]
+  responsavel           varchar(150)       [note: "almoxarife — RN11; NOT NULL se resolvida"]
+  observacao            text               [note: "especialmente relevante em negações"]
+
+  indexes {
+    (status, data_solicitacao) [name: "idx_solicitacao_status_data", note: "RF05.7"]
+    solicitante                [name: "idx_solicitacao_solicitante",  note: "RN12"]
+  }
+}
+
+Table movimentacao [note: "§2.5 — Registro auditável de alteração de estoque (RNF07.1)"] {
+  id             varchar(10)       [pk, note: "MOV-NNN"]
+  tipo           tipo_movimentacao [not null]
+  item_id        bigint            [not null, ref: > item.id, note: "INV01"]
+  item_nome      varchar(150)      [not null, note: "denorm §2.5"]
+  quantidade     integer           [not null, note: "pode ser negativo em ajuste — PR06"]
+  unidade        unidade_medida    [not null]
+  origem         varchar(120)      [not null, note: "string livre — §2.5"]
+  destino        local_estoque     [not null, note: "§2.5"]
+  responsavel    varchar(150)      [not null, note: "RNF07.1"]
+  data           timestamptz       [not null, default: `now()`, note: "K1, RF06.4"]
+  solicitacao_id varchar(10)       [ref: > solicitacao.id, note: "§2.5: vincula saída"]
+
+  indexes {
+    data [name: "idx_movimentacao_data", note: "RF06.4"]
+  }
+}
+
+// Relacionamentos §3 do modelo conceitual
+Ref: estoque_ceo.item_id > item.id [delete: restrict]          // INV04
+Ref: solicitacao.item_id > item.id [delete: restrict]
+Ref: movimentacao.item_id > item.id [delete: restrict]         // INV01
+Ref: movimentacao.solicitacao_id > solicitacao.id [delete: set null]  // §2.5

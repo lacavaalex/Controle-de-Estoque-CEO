@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ceo_estoque_db
+    environment:
+      POSTGRES_DB: ceo_estoque
+      POSTGRES_USER: ceo_user
+      POSTGRES_PASSWORD: ceo_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ceo_user -d ceo_estoque"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  pgdata:
+    driver: local
