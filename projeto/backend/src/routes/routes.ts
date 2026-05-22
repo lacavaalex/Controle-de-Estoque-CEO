@@ -3,9 +3,12 @@ import { itemController, userController } from "../di/container.js";
 
 const router = express.Router();
 
-router.patch('/items/:id', (req,res) => itemController.addStock(req,res));
-router.patch('/items/:id/name', (req, res) => itemController.changeItemName(req, res));
+// Itens
+router.post('/items', async (req,res) => await itemController.createItem(req,res));
+router.patch('/items/:id/stock', async (req,res) => await itemController.addStock(req,res));
+router.patch('/items/:id/name', async (req, res) => await itemController.changeItemName(req, res));
 
+// Usuários
 router.post('/login', (req, res) => userController.login(req, res));
 router.post('/registrar', (req, res) => userController.register(req, res));
 
