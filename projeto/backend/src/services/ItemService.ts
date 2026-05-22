@@ -5,6 +5,16 @@ import type { IItemRepository } from "../interfaces/repository-interfaces/IItemR
 export class ItemService implements IItemService{
     constructor(private itemRepository: IItemRepository) {}
 
+    private category_options = [
+        "EPI",
+        "Anestésico",
+        "Material Restaurador",
+        "Instrumentais",
+        "Higienização",
+        "Material Cirúrgico",
+        "Outros"
+    ]
+
     // Dá entrada de um item do inventário
     async addStock(id: string, quantity: number): Promise<Item> {
         const item = await this.itemRepository.getItemById(id);
@@ -51,17 +61,20 @@ export class ItemService implements IItemService{
     }
 
     // Cria um novo item no inventário
-    async createItem(newName: string) {
+    async createItem(newName: string, category: string): Promise<Item> {
         const items = await this.itemRepository.getAllItems()
 
         // Verifica se o item existe
         const verifyExistsItem = items.find((i) => i.name === newName)
         if (verifyExistsItem !== undefined) throw new Error("Item já existente")
+        
+        // Verifica se a categoria existe
+        if (!this.category_options.includes(category)) throw new Error("Categoria inválida")
 
         // Cria novo item
         const newID = items.length
         const formattedNewID = String(newID).padStart(3, "0")
-        const newItem: Item = {id: formattedNewID, name: newName, quantity: 0}
+        const newItem: Item = {id: formattedNewID, name: newName, category:category, quantity: 0}
 
         // Add novo item no banco
         try {
@@ -70,23 +83,5 @@ export class ItemService implements IItemService{
         } catch {
             throw new Error('Erro ao inserir item no banco de dados')
         }
-    }
-
-    // Cria um novo item no inventário
-    async createItem(newName: string) {
-        const items = await this.itemRepository.getAllItems()
-
-        const verifyExistsItem = items.find((i) => i.name === newName)
-
-        if (verifyExistsItem !== undefined){
-            throw new Error("Item já existente")
-        }
-
-        const newID = items.length
-        const formattedNewID = String(newID).padStart(3, "0")
-
-        const newItem: Item = {id: formattedNewID, name: newName, quantity: 0}
-
-        return newItem
     }
 }
