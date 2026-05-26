@@ -1,7 +1,7 @@
 # Glossário — Linguagem Ubíqua
 
 **Documento:** 01-glossario
-**Última atualização:** 07/05/2026
+**Última atualização:** 10/05/2026
 
 ---
 
@@ -16,7 +16,8 @@ Este glossário define o vocabulário do domínio. **Use exatamente estes termos
 | **Hospital Odontológico UFPE** | Instituição de saúde do Departamento de Odontologia da UFPE. Abriga Dispensação e diversos subdepartamentos clínicos. | "HUO", "HO" (não usar) |
 | **Dispensação** | Unidade central de almoxarifado do hospital. Recebe materiais de fornecedores e os redistribui aos subdepartamentos. | "Almoxarifado central" |
 | **CEO (Centro de Especialidades Odontológicas)** | Subdepartamento clínico do hospital, piloto deste sistema. Consome materiais via solicitação à Dispensação. | "Especialidades", "Clínica" |
-| **Subdepartamento** | Unidade clínica do hospital que consome materiais (CEO, Endodontia, Cirurgia etc.). | "Unidade clínica" |
+| **CME (Centro de Materiais e Esterilização)** | Subdepartamento do hospital responsável pelo processamento e esterilização de instrumentais. É um destino legítimo no fluxo real do almoxarife (confirmado em entrevista 10/05/2026). **Fora do escopo do piloto CEO** (OUT04) — modelado como `Subdepartamento` desde já para facilitar expansão na fase 2. | "Esterilização central" |
+| **Subdepartamento** | Unidade clínica ou de suporte do hospital que consome materiais (CEO, CME, Endodontia, Laboratórios etc.). | "Unidade clínica" |
 | **Gestão** | Perfil de usuário; coordenação administrativa. No protótipo, role `gestao`. | "Coordenação" (no contexto de UI usar "Gestão") |
 | **Almoxarife** | Perfil de usuário; operador da Dispensação. Role `almoxarife`. | — |
 | **Dentista CEO** | Perfil de usuário; profissional clínico que consome material. Role `dentista`. | "Profissional", "Usuário clínico" |
@@ -60,7 +61,10 @@ Este glossário define o vocabulário do domínio. **Use exatamente estes termos
 
 | Termo | Definição |
 |-------|-----------|
-| **Solicitação** | Pedido formal de material feito por um Dentista CEO ao Almoxarife. ID no formato `SOL-NNN`. |
+| **Solicitação** | Pedido formal de material feito por um Dentista CEO ao Almoxarife. ID no formato `SOL-NNN`. Corresponde ao e-mail enviado pela coordenação do CEO — contém uma lista de itens, não um item único. |
+| **ItemSolicitado** | Linha de uma Solicitação. Representa um item específico com quantidade solicitada e quantidade enviada. |
+| **Quantidade requerida** | Quantidade que o dentista/coordenação solicita para um ItemSolicitado. |
+| **Quantidade enviada** | Quantidade que o almoxarife efetivamente entrega. Pode ser menor (racionalização — ver RN16). |
 | **Justificativa** | Texto livre que o dentista escreve ao criar a solicitação. Mínimo 10 caracteres. |
 | **Status da solicitação** | Pendente · Aprovada · Negada. |
 | **Pendente** | Solicitação criada, aguardando decisão do almoxarife. |
