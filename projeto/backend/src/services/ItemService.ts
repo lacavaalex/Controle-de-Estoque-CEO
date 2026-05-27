@@ -105,4 +105,11 @@ export class ItemService implements IItemService{
             throw new Error('Erro ao inserir item no banco de dados')
         }
     }
+
+    // Lista todos os itens
+    async listItems(): Promise<Item[]> {
+        const items = await this.itemRepository.getAllItems()
+        if (items.length === 0) throw new Error("Estoque vazio")
+        return items
+    }
 }
