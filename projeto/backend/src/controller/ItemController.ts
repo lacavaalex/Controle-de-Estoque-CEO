@@ -75,4 +75,18 @@ export class ItemController {
 
         }
     }
+
+    // Listar todos os itens
+    async listItems(req: Request, res: Response): Promise<Response> {
+        try {
+            const items = await this.itemService.listItems()
+            return res.status(200).json(items)
+        } catch(error) {
+            if (error instanceof Error) {
+                return res.status(400).json({error: error.message})
+            } else {
+                return res.status(500).json({error: "Erro interno do servidor"})
+            }
+        }
+    }
 }

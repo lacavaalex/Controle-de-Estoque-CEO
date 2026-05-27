@@ -16,6 +16,7 @@ const createMockService = (): Mocked<IItemService> => ({
   changeItemName: vi.fn(),
   changeItemCategory: vi.fn(),
   createItem: vi.fn(),
+  listItems: vi.fn(),
 });
 
 const createMockResponse = (): Response => {
@@ -161,6 +162,38 @@ describe("ItemController", () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({ error: "Item já existente" });
+    });
+  });
+
+  describe("listItems", () => {
+    it("deve retornar 200 com todos os itens", async () => {
+      const items = [
+        mockItem,
+        {
+          id: "002",
+          name: "Máscara Descartável (caixa)",
+          category: "EPI",
+          quantity: 30,
+        },
+      ];
+      service.listItems.mockResolvedValue(items);
+      const req = {} as Request;
+
+      await controller.listItems(req, res);
+
+      expect(service.listItems).toHaveBeenCalledOnce();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(items);
+    });
+
+    it("deve retornar 400 quando o serviço lançar erro", async () => {
+      service.listItems.mockRejectedValue(new Error("Estoque vazio"));
+      const req = {} as Request;
+
+      await controller.listItems(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: "Estoque vazio" });
     });
   });
 });
