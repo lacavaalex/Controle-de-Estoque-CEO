@@ -187,3 +187,22 @@ describe("addStock", () => {
   });
 
 });
+
+describe("listItems", () => {
+
+  it("deve retornar todos os itens do estoque", async () => {
+    const resultado = await service.listItems();
+
+    expect(resultado).toEqual(createMockItems());
+  });
+
+  it("deve lançar erro se o estoque estiver vazio", async () => {
+    repo = new InMemoryItemRepo([]);
+    service = new ItemService(repo);
+
+    await expect(
+      service.listItems()
+    ).rejects.toThrow("Estoque vazio");
+  });
+
+});

@@ -5,4 +5,5 @@ export interface IItemService{
     changeItemName(id: string, name: string): Promise<Item>
     changeItemCategory(id: string, category: string): Promise<Item>
     createItem(id: string, newName: string): Promise<Item>
+    listItems(): Promise<Item[]>
 }
