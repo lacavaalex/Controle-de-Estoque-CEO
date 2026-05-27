@@ -32,7 +32,7 @@ export class ItemService implements IItemService{
             await this.itemRepository.updateItem(id, {quantity: newQuantity})
             item.quantity = newQuantity
             return item
-        } catch (error) {
+        } catch {
             throw new Error('Erro ao tentar dar entrada no item')
         }
     }
@@ -55,9 +55,27 @@ export class ItemService implements IItemService{
         try {
             await this.itemRepository.updateItem(id, {name: name})
             return item
-        } catch(error){
+        } catch {
             throw new Error('Erro ao tentar atualizar item')
         }
+    }
+
+    // Modifica a categoria de um item
+    async changeItemCategory(id: string, category: string): Promise<Item> {
+        // Validação se o item existe
+        const items = await this.itemRepository.getAllItems()
+        const item = items.find(item => item.id === id)
+        if (item === undefined) throw new Error(`Nenhum item com o id ${id} foi encontrado`)
+
+        // Operação no BD
+        try {
+            await this.itemRepository.updateItem(id, {category: category})
+            item.category = category
+            return item
+        } catch {
+            throw new Error("Erro ao tentar atualizar o item")
+        }
+        
     }
 
     // Cria um novo item no inventário
