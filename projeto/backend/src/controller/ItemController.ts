@@ -24,7 +24,7 @@ export class ItemController {
 
     }
 
-    // Modificar nome  
+    // Modificar nome do item
     async changeItemName(req: Request<{id: string}>, res: Response): Promise<Response> {
         const {id} = req.params;
         const {name} = req.body;
@@ -35,6 +35,23 @@ export class ItemController {
         } catch (error) {
             if (error instanceof Error){
                 return res.status(400).json({error: error.message});
+            } else {
+                return res.status(500).json({error: "Erro interno do servidor"})
+            }
+        }
+    }
+
+    // Modificar categoria do item
+    async changeItemCategory(req: Request<{id: string}>, res: Response): Promise<Response> {
+        const {id} = req.params;
+        const {category} = req.body;
+
+        try {
+            const modifiedItem = await this.itemService.changeItemCategory(id, category)
+            return res.status(200).json(modifiedItem)
+        } catch (error) {
+            if (error instanceof Error) {
+                return res.status(400).json({error: error.message})
             } else {
                 return res.status(500).json({error: "Erro interno do servidor"})
             }
