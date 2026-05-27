@@ -67,6 +67,9 @@ export class ItemService implements IItemService{
         const item = items.find(item => item.id === id)
         if (item === undefined) throw new Error(`Nenhum item com o id ${id} foi encontrado`)
 
+        // Verifica se a categoria existe
+        if (!this.category_options.includes(category)) throw new Error("Categoria inválida")
+
         // Operação no BD
         try {
             await this.itemRepository.updateItem(id, {category: category})
