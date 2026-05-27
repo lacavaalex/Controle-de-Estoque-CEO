@@ -21,8 +21,11 @@ class InMemoryItemRepo implements IItemRepository {
 
   async updateItem(id: string, updatedProperties: Partial<Omit<Item, "id">>): Promise<void> {
     const itemIndex = this.items.findIndex((item) => item.id === id);
+    const item = this.items[itemIndex];
+    if (item === undefined) throw new Error(`Nenhum item com o id ${id} foi encontrado`);
+
     this.items[itemIndex] = {
-      ...this.items[itemIndex],
+      ...item,
       ...updatedProperties,
     };
   }
@@ -84,6 +87,38 @@ describe("changeItemName", () => {
     await expect(
       service.changeItemName("001", "   ")
     ).rejects.toThrow("Nome inválido");
+  });
+
+});
+
+describe("changeItemCategory", () => {
+
+  it("deve alterar a categoria do item com sucesso", async () => {
+    const resultado = await service.changeItemCategory("001", "Material Cirúrgico");
+    const itemAtualizado = await repo.getItemById("001");
+
+    expect(resultado).toEqual({
+      id: "001",
+      name: "Luva Cirúrgica",
+      category: "Material Cirúrgico",
+      quantity: 105,
+    });
+    expect(itemAtualizado?.category).toBe("Material Cirúrgico");
+  });
+
+  it("deve lançar erro se o item não existir", async () => {
+    await expect(
+      service.changeItemCategory("999", "EPI")
+    ).rejects.toThrow("Nenhum item com o id 999 foi encontrado");
+  });
+
+  it("deve lançar erro se a categoria for inválida", async () => {
+    await expect(
+      service.changeItemCategory("001", "Categoria Inexistente")
+    ).rejects.toThrow("Categoria inválida");
+
+    const item = await repo.getItemById("001");
+    expect(item?.category).toBe("EPI");
   });
 
 });
