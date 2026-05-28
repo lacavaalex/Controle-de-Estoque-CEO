@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { efetuarLogin } from "../services/api";
 import type { User } from "../types/user";
 
-export function Login() {
+export function Login({ onLoginSuccess }: { onLoginSuccess: (user: User) => void }) {
     const [email, setEmail] = useState<string>("");
     const [senha, setSenha] = useState<string>("");
     
@@ -18,10 +18,9 @@ export function Login() {
 
         try {
             const dados = await efetuarLogin(email, senha);
-            setUsuarioLogado(dados.usuario);
 
-            // Salva no LocalStorage
             localStorage.setItem("usuario_ceo", JSON.stringify(dados.usuario));
+            onLoginSuccess(dados.usuario);
         } catch (err) {
             if (err instanceof Error) {
                 setErro(err.message);
@@ -31,21 +30,6 @@ export function Login() {
         } finally {
             setCarregando(false);
         }
-    }
-
-    if (usuarioLogado) {
-        return (
-            <div style={{ padding: "20px", textAlign: "center" }}>
-                <h2>Bem-vindo, {usuarioLogado.nome}!</h2>
-                <p>Seu cargo atual é: <strong>{usuarioLogado.cargo}</strong></p>
-                <button onClick={() => {
-                    localStorage.removeItem("usuario_ceo");
-                    setUsuarioLogado(null);
-                }}>
-                    Sair da Conta
-                </button>
-            </div>
-        );
     }
 
     return (

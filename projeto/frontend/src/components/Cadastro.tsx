@@ -81,7 +81,7 @@ export function Cadastro() {
                 </div>
 
                 <div style={{ marginBottom: "18px" }}>
-                    <label style={{ display: "block", marginBottom: "4px" }}>Cargo no C.E.O:</label>
+                    <label style={{ display: "block", marginBottom: "4px" }}>Cargo:</label>
                     <select value={cargo} onChange={(e) => setCargo(e.target.value as any)} style={{ width: "100%", padding: "6px" }}>
                         <option value="solicitante">Solicitante</option>
                         <option value="almoxarife">Almoxarife</option>
