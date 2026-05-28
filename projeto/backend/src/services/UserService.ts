@@ -47,4 +47,18 @@ export class UserService implements IUserService {
 
         return newUser;
     }
+
+    // valida os dados e envia para o repositorio atualizar no banco
+    async update(id: string, dados: { email?: string; senha?: string }): Promise<User> {
+        const users = await this.userRepository.getAllUsers();
+        
+        // checa se o email novo ja existe em outra conta
+        if (dados.email) {
+            const emailEmUso = users.find((u) => u.email === dados.email && u.id !== id);
+            if (emailEmUso) throw new Error("este e-mail ja esta cadastrado no sistema.");
+        }
+
+        // chama o repositorio para salvar
+        return await this.userRepository.updateUser(id, dados);
+    }
 }
