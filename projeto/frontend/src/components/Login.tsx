@@ -50,7 +50,7 @@ export function Login() {
 
     return (
         <div style={{ maxWidth: "400px", margin: "50px auto", padding: "20px", border: "1px solid #ccc", borderRadius: "8px" }}>
-            <h2 style={{ textAlign: "center" }}>C.E.O. UFPE - Login (TS)</h2>
+            <h2 style={{ textAlign: "center" }}>C.E.O. UFPE - Login</h2>
             
             {erro && <p style={{ color: "red", backgroundColor: "#ffe6e6", padding: "10px", borderRadius: "4px" }}>{erro}</p>}
 

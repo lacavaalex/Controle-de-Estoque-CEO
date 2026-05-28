@@ -1,4 +1,4 @@
-import type { User } from "../types/user";
+import type { User, RegisterDto } from "../types/user";
 
 const BASE_URL = "http://localhost:3000";
 
@@ -19,6 +19,36 @@ export async function efetuarLogin(email: string, senha: string): Promise<{ usua
         }
 
         return dados as { usuario: User };
+    } catch (error) {
+        throw error;
+    }
+}
+
+/**
+ * @param dados
+ * @param quemEstaCadastrando
+ */
+
+export async function efetuarCadastro(
+    dados: RegisterDto, 
+    quemEstaCadastrando: string
+): Promise<{ mensagem: string; usuario: User }> {
+    try {
+        const resposta = await fetch(`${BASE_URL}/registrar`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ ...dados, quemEstaCadastrando })
+        });
+
+        const resultado = await resposta.json();
+
+        if (!resposta.ok) {
+            throw new Error(resultado.mensagem || "Erro ao tentar registrar usuário.");
+        }
+
+        return resultado as { mensagem: string; usuario: User };
     } catch (error) {
         throw error;
     }
