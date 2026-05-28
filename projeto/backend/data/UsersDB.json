@@ -19,6 +19,13 @@
       "email": "solicitante@ufpe.br",
       "cargo": "solicitante",
       "senha": "senha123"
+    },
+    {
+      "id": "003",
+      "nome": "Wallyson Silva",
+      "email": "wrs4@cin.ufpe.br",
+      "cargo": "solicitante",
+      "senha": "159753"
     }
   ]
 }
