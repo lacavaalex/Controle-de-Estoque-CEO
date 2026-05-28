@@ -54,4 +54,30 @@ export class JsonUserRepo implements IUserRepository {
         const { senha, ...user } = found;
         return { user, senhaSalva: senha };
     }
+
+    async updateUser(id: string, dados: { email?: string; senha?: string }): Promise<User> {
+        const rows = await readUsersRaw();
+        const index = rows.findIndex((u) => u.id === id);
+
+        if (index === -1) {
+            throw new Error("usuario nao encontrado no banco de dados.");
+        }
+
+        // Armazena numa constante e garante a sua existencia para acalmar o compilador
+        const userRow = rows[index];
+        if (!userRow) {
+            throw new Error("usuario nao encontrado no banco de dados.");
+        }
+
+        // Atualiza apenas os campos fornecidos
+        if (dados.email) userRow.email = dados.email;
+        if (dados.senha) userRow.senha = dados.senha;
+
+        // Salva as alterações de volta no ficheiro JSON
+        await writeUsersRaw(rows);
+
+        // Separa a senha do objeto para não retornar dados sensíveis
+        const { senha, ...userAtualizado } = userRow;
+        return userAtualizado;
+    }
 }

@@ -13,5 +13,6 @@ router.get('/items', async (req,res)=> await itemController.listItems(req, res))
 // Usuários
 router.post('/login', (req, res) => userController.login(req, res));
 router.post('/registrar', (req, res) => userController.register(req, res));
+router.put('/usuarios/:id', (req, res) => userController.update(req, res));
 
 export { router };
