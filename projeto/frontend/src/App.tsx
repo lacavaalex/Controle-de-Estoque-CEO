@@ -1,45 +1,32 @@
 import { useState, useEffect } from "react";
 import { Login } from "./components/Login";
-import { Cadastro } from "./components/Cadastro";
+import { Dashboard } from "./components/Dashboard";
 import type { User } from "./types/user";
 
 function App() {
-  const [sessaoAtiva, setSessaoAtiva] = useState<boolean>(false);
+  const [usuarioLogado, setUsuarioLogado] = useState<User | null>(null);
 
   useEffect(() => {
-    const conferirSessao = () => {
-      const u = localStorage.getItem("usuario_ceo");
-      setSessaoAtiva(!!u);
-    };
-
-    conferirSessao();
-    window.addEventListener("storage", conferirSessao);
-    return () => window.removeEventListener("storage", conferirSessao);
+    const dadosSessao = localStorage.getItem("usuario_ceo");
+    if (dadosSessao) {
+      setUsuarioLogado(JSON.parse(dadosSessao));
+    }
   }, []);
 
+  function handleLogout() {
+    localStorage.removeItem("usuario_ceo");
+    setUsuarioLogado(null);
+  }
+
+ if (!usuarioLogado) {
+    return <Login onLoginSuccess={(user) => setUsuarioLogado(user)} />;
+  }
+
   return (
-    <div style={{ fontFamily: "Arial, sans-serif", padding: "10px" }}>
-      {!sessaoAtiva ? (
-        <Login />
-      ) : (
-        <div>
-          <div style={{ backgroundColor: "#f8f9fa", padding: "10px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #ddd" }}>
-            <h2>Painel de Controle - C.E.O. UFPE</h2>
-            <button 
-              onClick={() => {
-                localStorage.removeItem("usuario_ceo");
-                window.location.reload();
-              }}
-              style={{ padding: "6px 12px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-            >
-              Sair do Sistema
-            </button>
-          </div>
-          
-          <Cadastro />
-        </div>
-      )}
-    </div>
+    <Dashboard 
+      usuario={usuarioLogado} 
+      onLogout={handleLogout} 
+    />
   );
 }
 
