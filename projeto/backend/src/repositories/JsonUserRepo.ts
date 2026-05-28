@@ -2,6 +2,7 @@ import type { IUserRepository } from "../interfaces/repository-interfaces/IUserR
 import type { User } from "../entities/User.js";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "path";
+import bcrypt from "bcrypt";
 
 interface UserRow extends User {
     senha: string;
@@ -27,7 +28,9 @@ export class JsonUserRepo implements IUserRepository {
     
     async createUser(user: User, senhaObscura: string): Promise<void> {
         const users = await readUsersRaw();
-        const newUserRow: UserRow = { ...user, senha: senhaObscura };
+        const salt = await bcrypt.genSalt(10);
+        const senhaCriptografada = await bcrypt.hash(senhaObscura, salt);
+        const newUserRow: UserRow = { ...user, senha: senhaCriptografada };
         users.push(newUserRow);
         await writeUsersRaw(users);
     }
@@ -52,6 +55,7 @@ export class JsonUserRepo implements IUserRepository {
         if (!found) return null;
 
         const { senha, ...user } = found;
+
         return { user, senhaSalva: senha };
     }
 
@@ -63,20 +67,16 @@ export class JsonUserRepo implements IUserRepository {
             throw new Error("usuario nao encontrado no banco de dados.");
         }
 
-        // Armazena numa constante e garante a sua existencia para acalmar o compilador
         const userRow = rows[index];
         if (!userRow) {
             throw new Error("usuario nao encontrado no banco de dados.");
         }
 
-        // Atualiza apenas os campos fornecidos
         if (dados.email) userRow.email = dados.email;
         if (dados.senha) userRow.senha = dados.senha;
 
-        // Salva as alterações de volta no ficheiro JSON
         await writeUsersRaw(rows);
 
-        // Separa a senha do objeto para não retornar dados sensíveis
         const { senha, ...userAtualizado } = userRow;
         return userAtualizado;
     }

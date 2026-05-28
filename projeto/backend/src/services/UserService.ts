@@ -1,6 +1,7 @@
 import type { User } from "../entities/User.js";
 import type { IUserService } from "../interfaces/service-interfaces/IUserService.js";
 import type { IUserRepository } from "../interfaces/repository-interfaces/IUserRepo.js";
+import bcrypt from "bcrypt";
 
 export interface RegisterDto {
     nome: string;
@@ -15,7 +16,13 @@ export class UserService implements IUserService {
     async login(email: string, senhaDigitada: string): Promise<User> {
         const resultado = await this.userRepository.buscarSenhaPorEmail(email);
 
-        if (!resultado || resultado.senhaSalva !== senhaDigitada) {
+        if (!resultado) {
+            throw new Error("E-mail ou senha incorretos!");
+        }
+        
+        const senhaValida = await bcrypt.compare(senhaDigitada, resultado.senhaSalva);
+        
+        if (!senhaValida) {
             throw new Error("E-mail ou senha incorretos!");
         }
 
