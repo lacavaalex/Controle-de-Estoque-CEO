@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { efetuarLogin } from "../services/api";
 import type { User } from "../types/user";
 
-export function Login({ onLoginSuccess }: { onLoginSuccess: (user: User) => void }) {
+export function Login({ onLoginSuccess }: { onLoginSuccess: (user: User, token: string) => void }) {
     const [email, setEmail] = useState<string>("");
     const [senha, setSenha] = useState<string>("");
     
@@ -18,9 +18,9 @@ export function Login({ onLoginSuccess }: { onLoginSuccess: (user: User) => void
 
         try {
             const dados = await efetuarLogin(email, senha);
-
-            localStorage.setItem("usuario_ceo", JSON.stringify(dados.usuario));
-            onLoginSuccess(dados.usuario);
+            
+            onLoginSuccess(dados.usuario, dados.token);
+            
         } catch (err) {
             if (err instanceof Error) {
                 setErro(err.message);
