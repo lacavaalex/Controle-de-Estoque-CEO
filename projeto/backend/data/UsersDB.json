@@ -4,29 +4,36 @@
       "id": "000",
       "nome": "Gestor",
       "email": "gestor@ufpe.br",
-      "senha": "$2b$10$9v3mH9Z/8e4Iun.p5pGgNu8F3D1C8C03XWwTjI6/tGvO5.D1/CgKG",
+      "senha": "$2b$10$IRy7xTEr8RP1CDU94YYIMuYuYanKkfgcAQpZFwWsxhJkbToirrH0S",
       "cargo": "gestor"
     },
     {
       "id": "001",
       "nome": "alex",
       "email": "alex@ufpe.br",
-      "senha": "$2b$10$m69vDshg87V6H0z6R1Z3OuxyA9UfBfZCWhfW12ZfKqS0fL6P3wXmG",
+      "senha": "$2b$10$IRy7xTEr8RP1CDU94YYIMuvoqAB47W2DuQx2.0fWg8k4hcQoafDcG",
       "cargo": "almoxarife"
     },
     {
       "id": "002",
       "nome": "Novo Solicitante",
       "email": "solicitante@ufpe.br",
-      "senha": "$2b$10$3vM2l2eGgW7mPOnB2D1RSuXyA9UfBfZCWhfW12ZfKqS0fL6P3wXmG",
+      "senha": "$2b$10$IRy7xTEr8RP1CDU94YYIMukuSjNvf3fJDAPnrP.xidftDTgXMF3rS",
       "cargo": "solicitante"
     },
     {
       "id": "003",
       "nome": "Wallyson Silva",
       "email": "wrs4@cin.ufpe.br",
-      "senha": "$2b$10$E1Z3OuxyA9UfBfZCWhfW12ZfKqS0fL6P3wXmG9vDshg87V6H0z6R",
+      "senha": "$2b$10$IRy7xTEr8RP1CDU94YYIMuPBqOUsT/XSFJqXtKCyRddRdw8ok6UTu",
       "cargo": "solicitante"
+    },
+    {
+      "id": "004",
+      "nome": "testinho",
+      "email": "teste@ufpe.br",
+      "cargo": "solicitante",
+      "senha": "$2b$10$uGro.gULYoocXCUoXjMk3.apw0AVqQTu0ep4hetStpehJEMUqS0aq"
     }
   ]
 }

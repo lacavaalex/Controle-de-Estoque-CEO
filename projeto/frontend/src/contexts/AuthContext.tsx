@@ -1,4 +1,3 @@
-// src/contexts/AuthContext.tsx
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import type { User } from "../types/user";
 
@@ -18,7 +17,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [carregandoSessao, setCarregandoSessao] = useState(true);
     const timerRef = useRef<number | null>(null);
 
-    // Carrega a sessão do sessionStorage ao iniciar o app
+    // carrega a sessão do sessionStorage ao iniciar o app
     useEffect(() => {
         const dadosSessao = sessionStorage.getItem("usuario_ceo");
         const token = sessionStorage.getItem("token_ceo");
