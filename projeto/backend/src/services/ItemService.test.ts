@@ -89,6 +89,18 @@ describe("changeItemName", () => {
     ).rejects.toThrow("Nome inválido");
   });
 
+  // Bug de changeItemName -----------------------------------------------------------------
+it("deve lançar erro se já existir um item com o mesmo nome", async () => {
+    await expect(
+        service.changeItemName("001", "Máscara Descartável (caixa)")
+    ).rejects.toThrow("Já existe um item com o mesmo nome no estoque")
+  });
+
+it("deve retornar o item com o nome já atualizado", async () => {
+    const resultado = await service.changeItemName("001", "Nome Novo")
+    expect(resultado.name).toBe("Nome Novo")
+  });
+  // ----------------------------------------------------------------------------------------
 });
 
 describe("changeItemCategory", () => {
@@ -142,7 +154,31 @@ describe("createItem", () => {
       service.createItem("Luva Cirúrgica", "Outros")
     ).rejects.toThrow("Item já existente");
   });
+  // Teste no creatItem -------------------------------------------------------------
+  it("não deve gerar ID duplicado após deletar um item", async () => {
+      await repo.deleteItem("010") // deleta o último (id "010", length era 11)
+      const novo = await service.createItem("Item Novo", "EPI")
+    
+      const todos = await repo.getAllItems()
+      const ids = todos.map(i => i.id)
+      const unicos = new Set(ids)
+    
+      expect(unicos.size).toBe(ids.length) // falha se houver duplicata
+  });
 
+  it("não deve gerar ID duplicado ao deletar item do meio", async () => {
+    await repo.deleteItem("005") // deleta o item do meio
+    const novo = await service.createItem("Item Novo", "EPI")
+    // items.length agora é 10 → gera ID "010"
+    // mas "010" (Amalgama) ainda existe! → COLISÃO
+    
+    const todos = await repo.getAllItems()
+    const ids = todos.map(i => i.id)
+    const unicos = new Set(ids)
+    
+    expect(unicos.size).toBe(ids.length) 
+  });
+  // --------------------------------------------------------------------------------
 });
 
 describe("addStock", () => {
