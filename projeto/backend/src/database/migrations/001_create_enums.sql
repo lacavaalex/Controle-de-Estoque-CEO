@@ -1,31 +1,60 @@
-CREATE TYPE role_usuario AS ENUM ('gestao', 'almoxarife', 'dentista');
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'role_usuario') THEN
+    CREATE TYPE role_usuario AS ENUM ('gestao', 'almoxarife', 'dentista');
+  END IF;
+END $$;
 
-CREATE TYPE categoria_item AS ENUM (
-    'EPI',
-    'Anestésico',
-    'Material Restaurador',
-    'Instrumentais',
-    'Higienização',
-    'Material Cirúrgico',
-    'Outros'
-);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'categoria_produto') THEN
+    CREATE TYPE categoria_produto AS ENUM (
+      'EPI',
+      'Anestesico',
+      'Material Restaurador',
+      'Instrumentais',
+      'Higienizacao',
+      'Material Cirurgico',
+      'Outros'
+    );
+  END IF;
+END $$;
 
-CREATE TYPE unidade_medida AS ENUM (
-    'caixa',
-    'tubo',
-    'seringa',
-    'kit',
-    'pacote',
-    'rolo',
-    'unidade',
-    'frasco',
-    'bastão',
-    'folha',
-    'par'
-);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'unidade_medida') THEN
+    CREATE TYPE unidade_medida AS ENUM (
+      'caixa', 'tubo', 'seringa', 'kit', 'pacote',
+      'rolo', 'unidade', 'frasco', 'bastao', 'folha', 'par'
+    );
+  END IF;
+END $$;
 
-CREATE TYPE status_solicitacao AS ENUM ('pendente', 'aprovada', 'negada');
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'estado_lote') THEN
+    CREATE TYPE estado_lote AS ENUM (
+      'disponivel', 'reservado', 'vencido', 'segregado', 'descartado'
+    );
+  END IF;
+END $$;
 
-CREATE TYPE tipo_movimentacao AS ENUM ('entrada', 'saida', 'ajuste');
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'status_pedido') THEN
+    CREATE TYPE status_pedido AS ENUM (
+      'pendente', 'em_separacao', 'expedido', 'cancelado'
+    );
+  END IF;
+END $$;
 
-CREATE TYPE local_estoque AS ENUM ('Dispensação', 'CEO');
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'status_item_pedido') THEN
+    CREATE TYPE status_item_pedido AS ENUM (
+      'pendente', 'atendido', 'parcial', 'nao_atendido'
+    );
+  END IF;
+END $$;
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tipo_movimentacao') THEN
+    CREATE TYPE tipo_movimentacao AS ENUM (
+      'entrada', 'saida', 'transferencia', 'ajuste', 'segregacao', 'descarte'
+    );
+  END IF;
+END $$;

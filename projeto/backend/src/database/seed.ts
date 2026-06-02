@@ -11,7 +11,7 @@ async function seed(): Promise<void> {
   const client = await pool.connect();
 
   try {
-    const { rows } = await client.query("SELECT COUNT(*) AS total FROM usuario");
+    const { rows } = await client.query("SELECT COUNT(*) AS total FROM setores");
     if (parseInt(rows[0].total, 10) > 0) {
       console.log("Seed ignorado: tabelas já possuem dados.");
       return;
