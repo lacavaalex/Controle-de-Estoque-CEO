@@ -1,11 +1,9 @@
 import type { Item } from "../../entities/Item.js";
-import type { CategoriaItem } from "../../entities/enums.js";
 
-export interface IItemService {
-  listAll(filtros?: { nome?: string; lote?: string; categoria?: CategoriaItem }): Promise<Item[]>;
-  getById(id: number): Promise<Item | null>;
-  addStock(id: number, quantidade: number): Promise<Item>;
-  create(item: Omit<Item, "id">): Promise<Item>;
-  update(id: number, dados: Partial<Omit<Item, "id">>): Promise<Item | null>;
-  delete(id: number): Promise<boolean>;
+export interface IItemService{
+    addStock(id: string, quantity: number): Promise<Item>
+    changeItemName(id: string, name: string): Promise<Item>
+    changeItemCategory(id: string, category: string): Promise<Item>
+    createItem(id: string, newName: string): Promise<Item>
+    listItems(): Promise<Item[]>
 }

@@ -1,13 +1,18 @@
 import express from "express";
-import { itemController } from "../di/container.js";
+import { itemController, userController } from "../di/container.js";
 
 const router = express.Router();
 
-router.get("/items",         (req, res) => itemController.listAll(req, res));
-router.get("/items/:id",     (req, res) => itemController.getById(req, res));
-router.post("/items",        (req, res) => itemController.create(req, res));
-router.patch("/items/:id",   (req, res) => itemController.addStock(req, res));
-router.put("/items/:id",     (req, res) => itemController.update(req, res));
-router.delete("/items/:id",  (req, res) => itemController.delete(req, res));
+// Itens
+router.post('/items', async (req,res) => await itemController.createItem(req,res));
+router.patch('/items/:id/stock', async (req,res) => await itemController.addStock(req,res));
+router.patch('/items/:id/name', async (req, res) => await itemController.changeItemName(req, res));
+router.patch('/items/:id/category', async (req,res)=> await itemController.changeItemCategory(req, res))
+router.get('/items', async (req,res)=> await itemController.listItems(req, res))
+
+// Usuários
+router.post('/login', (req, res) => userController.login(req, res));
+router.post('/registrar', (req, res) => userController.register(req, res));
+router.put('/usuarios/:id', (req, res) => userController.update(req, res));
 
 export { router };
