@@ -12,7 +12,7 @@ async function reset(): Promise<void> {
   try {
     console.log("Resetando banco de dados...");
     await client.query(`
-      TRUNCATE TABLE movimentacao, solicitacao, estoque_ceo, item, usuario
+      TRUNCATE TABLE movimentacoes, itens_pedido, pedidos, lotes, produtos, usuarios, setores
       RESTART IDENTITY CASCADE
     `);
     console.log("  ✓ tabelas truncadas.");
