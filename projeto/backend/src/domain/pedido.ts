@@ -2,7 +2,8 @@
 // Função de domínio — status DERIVADO do pedido a partir dos seus itens (RN10).
 // Pura e testável. O status do pedido nunca é setado à mão: é calculado.
 // =============================================================================
-import type { StatusItem, StatusPedido } from "../entities/index.js";
+import type { Lote, MotivoDivergencia, StatusItem, StatusPedido } from "../entities/index.js";
+import { ordenarFEFO } from "./estoque.js";
 
 /**
  * RN10 — deriva o status do pedido a partir dos status dos seus itens.
@@ -61,4 +62,88 @@ export function statusDerivadoDoPedido(statusItens: StatusItem[]): StatusPedido 
 
   // 7. pendente — restante: só pendentes, ou mistura pendente + aguardando.
   return "pendente";
+}
+
+// =============================================================================
+// Expedição de um item (RN16/RN19/RN20) — PURO, sem I/O.
+// Dado quanto se pede e os lotes disponíveis no setor de origem (HO), calcula:
+//   - como repartir a quantidade entre lotes (FEFO, RN20);
+//   - quanto sai no total (qtdExpedida);
+//   - o status do item resultante (RN10) e, se houver divergência, o motivo (RN16).
+// O service consome este plano para fazer as baixas e movimentações na transação.
+// =============================================================================
+
+/** Uma alocação concreta: tirar `quantidade` do lote `loteId`. */
+export interface AlocacaoLote {
+  loteId: number;
+  quantidade: number;
+}
+
+export interface PlanoExpedicao {
+  alocacoes: AlocacaoLote[];
+  qtdExpedida: number;
+  qtdSolicitada: number;
+  statusItem: StatusItem;
+  // Só presente quando qtdExpedida < qtdSolicitada (INV03/RN16).
+  motivoDivergencia?: MotivoDivergencia;
+}
+
+/**
+ * RN16/RN19/RN20 — planeja a expedição de um item.
+ *
+ * Consome os lotes expedíveis do produto no setor de origem na ordem FEFO
+ * (validade mais próxima primeiro) até cobrir `qtdSolicitada` ou esgotar o
+ * estoque ativo. Não muta `lotesDisponiveis`.
+ *
+ *   - qtdExpedida == solicitada            -> atendido_integral (sem motivo).
+ *   - 0 < qtdExpedida < solicitada         -> atendido_parcial  (falta_estoque).
+ *   - qtdExpedida == 0 (sem lote ativo)    -> aguardando_reposicao (falta_estoque).
+ *
+ * `qtdSolicitada` deve ser >= 1 (RN09); lança erro caso contrário.
+ */
+export function planejarExpedicaoItem(
+  qtdSolicitada: number,
+  lotesDisponiveis: Lote[],
+  hoje: Date = new Date(),
+): PlanoExpedicao {
+  if (qtdSolicitada < 1) {
+    throw new Error("Quantidade solicitada deve ser >= 1 (RN09)");
+  }
+
+  // RN20 — só lotes expedíveis (ativos, com saldo, não vencidos), em ordem FEFO.
+  const fila = ordenarFEFO(lotesDisponiveis, hoje);
+
+  const alocacoes: AlocacaoLote[] = [];
+  let restante = qtdSolicitada;
+  for (const lote of fila) {
+    if (restante <= 0) break;
+    const tirar = Math.min(lote.quantidade, restante);
+    if (tirar > 0) {
+      alocacoes.push({ loteId: lote.id, quantidade: tirar });
+      restante -= tirar;
+    }
+  }
+
+  const qtdExpedida = qtdSolicitada - restante;
+
+  let statusItem: StatusItem;
+  let motivoDivergencia: MotivoDivergencia | undefined;
+  if (qtdExpedida === qtdSolicitada) {
+    statusItem = "atendido_integral";
+  } else if (qtdExpedida === 0) {
+    // Nada saiu: demanda represada até repor estoque.
+    statusItem = "aguardando_reposicao";
+    motivoDivergencia = "falta_estoque";
+  } else {
+    statusItem = "atendido_parcial";
+    motivoDivergencia = "falta_estoque";
+  }
+
+  return {
+    alocacoes,
+    qtdExpedida,
+    qtdSolicitada,
+    statusItem,
+    ...(motivoDivergencia !== undefined ? { motivoDivergencia } : {}),
+  };
 }

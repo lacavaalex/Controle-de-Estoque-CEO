@@ -7,9 +7,15 @@ import {
   estoqueService,
   produtoController,
   loteController,
+  pedidoController,
 } from "../di/container.js";
 import { autenticar, exigir } from "../auth/middleware.js";
-import { podeVerSetor, podeEditarEstoque } from "../auth/rbac.js";
+import {
+  podeVerSetor,
+  podeEditarEstoque,
+  podeCriarPedido,
+  podeProcessarPedidos,
+} from "../auth/rbac.js";
 import type { FiltrosCatalogo } from "../services/EstoqueService.js";
 import type { StatusProduto } from "../domain/estoque.js";
 
@@ -126,6 +132,35 @@ router.patch(
   auth,
   exigir((id) => id.perfil === "gestor" || id.perfil === "almoxarife"),
   (req, res) => loteController.ajustar(req, res),
+);
+
+// ─── Pedidos (EP03 expedição / EP04-01 criação) ─────────────────────────────
+
+// EP04-01 — criar pedido (solicitante/gestor do setor de origem — RN12).
+router.post(
+  "/pedidos",
+  auth,
+  exigir((id, req) => podeCriarPedido(id, Number(req.body?.setorOrigemId ?? id.setorId))),
+  (req, res) => pedidoController.criar(req, res),
+);
+
+// Detalhe de um pedido (escopo de setor verificado no controller pelos dados do pedido).
+router.get("/pedidos/:id", auth, (req, res) => pedidoController.detalhar(req, res));
+
+// Pedidos de um setor (origem ou destino) — RN12.
+router.get(
+  "/setores/:setorId/pedidos",
+  auth,
+  exigir((id, req) => podeVerSetor(id, Number(req.params.setorId))),
+  (req, res) => pedidoController.listarPorSetor(req, res),
+);
+
+// EP03 — expedir um item do pedido (almoxarife/gestor HO — RN11/RN19).
+router.post(
+  "/pedidos/:id/itens/:itemId/expedir",
+  auth,
+  exigir((id) => podeProcessarPedidos(id)),
+  (req, res) => pedidoController.expedir(req, res),
 );
 
 // ─── Itens (legado v1) — mantidas até a migração para Produto/Lote ──────────

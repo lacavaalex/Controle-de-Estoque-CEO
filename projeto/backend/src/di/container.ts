@@ -18,6 +18,9 @@ import { ProdutoService } from "../services/ProdutoService.js";
 import { ProdutoController } from "../controller/ProdutoController.js";
 import { LoteService } from "../services/LoteService.js";
 import { LoteController } from "../controller/LoteController.js";
+import { PgPedidoRepo } from "../repositories/PgPedidoRepo.js";
+import { PedidoService } from "../services/PedidoService.js";
+import { PedidoController } from "../controller/PedidoController.js";
 
 // --- Legado v1 (Item/User em JSON) — mantido até a migração das rotas ---
 const itemRepo = new JsonItemRepo();
@@ -45,6 +48,10 @@ const produtoController = new ProdutoController(produtoService);
 const loteService = new LoteService();
 const loteController = new LoteController(loteService, loteRepo);
 
+const pedidoRepo = new PgPedidoRepo();
+const pedidoService = new PedidoService(pedidoRepo);
+const pedidoController = new PedidoController(pedidoService);
+
 export {
   itemController,
   userController,
@@ -53,4 +60,5 @@ export {
   estoqueService,
   produtoController,
   loteController,
+  pedidoController,
 };
