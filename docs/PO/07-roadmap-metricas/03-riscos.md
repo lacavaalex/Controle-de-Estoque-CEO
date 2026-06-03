@@ -1,7 +1,7 @@
 # Riscos e Mitigações
 
 **Documento:** 03-riscos
-**Última atualização:** 07/05/2026
+**Última atualização:** 10/05/2026
 
 ---
 
@@ -18,7 +18,7 @@
 | ID | Risco | Categoria | Prob. | Impac. | Prio. | Mitigação | Plano de contingência | Status |
 |----|-------|-----------|:-----:|:------:|:-----:|-----------|----------------------|:------:|
 | R01 | **Almoxarife continua usando o caderno em paralelo**, gerando dupla fonte de verdade. | A | Alta | Alto | 9 | Treinamento prático com cenários reais; "ronda diária" do PO no início do piloto; incentivo (reconhecimento) por uso correto. | Aceitar uso paralelo nos primeiros 14 dias; aposentar caderno gradualmente. | Aberto |
-| R02 | **Dentistas ignoram o sistema** e continuam pedindo verbalmente. | A | Alta | Alto | 9 | Almoxarife passa a só atender via sistema (regra interna acordada com a coordenação CEO). | Comitê semanal verifica taxa de NSM; se < 50% após 30 dias, reforço de comunicação. | Aberto |
+| R02 | **Dentistas ignoram o sistema** e continuam pedindo informalmente. | A | Média | Alto | 6 | Almoxarife passa a só atender via sistema (regra interna acordada com a coordenação CEO). **Nuance (entrevista João 10/05/2026):** a coordenação CEO já tem disciplina de pedido por e-mail estruturado — o risco real é mais brando no CEO e mais agudo em fases futuras (laboratórios de aula, onde a racionalização gera atrito). | Comitê semanal verifica taxa de NSM; se < 50% após 30 dias, reforço de comunicação. | Aberto |
 | R03 | **Indisponibilidade de internet** na Dispensação ou no CEO. | T | Média | Alto | 6 | Sistema funciona em modo somente leitura caso a API caia; cache local de visualização. | Procedimento de fallback documentado em cartilha; volta ao caderno em situação de emergência, com regularização posterior. | Aberto |
 | R04 | **Cadastro inicial impreciso** (lotes, validades, mínimos errados) gera alertas falsos positivos e perde credibilidade do sistema. | O | Média | Alto | 6 | Mutirão inicial de 2 dias com almoxarife + PO conferindo cada item; revisão dos parâmetros após 30 dias. | Funcionalidade de "ajuste manual" (movimentação tipo `ajuste`) já existe no MVP. | Aberto |
 | R05 | **Mudança de coordenação** durante o piloto (rotatividade institucional). | O | Baixa | Alto | 3 | Documentação completa neste diretório `docs/PO/`; pelo menos 2 stakeholders por função capacitados. | Reaplicar Discovery resumido com novo coordenador. | Aberto |
@@ -41,7 +41,15 @@ Riscos que **não tratamos no MVP** e que ficam mapeados para fase 2:
 | R15 | Perda de pedidos por ausência de notificação ativa | Painel "Pendentes" como compensação (OUT07). |
 | R16 | Auditor externo solicita relatório PDF | Print de tela como contingência no MVP (OUT08). |
 
-## 3. Plano de monitoramento de riscos
+## 3. Pendências operacionais abertas
+
+| # | Ação | Responsável | Prazo |
+|---|------|-------------|-------|
+| PO-01 | Coletar e-mails reais de solicitação + planilhas Excel do almoxarife João para validar o modelo de dados (campos, categorias, lotes) antes de codar EP03/EP04. | PO | Até 12/05/2026 (segunda-feira) |
+
+---
+
+## 4. Plano de monitoramento de riscos
 
 - **Reunião quinzenal de risco:** PO + Coordenação Dispensação + Coordenação CEO.
 - **Indicadores observados:**
