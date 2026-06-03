@@ -12,6 +12,7 @@
 // HO (GET /setores/:ho/catalogo).
 // =============================================================================
 import { useEffect, useState, type FormEvent } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { listarSetores } from "@/api/setores";
 import { catalogoDoSetor, type CatalogoItem } from "@/api/estoque";
 import { criarPedido } from "@/api/pedidos";
@@ -49,6 +50,9 @@ interface NovoPedidoFormProps {
 }
 
 export function NovoPedidoForm({ onCriado }: NovoPedidoFormProps) {
+  const { identidade } = useAuth();
+  const meuSetorId = identidade?.setorId ?? null;
+
   const [setores, setSetores] = useState<Setor[] | null>(null);
   const [catalogo, setCatalogo] = useState<CatalogoItem[]>([]);
   const [erroSetup, setErroSetup] = useState<string | null>(null);
@@ -58,16 +62,17 @@ export function NovoPedidoForm({ onCriado }: NovoPedidoFormProps) {
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  // Carrega setores e catálogo do HO (origem). Se /setores não existir ainda no
-  // backend, o formulário se desabilita com mensagem clara (degradação suave).
+  // Setup: descobre o HO (origem) via /setores e carrega o catálogo do PRÓPRIO
+  // setor do solicitante (RN12/podeVerSetor só libera o próprio setor — pedir o
+  // catálogo do HO daria 403). Degradação suave se /setores indisponível.
   useEffect(() => {
+    if (meuSetorId === null) return;
     let ativo = true;
-    listarSetores()
-      .then(async (todos) => {
+    Promise.all([listarSetores(), catalogoDoSetor(meuSetorId)])
+      .then(([todos, cat]) => {
         if (!ativo) return;
         setSetores(todos);
-        const ho = todos.find((s) => s.tipo === "almoxarifado");
-        if (ho) setCatalogo(await catalogoDoSetor(ho.id));
+        setCatalogo(cat);
       })
       .catch((err) => {
         if (ativo) {
@@ -81,10 +86,13 @@ export function NovoPedidoForm({ onCriado }: NovoPedidoFormProps) {
     return () => {
       ativo = false;
     };
-  }, []);
+  }, [meuSetorId]);
 
+  // Orientação do backend (podeCriarPedido): ORIGEM = setor do solicitante
+  // (quem pede), DESTINO = o HO/almoxarifado (quem fornece e processa). A
+  // expedição depois move o estoque HO -> setor de origem.
+  const origem = setores?.find((s) => s.id === meuSetorId) ?? null;
   const ho = setores?.find((s) => s.tipo === "almoxarifado") ?? null;
-  const destino = setores?.find((s) => s.tipo === "destinatario") ?? null;
 
   function atualizarLinha(idx: number, patch: Partial<LinhaForm>) {
     setLinhas((ls) => ls.map((l, i) => (i === idx ? { ...l, ...patch } : l)));
@@ -106,7 +114,7 @@ export function NovoPedidoForm({ onCriado }: NovoPedidoFormProps) {
       setErro("A justificativa deve ter ao menos 10 caracteres.");
       return;
     }
-    if (!ho || !destino) {
+    if (!origem || !ho) {
       setErro("Setores de origem/destino indisponíveis.");
       return;
     }
@@ -134,8 +142,8 @@ export function NovoPedidoForm({ onCriado }: NovoPedidoFormProps) {
     setEnviando(true);
     try {
       await criarPedido({
-        setorOrigemId: ho.id,
-        setorDestinoId: destino.id,
+        setorOrigemId: origem.id,
+        setorDestinoId: ho.id,
         justificativa: justificativa.trim(),
         itens,
       });
