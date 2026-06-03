@@ -1,17 +1,40 @@
 import { eq, or, sql } from "drizzle-orm";
 import type {
   IPedidoRepository,
+  ItemComDesdobramentos,
   NovoItemSemPedido,
   NovoPedidoSemId,
   PedidoComItens,
 } from "../interfaces/repository-interfaces/IPedidoRepo.js";
-import type { StatusPedido } from "../entities/index.js";
+import type { ItemDoPedido, StatusPedido } from "../entities/index.js";
 import { db as defaultDb, type DB } from "../db/client.js";
 import { itemDoPedido, pedido } from "../db/schema.js";
 
 // Executor de transação (callback de db.transaction): compartilha a API de
 // consulta com DB, mas não é o NodePgDatabase completo.
 type Tx = Parameters<Parameters<DB["transaction"]>[0]>[0];
+
+// Aninha os itens-filho (itemPaiId != null — RF05.17) sob seus itens-pai.
+// O array resultante contém apenas os itens RAIZ; cada um leva `desdobramentos`.
+// Exportado para teste (pura).
+export function aninharItens(linhas: ItemDoPedido[]): ItemComDesdobramentos[] {
+  const raizes: ItemComDesdobramentos[] = [];
+  const filhosPorPai = new Map<number, ItemDoPedido[]>();
+  for (const linha of linhas) {
+    if (linha.itemPaiId === null) {
+      raizes.push(linha);
+    } else {
+      const lista = filhosPorPai.get(linha.itemPaiId) ?? [];
+      lista.push(linha);
+      filhosPorPai.set(linha.itemPaiId, lista);
+    }
+  }
+  for (const raiz of raizes) {
+    const filhos = filhosPorPai.get(raiz.id);
+    if (filhos && filhos.length > 0) raiz.desdobramentos = filhos;
+  }
+  return raizes;
+}
 
 export class PgPedidoRepo implements IPedidoRepository {
   constructor(private db: DB = defaultDb) {}
@@ -63,7 +86,7 @@ export class PgPedidoRepo implements IPedidoRepository {
       .from(itemDoPedido)
       .where(eq(itemDoPedido.pedidoId, id));
 
-    return { ...cabecalho, itens };
+    return { ...cabecalho, itens: aninharItens(itens) };
   }
 
   async listarPorSetor(setorId: number): Promise<PedidoComItens[]> {
@@ -81,7 +104,7 @@ export class PgPedidoRepo implements IPedidoRepository {
         .select()
         .from(itemDoPedido)
         .where(eq(itemDoPedido.pedidoId, c.id));
-      resultado.push({ ...c, itens });
+      resultado.push({ ...c, itens: aninharItens(itens) });
     }
     return resultado;
   }

@@ -13,9 +13,15 @@ export type NovoPedidoSemId = Omit<NovoPedido, "id" | "status">;
 // Item na criação: sem id e sem pedidoId (o repo amarra ao pedido criado).
 export type NovoItemSemPedido = Omit<NovoItemDoPedido, "id" | "pedidoId">;
 
-// Leitura do agregado completo (cabeçalho + linhas).
+// Item na leitura: pode trazer os desdobramentos por lote (filhos — RF05.17).
+export interface ItemComDesdobramentos extends ItemDoPedido {
+  desdobramentos?: ItemDoPedido[];
+}
+
+// Leitura do agregado completo (cabeçalho + linhas). `itens` traz apenas os
+// itens RAIZ (itemPaiId IS NULL); cada um pode ter `desdobramentos` aninhados.
 export interface PedidoComItens extends Pedido {
-  itens: ItemDoPedido[];
+  itens: ItemComDesdobramentos[];
 }
 
 export interface IPedidoRepository {

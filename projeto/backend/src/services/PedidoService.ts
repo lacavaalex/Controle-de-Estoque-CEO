@@ -14,7 +14,7 @@
 // A regra de alocação é PURA (domain/pedido.planejarExpedicaoItem); aqui só há
 // orquestração de I/O, espelhando LoteService.
 // =============================================================================
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import type { DB } from "../db/client.js";
 import { db as defaultDb } from "../db/client.js";
 import {
@@ -191,9 +191,9 @@ export class PedidoService {
         movimentacoes.push(movId);
       }
 
-      // 4. Grava o resultado no item (RN16). loteExpedidoId só quando a saída veio
-      //    de um único lote; com múltiplos lotes a rastreabilidade fica nas
-      //    movimentações (desdobramento em itens-filho — RF05.17 — fica p/ depois).
+      // 4. Grava o resultado no item-pai (RN16). loteExpedidoId só quando a saída
+      //    veio de um único lote; com múltiplos lotes ele fica null e a quebra por
+      //    lote é materializada em itens-filho (RF05.17 — passo 4b).
       const loteUnico =
         plano.alocacoes.length === 1 ? plano.alocacoes[0]!.loteId : null;
 
@@ -211,11 +211,34 @@ export class PedidoService {
         .returning();
       if (!itemAtualizado) throw new Error("Falha ao atualizar item do pedido");
 
-      // 5. Recalcula o status (derivado) do pedido a partir de TODOS os itens (RN10).
+      // 4b. RF05.17 — desdobramento em itens-filho quando a saída veio de >1 lote.
+      //     Cada filho registra a parcela (qtd + lote) e aponta itemPaiId ao item
+      //     original; serve de rastreabilidade. Os filhos NÃO entram no cálculo do
+      //     status do pedido (item-pai já carrega o status agregado — ver passo 5).
+      if (plano.alocacoes.length > 1) {
+        await tx.insert(itemTable).values(
+          plano.alocacoes.map((aloc) => ({
+            pedidoId,
+            produtoId: item.produtoId,
+            qtdSolicitada: aloc.quantidade,
+            qtdExpedida: aloc.quantidade,
+            loteExpedidoId: aloc.loteId,
+            unidade: item.unidade,
+            statusItem: "atendido_integral" as StatusItem,
+            itemPaiId: itemId,
+            processadoPorId: responsavelId,
+            dataProcessamento: new Date(),
+          })),
+        );
+      }
+
+      // 5. Recalcula o status (derivado) do pedido (RN10). Considera apenas os
+      //    itens RAIZ (itemPaiId IS NULL): os filhos são detalhamento de um item
+      //    que já contribui com seu próprio status, e contá-los distorceria RN10.
       const itensAtuais = await tx
         .select({ statusItem: itemTable.statusItem })
         .from(itemTable)
-        .where(eq(itemTable.pedidoId, pedidoId));
+        .where(and(eq(itemTable.pedidoId, pedidoId), isNull(itemTable.itemPaiId)));
       const statusPedido = statusDerivadoDoPedido(itensAtuais.map((i) => i.statusItem));
       await tx
         .update(pedidoTable)
