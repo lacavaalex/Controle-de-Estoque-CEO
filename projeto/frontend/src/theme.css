@@ -47,12 +47,15 @@
   --color-brand-soft: var(--color-ufpe-50);
   --color-accent: var(--color-cin-500); /* vermelho CIn = acento */
 
-  /* Estados de estoque — espelham os status do domínio (RN06). Alinhar a
-   * domain/estoque.ts (crítico/baixo/vencendo/atenção/normal/indisponível). */
+  /* Estados de estoque — espelham os 8 status do domínio (RN06). Alinhar a
+   * domain/estoque.ts. Precedência: indisponível > vencido > vencendo > atenção
+   * > crítico > baixo > excessivo > normal. */
+  --color-status-vencido: #991b1b; /* vencido — vermelho mais escuro que crítico */
   --color-status-critico: #c0362c;
   --color-status-baixo: #d98324;
   --color-status-vencendo: #c79a16;
   --color-status-atencao: #b0a000;
+  --color-status-excessivo: #7c5cbf; /* excessivo (RN04, só HO) — roxo, fora da escala de risco */
   --color-status-normal: #2f8f4e;
   --color-status-indisponivel: #6b7280;
 

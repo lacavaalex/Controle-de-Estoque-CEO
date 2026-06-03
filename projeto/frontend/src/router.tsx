@@ -6,6 +6,7 @@ import { ProtectedRoute } from "@/router/ProtectedRoute";
 import { AppLayout } from "@/layouts/AppLayout";
 import { Login } from "@/pages/Login";
 import { Placeholder } from "@/pages/Placeholder";
+import { EstoqueCEO } from "@/pages/EstoqueCEO";
 
 // Um ÚNICO AuthProvider envolve toda a árvore (login + rotas protegidas), para
 // que a sessão criada no login seja a mesma vista pelo resto do app.
@@ -41,13 +42,7 @@ export const router = createBrowserRouter([
               },
               {
                 path: "/estoque-ceo",
-                element: (
-                  <Placeholder
-                    titulo="Estoque do CEO"
-                    descricao="Lista do estoque local do CEO: produto, categoria, quantidade, mínimo e status."
-                    story="CEO-237 · EP03"
-                  />
-                ),
+                element: <EstoqueCEO />,
               },
               {
                 path: "/estoque-dispensacao",
