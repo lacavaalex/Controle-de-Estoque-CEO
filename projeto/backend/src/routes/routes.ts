@@ -41,6 +41,21 @@ router.post("/logout", (req, res) => authController.logout(req, res));
 router.get("/eu", auth, (req, res) => authController.eu(req, res));
 router.post("/usuarios", auth, (req, res) => authController.provisionar(req, res));
 
+// ─── Setores ─────────────────────────────────────────────────────────────────
+
+// Lista os setores (HO/CEO...). Autenticada: qualquer usuário logado pode listar
+// — o front precisa para escolher origem/destino ao criar pedido (EP04). Não
+// expõe dado sensível (só nome/tipo/email do setor); sem filtro por escopo.
+router.get("/setores", auth, async (_req, res) => {
+  try {
+    const setores = await setorRepo.listar();
+    return res.status(200).json({ setores });
+  } catch (error) {
+    if (error instanceof Error) return res.status(400).json({ mensagem: error.message });
+    return res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
 // ─── Catálogo / Estoque (EP02) ───────────────────────────────────────────────
 
 // US-EP02-01 + EP02-03 — catálogo agregado (almoxarife/gestor HO veem detalhe).
