@@ -1,20 +1,35 @@
 // =============================================================================
-// Estoque do CEO (CEO-237 · EP03) — lista o estoque local do setor do usuário:
-// produto, categoria, quantidade total, mínimo, unidade e status agregado.
+// Estoque da Dispensação (HO) — EP02. Catálogo/estoque agregado do almoxarifado
+// central, com DETALHE DE LOTE: expandir um produto lista seus lotes (número,
+// validade, quantidade, estado e estado de validade), ordenados por validade
+// (FEFO — o que vence antes aparece primeiro).
 //
-// Fonte: GET /setores/:setorId/estoque (EstoqueService do backend). O setorId é
-// o da própria identidade do usuário logado (RBAC: podeVerSetor sempre permite o
-// próprio setor). Filtros (texto/categoria/status) batem com FiltrosCatalogo.
+// Fonte: GET /setores/:setorId/estoque + GET /produtos/:id/lotes. Usa o setorId
+// da própria identidade do usuário (HO): pela RN12/podeVerSetor, quem vê o HO é
+// almoxarife/gestor do HO, cujo próprio setor JÁ é o almoxarifado — então o
+// setorId da identidade é o setorId do HO. Não há rota de descoberta de setor e
+// não precisamos dela aqui.
 // =============================================================================
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { estoqueDoSetor, type FiltrosEstoque } from "@/api/estoque";
+import { lotesDoProduto } from "@/api/lotes";
 import { ApiError } from "@/api/client";
-import { rotuloStatus } from "@/lib/status";
 import { TabelaEstoque } from "@/components/TabelaEstoque";
-import type { Categoria, ProdutoComEstoque, StatusProduto } from "@/types/domain";
+import {
+  classeBadgeValidade,
+  rotuloEstadoLote,
+  rotuloStatus,
+  rotuloValidade,
+} from "@/lib/status";
+import { formatarData } from "@/lib/data";
+import type {
+  Categoria,
+  LoteComEstado,
+  ProdutoComEstoque,
+  StatusProduto,
+} from "@/types/domain";
 
-// Ordem de exibição dos filtros (espelha os enums de domain.ts do backend).
 const CATEGORIAS: Categoria[] = [
   "EPI",
   "Anestésico",
@@ -26,8 +41,7 @@ const CATEGORIAS: Categoria[] = [
   "Outros",
 ];
 
-// Status que fazem sentido filtrar no CEO (destinatário): 'excessivo' (RN04) só
-// ocorre em setor almoxarifado, então fica de fora da lista de filtro aqui.
+// No HO (almoxarifado), 'excessivo' (RN04) é um status possível — incluímos.
 const STATUS_FILTRO: StatusProduto[] = [
   "indisponivel",
   "vencido",
@@ -35,10 +49,80 @@ const STATUS_FILTRO: StatusProduto[] = [
   "atencao",
   "critico",
   "baixo",
+  "excessivo",
   "normal",
 ];
 
-export function EstoqueCEO() {
+// ─── Detalhe de lotes de um produto (carrega ao expandir) ────────────────────
+function DetalheLotes({ produtoId, setorId }: { produtoId: number; setorId: number }) {
+  const [lotes, setLotes] = useState<LoteComEstado[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
+
+  useEffect(() => {
+    let ativo = true;
+    setCarregando(true);
+    setErro(null);
+    lotesDoProduto(produtoId, setorId)
+      .then((l) => {
+        if (ativo) setLotes(l);
+      })
+      .catch((err) => {
+        if (ativo) {
+          setErro(err instanceof ApiError ? err.message : "Falha ao carregar lotes.");
+        }
+      })
+      .finally(() => {
+        if (ativo) setCarregando(false);
+      });
+    return () => {
+      ativo = false;
+    };
+  }, [produtoId, setorId]);
+
+  if (carregando) return <p className="text-sm text-gray-400">Carregando lotes…</p>;
+  if (erro) return <p className="text-sm text-status-critico">{erro}</p>;
+  if (lotes.length === 0) {
+    return <p className="text-sm text-gray-400">Nenhum lote ativo para este produto.</p>;
+  }
+
+  return (
+    <div className="overflow-x-auto rounded-md ring-1 ring-gray-200">
+      <table className="min-w-full divide-y divide-gray-200 bg-white text-sm">
+        <thead className="bg-white text-left text-xs font-semibold tracking-wide text-gray-500 uppercase">
+          <tr>
+            <th className="px-3 py-2">Nº do lote</th>
+            <th className="px-3 py-2">Validade</th>
+            <th className="px-3 py-2 text-right">Qtd.</th>
+            <th className="px-3 py-2">Estado</th>
+            <th className="px-3 py-2">Situação</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {lotes.map((lote) => (
+            <tr key={lote.id}>
+              <td className="px-3 py-2 font-medium text-gray-800">{lote.numeroLote}</td>
+              <td className="px-3 py-2 text-gray-600">{formatarData(lote.validade)}</td>
+              <td className="px-3 py-2 text-right tabular-nums text-gray-900">
+                {lote.quantidade}
+              </td>
+              <td className="px-3 py-2 text-gray-600">{rotuloEstadoLote(lote.estado)}</td>
+              <td className="px-3 py-2">
+                <span
+                  className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${classeBadgeValidade(lote.estadoValidade)}`}
+                >
+                  {rotuloValidade(lote.estadoValidade)}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export function EstoqueDispensacao() {
   const { identidade } = useAuth();
   const setorId = identidade?.setorId ?? null;
 
@@ -66,15 +150,12 @@ export function EstoqueCEO() {
     try {
       setLinhas(await estoqueDoSetor(setorId, filtros));
     } catch (err) {
-      setErro(
-        err instanceof ApiError ? err.message : "Não foi possível carregar o estoque.",
-      );
+      setErro(err instanceof ApiError ? err.message : "Não foi possível carregar o estoque.");
     } finally {
       setCarregando(false);
     }
   }, [setorId, filtros]);
 
-  // Recarrega quando os filtros mudam, com um pequeno debounce no texto.
   useEffect(() => {
     const id = setTimeout(carregar, 250);
     return () => clearTimeout(id);
@@ -84,17 +165,16 @@ export function EstoqueCEO() {
     <div>
       <header className="flex flex-wrap items-baseline justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Estoque do CEO</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Estoque da Dispensação (HO)</h1>
           <p className="mt-1 text-gray-600">
-            Estoque local do CEO: produto, categoria, quantidade, mínimo e status.
+            Catálogo e estoque do almoxarifado central. Expanda um produto para ver os lotes.
           </p>
         </div>
         <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-brand-strong">
-          CEO-237 · EP03
+          EP02
         </span>
       </header>
 
-      {/* Filtros — texto, categoria e status (US-EP02-03). */}
       <div className="mt-6 flex flex-wrap gap-3">
         <input
           type="search"
@@ -132,7 +212,6 @@ export function EstoqueCEO() {
         </select>
       </div>
 
-      {/* Estados: erro > carregando > vazio > tabela. */}
       {erro ? (
         <div className="mt-8 rounded-lg border border-status-critico/30 bg-status-critico/5 p-4 text-sm text-status-critico">
           {erro}
@@ -152,7 +231,14 @@ export function EstoqueCEO() {
         </div>
       ) : (
         <div className="mt-6">
-          <TabelaEstoque linhas={linhas} />
+          <TabelaEstoque
+            linhas={linhas}
+            renderDetalhe={(produto) =>
+              setorId !== null ? (
+                <DetalheLotes produtoId={produto.produtoId} setorId={setorId} />
+              ) : null
+            }
+          />
         </div>
       )}
     </div>

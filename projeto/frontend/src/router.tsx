@@ -7,6 +7,7 @@ import { AppLayout } from "@/layouts/AppLayout";
 import { Login } from "@/pages/Login";
 import { Placeholder } from "@/pages/Placeholder";
 import { EstoqueCEO } from "@/pages/EstoqueCEO";
+import { EstoqueDispensacao } from "@/pages/EstoqueDispensacao";
 
 // Um ÚNICO AuthProvider envolve toda a árvore (login + rotas protegidas), para
 // que a sessão criada no login seja a mesma vista pelo resto do app.
@@ -46,13 +47,7 @@ export const router = createBrowserRouter([
               },
               {
                 path: "/estoque-dispensacao",
-                element: (
-                  <Placeholder
-                    titulo="Estoque da Dispensação (HO)"
-                    descricao="Catálogo e estoque do almoxarifado central, com detalhe de lote."
-                    story="EP02"
-                  />
-                ),
+                element: <EstoqueDispensacao />,
               },
               {
                 path: "/solicitacoes",

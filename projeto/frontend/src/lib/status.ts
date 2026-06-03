@@ -1,6 +1,6 @@
 // Apresentação dos status de estoque na UI. Os rótulos espelham rotuloStatus()
 // do backend (domain/estoque.ts); as classes usam os tokens de tema (theme.css).
-import type { StatusProduto } from "@/types/domain";
+import type { EstadoLote, EstadoValidade, StatusProduto } from "@/types/domain";
 
 // Rótulos PT-BR — idênticos a rotuloStatus() do backend.
 const ROTULOS: Record<StatusProduto, string> = {
@@ -33,4 +33,38 @@ export function rotuloStatus(status: StatusProduto): string {
 
 export function classeBadgeStatus(status: StatusProduto): string {
   return CLASSES[status];
+}
+
+// ─── Lote: estado de validade (RN05) ─────────────────────────────────────────
+const ROTULOS_VALIDADE: Record<EstadoValidade, string> = {
+  vencido: "Vencido",
+  vencendo: "Vencendo",
+  atencao: "Atenção",
+  ok: "OK",
+};
+
+const CLASSES_VALIDADE: Record<EstadoValidade, string> = {
+  vencido: "bg-status-vencido/15 text-status-vencido",
+  vencendo: "bg-status-vencendo/15 text-status-vencendo",
+  atencao: "bg-status-atencao/15 text-status-atencao",
+  ok: "bg-status-normal/15 text-status-normal",
+};
+
+export function rotuloValidade(estado: EstadoValidade): string {
+  return ROTULOS_VALIDADE[estado];
+}
+
+export function classeBadgeValidade(estado: EstadoValidade): string {
+  return CLASSES_VALIDADE[estado];
+}
+
+// ─── Lote: estado do lote (RN17) ─────────────────────────────────────────────
+const ROTULOS_ESTADO_LOTE: Record<EstadoLote, string> = {
+  ativo: "Ativo",
+  vencido: "Vencido",
+  segregado: "Segregado",
+};
+
+export function rotuloEstadoLote(estado: EstadoLote): string {
+  return ROTULOS_ESTADO_LOTE[estado];
 }

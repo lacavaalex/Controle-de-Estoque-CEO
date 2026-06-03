@@ -36,6 +36,9 @@ export type Unidade =
 
 export type EstadoLote = "ativo" | "vencido" | "segregado";
 
+// Estado de validade derivado pela RN05 (backend domain/estoque.ts).
+export type EstadoValidade = "vencido" | "vencendo" | "atencao" | "ok";
+
 // Status agregado do produto calculado pelo backend (domain/estoque.ts, RN06).
 export type StatusProduto =
   | "indisponivel"
@@ -92,4 +95,22 @@ export interface ProdutoComEstoque {
   localizacao: string | null;
   qtdTotal: number;
   status: StatusProduto;
+}
+
+// ─── Lote (GET /produtos/:id/lotes) ──────────────────────────────────────────
+// Espelha a entidade Lote do backend (db/schema.ts). Dates vêm como ISO string.
+// O controller (LoteController.listarPorProduto) enriquece cada lote com
+// `estadoValidade` (RN05).
+export interface LoteComEstado {
+  id: number;
+  produtoId: number;
+  setorId: number;
+  numeroLote: string;
+  fabricacao: string | null;
+  validade: string;
+  quantidade: number;
+  estado: EstadoLote;
+  dataSegregacao: string | null;
+  observacaoSegregacao: string | null;
+  estadoValidade: EstadoValidade;
 }
