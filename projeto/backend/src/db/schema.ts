@@ -13,6 +13,7 @@
 import {
   pgTable,
   pgEnum,
+  pgSequence,
   serial,
   text,
   integer,
@@ -24,6 +25,12 @@ import {
   check,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+
+// ─── Sequências para IDs textuais legíveis (MOV-NNN, PED-NNN) ────────────────
+// Pedido e Movimentação usam PK textual com prefixo. A numeração vem destas
+// sequências; a formatação ('MOV-' || lpad(...)) é feita no repositório.
+export const seqMovimentacao = pgSequence("seq_movimentacao", { startWith: 1 });
+export const seqPedido = pgSequence("seq_pedido", { startWith: 1 });
 
 // ─── Enums de domínio ────────────────────────────────────────────────────────
 

@@ -48,6 +48,9 @@ async function seed() {
       ${lote}, ${produto}, ${usuario}, ${setor}
     RESTART IDENTITY CASCADE
   `);
+  // Reseta as sequências de IDs textuais (MOV-NNN/PED-NNN) para começar do 1.
+  await db.execute(sql`ALTER SEQUENCE seq_movimentacao RESTART WITH 1`);
+  await db.execute(sql`ALTER SEQUENCE seq_pedido RESTART WITH 1`);
 
   // ─── Setores ──────────────────────────────────────────────────────────────
   console.log("Inserindo setores...");
@@ -315,6 +318,10 @@ async function seed() {
         ]
       : []),
   ]);
+
+  // Avança a sequência de movimentação além das 3 inseridas com id fixo
+  // (MOV-001..003), para que a próxima entrada em runtime gere MOV-004.
+  await db.execute(sql`SELECT setval('seq_movimentacao', 3, true)`);
 
   console.log("Seed concluído com sucesso.");
 }

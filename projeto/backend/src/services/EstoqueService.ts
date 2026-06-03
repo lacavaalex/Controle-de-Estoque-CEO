@@ -19,8 +19,19 @@ export interface ProdutoComEstoque {
   nome: string;
   categoria: string;
   unidade: string;
+  estoqueMinimo: number;
+  estoqueMaximo: number;
+  localizacao: string | null;
   qtdTotal: number;
   status: StatusProduto;
+}
+
+export interface FiltrosCatalogo {
+  texto?: string; // nome do produto (case-insensitive, substring)
+  categoria?: string;
+  status?: StatusProduto;
+  somenteComEstoque?: boolean;
+  somenteSemEstoque?: boolean;
 }
 
 export class EstoqueService {
@@ -34,14 +45,18 @@ export class EstoqueService {
    * Estoque de um setor: para cada produto do catálogo, qtd_total e status
    * agregado. `incluirExcessivo` (RN04) só vale para setores almoxarifado (HO).
    */
-  async estoqueDoSetor(setorId: number, hoje: Date = new Date()): Promise<ProdutoComEstoque[]> {
+  async estoqueDoSetor(
+    setorId: number,
+    filtros: FiltrosCatalogo = {},
+    hoje: Date = new Date(),
+  ): Promise<ProdutoComEstoque[]> {
     const setor = await this.setorRepo.buscarPorId(setorId);
     if (setor === null) throw new Error(`Setor ${setorId} não encontrado`);
 
     const incluirExcessivo = setor.tipo === "almoxarifado";
     const produtos = await this.produtoRepo.listar();
 
-    const resultado: ProdutoComEstoque[] = [];
+    let resultado: ProdutoComEstoque[] = [];
     for (const p of produtos) {
       const lotes = await this.loteRepo.listarPorProdutoSetor(p.id, setorId);
       resultado.push({
@@ -49,11 +64,45 @@ export class EstoqueService {
         nome: p.nome,
         categoria: p.categoria,
         unidade: p.unidade,
+        estoqueMinimo: p.estoqueMinimo,
+        estoqueMaximo: p.estoqueMaximo,
+        localizacao: p.localizacao,
         qtdTotal: qtdTotal(lotes),
         status: statusProduto(p, lotes, { incluirExcessivo, hoje }),
       });
     }
+
+    // US-EP02-03 — filtros (aplicados sobre o agregado já calculado).
+    if (filtros.texto) {
+      const t = filtros.texto.toLowerCase();
+      resultado = resultado.filter((r) => r.nome.toLowerCase().includes(t));
+    }
+    if (filtros.categoria) {
+      resultado = resultado.filter((r) => r.categoria === filtros.categoria);
+    }
+    if (filtros.status) {
+      resultado = resultado.filter((r) => r.status === filtros.status);
+    }
+    if (filtros.somenteComEstoque) {
+      resultado = resultado.filter((r) => r.qtdTotal > 0);
+    }
+    if (filtros.somenteSemEstoque) {
+      resultado = resultado.filter((r) => r.qtdTotal === 0);
+    }
     return resultado;
+  }
+
+  /**
+   * US-EP02-07 — visão do solicitante: catálogo agregado SEM detalhe de lote
+   * (RN12). É o mesmo agregado, apenas sem `localizacao` (dado físico do lote/HO).
+   */
+  async catalogoParaSolicitante(
+    setorId: number,
+    filtros: FiltrosCatalogo = {},
+    hoje: Date = new Date(),
+  ): Promise<Array<Omit<ProdutoComEstoque, "localizacao" | "estoqueMaximo">>> {
+    const completo = await this.estoqueDoSetor(setorId, filtros, hoje);
+    return completo.map(({ localizacao, estoqueMaximo, ...resto }) => resto);
   }
 
   /**

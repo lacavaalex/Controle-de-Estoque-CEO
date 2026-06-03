@@ -51,6 +51,9 @@ class InMemLoteRepo implements ILoteRepository {
   async listarPorProdutoSetor(produtoId: number, setorId: number): Promise<Lote[]> {
     return this.rows.filter((r) => r.produtoId === produtoId && r.setorId === setorId).map((r) => ({ ...r }));
   }
+  async listarPorProdutoTodosSetores(produtoId: number): Promise<Lote[]> {
+    return this.rows.filter((r) => r.produtoId === produtoId).map((r) => ({ ...r }));
+  }
   async listarPorSetor(setorId: number): Promise<Lote[]> {
     return this.rows.filter((r) => r.setorId === setorId).map((r) => ({ ...r }));
   }
@@ -92,7 +95,7 @@ beforeEach(() => {
 
 describe("EstoqueService.estoqueDoSetor", () => {
   it("calcula qtd_total e status por produto no HO (excessivo aplicável)", async () => {
-    const estoque = await service.estoqueDoSetor(1, HOJE);
+    const estoque = await service.estoqueDoSetor(1, {}, HOJE);
     const luva = estoque.find((e) => e.produtoId === 1)!;
     const resina = estoque.find((e) => e.produtoId === 2)!;
     const papel = estoque.find((e) => e.produtoId === 3)!;
@@ -111,14 +114,14 @@ describe("EstoqueService.estoqueDoSetor", () => {
   });
 
   it("no CEO o status 'excessivo' não se aplica (RN04 só HO)", async () => {
-    const estoque = await service.estoqueDoSetor(2, HOJE);
+    const estoque = await service.estoqueDoSetor(2, {}, HOJE);
     const luva = estoque.find((e) => e.produtoId === 1)!;
     expect(luva.qtdTotal).toBe(96);
     expect(luva.status).toBe("normal");
   });
 
   it("lança erro para setor inexistente", async () => {
-    await expect(service.estoqueDoSetor(999, HOJE)).rejects.toThrow("não encontrado");
+    await expect(service.estoqueDoSetor(999, {}, HOJE)).rejects.toThrow("não encontrado");
   });
 });
 

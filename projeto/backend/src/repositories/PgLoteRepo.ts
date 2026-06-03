@@ -25,6 +25,10 @@ export class PgLoteRepo implements ILoteRepository {
       .where(and(eq(lote.produtoId, produtoId), eq(lote.setorId, setorId)));
   }
 
+  async listarPorProdutoTodosSetores(produtoId: number): Promise<Lote[]> {
+    return this.db.select().from(lote).where(eq(lote.produtoId, produtoId));
+  }
+
   async listarPorSetor(setorId: number): Promise<Lote[]> {
     return this.db.select().from(lote).where(eq(lote.setorId, setorId));
   }
