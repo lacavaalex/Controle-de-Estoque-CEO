@@ -1,0 +1,41 @@
+Número do ADR: 0006
+Título: Stack do Frontend (produção) e Estratégia de Identidade Visual
+Data: 03/06/2026
+Responsável: dsgrupocinco (PO) — fase de fundação do front
+Status: Aceito
+
+#Contexto
+Os ADRs 0001–0005 cobriram apenas decisões de backend e infraestrutura (PostgreSQL, monólito, .env, Drizzle, JWT/RBAC). O frontend de produção nunca teve uma decisão registrada: existia apenas o `DS-prototype/` — um protótipo navegável (entrega R0) em React/Vite/Tailwind com dados hardcoded (src/data/data.js), criado como referência visual e de fluxo, não como base de produção. A pasta `projeto/frontend/` estava vazia. Com o backend v2 já entregando catálogo/estoque/pedidos/expedição (EP02/03/04), foi necessário iniciar o front de produção e, com isso, decidir formalmente a stack e como aplicar a identidade visual institucional.
+
+#Decisão
+Foi decidido construir o front de produção em `projeto/frontend/` com a seguinte stack:
+- React 19 + Vite 8 como bundler/dev server.
+- TypeScript em modo strict (incluindo noUncheckedIndexedAccess e exactOptionalPropertyTypes), alinhado ao rigor do backend (ADR-0004).
+- Tailwind CSS v4 (via @tailwindcss/vite) para estilização, com a identidade visual concentrada em tokens de tema num único arquivo (src/theme.css).
+- react-router 7 para roteamento (browser router) com rotas protegidas por sessão.
+- Integração com o backend via cliente HTTP tipado; em desenvolvimento, o Vite faz proxy de `/api` → `http://localhost:3000` (evita CORS no dev); em produção, a origem do backend vem de VITE_API_BASE_URL.
+- Autenticação reaproveitando o JWT do backend (ADR-0005): token em Authorization: Bearer, guardado no cliente, sessão reidratada via GET /eu.
+
+Estratégia de identidade visual: a identidade institucional da **UFPE** é a BASE (o sistema é do Departamento de Odontologia/UFPE), e a identidade do **CInUFPE** (equipe desenvolvedora) COMPLEMENTA o que a UFPE não cobrir. Valores extraídos dos manuais oficiais: cor primária bordô #990000 (UFPE, Pantone 201C); acento vermelho #DB1E2F (CIn, Pantone 1795C); tipografia Trebuchet MS (oficial UFPE, websafe) com Proxima Nova (CIn) como preferência quando licenciada/hospedada. Os tokens ficam isolados em src/theme.css.
+
+#Justificativa
+- Coerência com o protótipo e reaproveitamento: a mesma base (React + Vite + Tailwind + react-router) do DS-prototype permite reusar telas e fluxo já validados na entrega R0, reduzindo retrabalho.
+- TypeScript alinhado ao backend: o backend é TS strict com tipos derivados do schema (ADR-0004). Um front TS permite espelhar os tipos de domínio (Produto, Lote, Pedido, status) e pegar erros de integração em tempo de compilação, beneficiando a manutenção por turmas futuras.
+- Identidade institucional fiel: usar os valores reais dos manuais (não cores inventadas) garante que um sistema oficial do Depto. de Odontologia respeite a marca UFPE; concentrar tudo em theme.css permite ajustar a identidade em um único ponto.
+- Baixo atrito de CORS no desenvolvimento: o proxy do Vite evita configurar CORS no backend só para o dev, deixando essa configuração explícita apenas para produção.
+
+#Alternativas Consideradas
+- Evoluir o próprio DS-prototype como produção: descartado — ele é JavaScript com dados mockados e foi concebido como protótipo descartável (R0); herdaria dívidas (ex.: anti-patterns de UI já detectados) e misturaria referência com produto.
+- JavaScript puro (como o protótipo): descartado por perder a checagem de tipos e a sincronia de contrato com o backend TS.
+- Next.js/SSR: desnecessário para uma aplicação interna autenticada (não há requisito de SEO/SSR); adicionaria complexidade fora do escopo e do cronograma (ADR-0002).
+
+#Consequências
+- O front passa a ter build/typecheck próprios (tsc -b + vite build) que devem entrar no fluxo de CI/revisão.
+- Os tipos de domínio são replicados no front (src/types/domain.ts) espelhando os pgEnum do schema; mudanças de enum no backend exigem atualizar o front (mitigável no futuro com um pacote de tipos compartilhado).
+- Proxima Nova é fonte comercial: sem licença/hospedagem, o front usa Trebuchet MS (oficial UFPE, websafe) como fonte efetiva — aceitável e fiel à UFPE.
+- Em produção será necessário habilitar CORS no backend (hoje o server.ts não tem), pois o proxy do Vite só vale no desenvolvimento.
+
+#Referências
+- ADR-0004 (TypeScript strict / Drizzle) e ADR-0005 (JWT/RBAC) — base de integração do front.
+- Manual de Identidade Visual da UFPE e Manual de Identidade Visual do CIn-UFPE (cores/tipografia institucionais).
+- Vite — https://vite.dev/  ·  Tailwind CSS v4 — https://tailwindcss.com/  ·  React Router — https://reactrouter.com/
