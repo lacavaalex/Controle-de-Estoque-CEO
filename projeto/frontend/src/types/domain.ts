@@ -65,6 +65,12 @@ export type StatusPedido =
   | "nao_atendido"
   | "aguardando_reposicao";
 
+export type MotivoDivergencia =
+  | "falta_estoque"
+  | "racionalizacao_setor"
+  | "lote_indisponivel"
+  | "outros";
+
 // ─── Identidade autenticada (payload do backend em /login e /eu) ─────────────
 export interface Usuario {
   id: number;
@@ -113,4 +119,61 @@ export interface LoteComEstado {
   dataSegregacao: string | null;
   observacaoSegregacao: string | null;
   estadoValidade: EstadoValidade;
+}
+
+// ─── Setor (GET /setores) ────────────────────────────────────────────────────
+export interface Setor {
+  id: number;
+  nome: string;
+  tipo: TipoSetor;
+  emailInstitucional: string;
+}
+
+// ─── Pedido (EP04) ───────────────────────────────────────────────────────────
+// Item de um pedido. `desdobramentos` = quebras por lote (RF05.17), só presentes
+// em itens RAIZ que foram expedidos a partir de >1 lote.
+export interface ItemDoPedido {
+  id: number;
+  pedidoId: string;
+  produtoId: number | null;
+  descricaoLivre: string | null;
+  qtdSolicitada: number;
+  qtdExpedida: number | null;
+  loteExpedidoId: number | null;
+  unidade: Unidade;
+  statusItem: StatusItem;
+  motivoDivergencia: MotivoDivergencia | null;
+  observacaoMotivo: string | null;
+  itemPaiId: number | null;
+  processadoPorId: number | null;
+  dataProcessamento: string | null;
+  desdobramentos?: ItemDoPedido[];
+}
+
+// Agregado de leitura (GET /pedidos/:id e /setores/:setorId/pedidos).
+export interface PedidoComItens {
+  id: string; // PED-NNN
+  setorOrigemId: number;
+  setorDestinoId: number;
+  solicitanteId: number;
+  dataCriacao: string;
+  justificativa: string;
+  status: StatusPedido;
+  itens: ItemDoPedido[];
+}
+
+// ─── Payload de criação (POST /pedidos) ──────────────────────────────────────
+// XOR (INV07): exatamente um entre produtoId e descricaoLivre por item.
+export interface ItemNovoPedido {
+  produtoId?: number;
+  descricaoLivre?: string;
+  qtdSolicitada: number;
+  unidade: Unidade;
+}
+
+export interface NovoPedido {
+  setorOrigemId: number;
+  setorDestinoId: number;
+  justificativa: string;
+  itens: ItemNovoPedido[];
 }

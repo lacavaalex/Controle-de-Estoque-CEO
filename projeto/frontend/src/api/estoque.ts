@@ -37,3 +37,22 @@ export async function estoqueDoSetor(
   );
   return estoque;
 }
+
+// Visão do solicitante (US-EP02-07): catálogo agregado SEM detalhe de lote
+// (RN12) — sem `localizacao`/`estoqueMaximo`. Útil para escolher produtos ao
+// criar um pedido.
+export type CatalogoItem = Omit<ProdutoComEstoque, "localizacao" | "estoqueMaximo">;
+
+/**
+ * GET /setores/:setorId/catalogo — catálogo do setor para o solicitante. Passe o
+ * setorId de onde o estoque é consultado (no MVP, o HO que fornece).
+ */
+export async function catalogoDoSetor(
+  setorId: number,
+  filtros: FiltrosEstoque = {},
+): Promise<CatalogoItem[]> {
+  const { catalogo } = await api.get<{ catalogo: CatalogoItem[] }>(
+    `/setores/${setorId}/catalogo${montarQuery(filtros)}`,
+  );
+  return catalogo;
+}

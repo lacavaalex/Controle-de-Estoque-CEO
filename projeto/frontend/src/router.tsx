@@ -1,13 +1,14 @@
-// Rotas da aplicação (react-router 7). O esqueleto já reflete as telas das
-// stories do EP03/EP04; as de negócio são placeholders até a implementação.
+// Rotas da aplicação (react-router 7). Todas as telas de negócio do MVP
+// (Dashboard, Estoque CEO/HO, Solicitações) estão implementadas.
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { ProtectedRoute } from "@/router/ProtectedRoute";
 import { AppLayout } from "@/layouts/AppLayout";
 import { Login } from "@/pages/Login";
-import { Placeholder } from "@/pages/Placeholder";
+import { Dashboard } from "@/pages/Dashboard";
 import { EstoqueCEO } from "@/pages/EstoqueCEO";
 import { EstoqueDispensacao } from "@/pages/EstoqueDispensacao";
+import { Solicitacoes } from "@/pages/Solicitacoes";
 
 // Um ÚNICO AuthProvider envolve toda a árvore (login + rotas protegidas), para
 // que a sessão criada no login seja a mesma vista pelo resto do app.
@@ -34,12 +35,7 @@ export const router = createBrowserRouter([
             children: [
               {
                 path: "/",
-                element: (
-                  <Placeholder
-                    titulo="Dashboard"
-                    descricao="Visão geral do estoque e das solicitações."
-                  />
-                ),
+                element: <Dashboard />,
               },
               {
                 path: "/estoque-ceo",
@@ -51,13 +47,7 @@ export const router = createBrowserRouter([
               },
               {
                 path: "/solicitacoes",
-                element: (
-                  <Placeholder
-                    titulo="Solicitações / Pedidos"
-                    descricao="Criar pedidos multi-item e acompanhar o processamento."
-                    story="EP04"
-                  />
-                ),
+                element: <Solicitacoes />,
               },
             ],
           },
