@@ -235,6 +235,10 @@ async function seed() {
     { id: "PED-002", setorOrigemId: ceo.id, setorDestinoId: ho.id, solicitanteId: solicitanteCeo.id, justificativa: "Sem estoque no CEO para condicionamento em restaurações — demanda represada.", status: "aguardando_reposicao" },
     { id: "PED-003", setorOrigemId: ceo.id, setorDestinoId: ho.id, solicitanteId: solicitanteCeo.id, justificativa: "Reposição mensal de material restaurador para endodontia.", status: "atendido_integral" },
   ]);
+  // Avança a sequência além dos ids explícitos (PED-001..003), senão o próximo
+  // pedido em runtime gera PED-003 de novo e colide na PK (espelha o setval de
+  // seq_movimentacao mais abaixo).
+  await db.execute(sql`SELECT setval('seq_pedido', 3, true)`);
 
   // PED-001: pendente, com item de catálogo
   await db.insert(itemDoPedido).values([
