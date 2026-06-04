@@ -1,0 +1,44 @@
+# =============================================================================
+# .gitignore raiz — CEO-UFPE (monorepo: projeto/backend + projeto/frontend)
+# Os subprojetos têm .gitignore próprios; este cobre o que é comum/raiz.
+# =============================================================================
+
+# --- Node ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# --- Build / artefatos ---
+dist/
+build/
+*.tsbuildinfo
+
+# --- Variáveis de ambiente (NUNCA commitar segredos — ADR-0003) ---
+.env
+.env.*
+!.env.example
+
+# --- Python (.jira-sync usa scripts Python) ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# --- Cobertura / cache de teste ---
+coverage/
+.vitest/
+
+# --- Sistema operacional ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Editores ---
+*.swp
+*.swo
+.idea/
+*.iml
+# (.vscode/ deixado fora de propósito: settings de editor podem ser úteis ao time)
