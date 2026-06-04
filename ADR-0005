@@ -1,0 +1,39 @@
+Número do ADR: 0005
+Título: Autenticação por Token JWT (stateless) e RBAC perfil × setor
+Data: 02/06/2026
+Responsável: dsgrupocinco (PO) — fase de fundação
+Status: Aceito
+
+#Contexto
+O núcleo do épico EP01 (acesso e segurança) exige autenticação real. O estado anterior salvava a senha em texto puro (UsersDB.json) e comparava strings, o que é inaceitável (RNF03.3). Além disso, as permissões do sistema são determinadas pela combinação perfil × setor (RN01): gestor HO é super-user global, gestor CEO é restrito ao CEO, almoxarife processa pedidos, solicitante só enxerga o próprio setor (RN12). Foi necessário decidir (a) como armazenar credenciais e (b) o mecanismo de sessão que carrega essa identidade por toda requisição (RNF03.7).
+
+#Decisão
+Foi decidido:
+- Armazenar senhas como hash bcrypt (custo 12), nunca em texto puro. A coluna usuario.senha_hash guarda o hash; comparação via bcrypt.compare.
+- Adotar autenticação por token JWT stateless. No login, o servidor assina um JWT (HS256) com o payload { sub, email, perfil, setorId }. Cada rota protegida verifica o token (middleware `autenticar`) e popula req.identidade resolvendo o tipo do setor. A autorização usa funções RBAC puras (auth/rbac.ts) sobre essa identidade, expostas como guardas de rota (`exigir`).
+- O segredo (JWT_SECRET) e a expiração (JWT_EXPIRES_IN, default 8h) vêm do .env (ADR-0003).
+- O cadastro NÃO é público: usuários são provisionados por gestor (US-EP01-06), com senha provisória e flag trocar_senha; o RBAC de provisionamento limita gestor CEO a criar apenas solicitante do próprio setor.
+
+#Justificativa
+- Stateless e simples de operar: o JWT não exige store de sessão server-side nem tabela extra, adequado ao monólito (ADR-0002) e ao cronograma do projeto. A identidade (perfil/setor) viaja no token, então o RBAC não precisa consultar o banco a cada request para o básico.
+- bcrypt é padrão de mercado para hash de senha, com salt por hash e custo configurável (RNF03.3).
+- RBAC como funções puras: a lógica perfil × setor (RN01/RN12) fica isolada e testável (ver auth/rbac.test.ts), separada do transporte HTTP, e reutilizável em services.
+- Coerência com a arquitetura: middleware + guardas mantêm os controllers finos; o segredo vem de configuração (ADR-0003).
+
+#Alternativas Consideradas
+- Sessão server-side (cookie + tabela de sessão no Postgres): oferece invalidação real no logout (RNF03.6) e revogação imediata, mas adiciona uma tabela/store e estado no servidor. Foi preterida pela simplicidade do JWT no escopo atual; pode ser reavaliada se a revogação imediata virar requisito duro.
+- Provedor externo / OAuth institucional (SIGAA): fora de escopo no MVP; fica como evolução.
+- Hash com argon2: alternativa moderna e válida ao bcrypt; bcrypt foi escolhido pela maturidade e simplicidade de integração no Node.
+
+#Consequências
+- Logout não invalida o token no servidor: com JWT stateless, o logout instrui o cliente a descartar o token; a expiração curta (8h) limita a janela. A invalidação imediata (denylist de tokens / jti) fica como TODO marcado, a implementar se o requisito de revogação se tornar firme (RNF03.6).
+- Proteção do segredo: o JWT_SECRET precisa ser forte e secreto em produção (variável de ambiente do provedor), nunca commitado.
+- Migração de usuários: o login v2 usa a tabela usuario (Postgres) com senha_hash. O fluxo legado em JSON (UsersDB.json, texto puro) deve ser desativado; as rotas legadas permanecem temporariamente e devem ser removidas pelo time.
+- Troca de senha no primeiro acesso: a flag trocar_senha está modelada e setada no provisionamento; a tela/endpoint de troca obrigatória fica como próximo passo do EP01.
+
+#Referências
+- bcrypt (node.bcrypt.js): https://github.com/kelektiv/node.bcrypt.js
+- jsonwebtoken: https://github.com/auth0/node-jsonwebtoken
+- RFC 7519 (JWT): https://datatracker.ietf.org/doc/html/rfc7519
+- ADR-0002 (monólito), ADR-0003 (.env/dotenv) deste repositório.
+- Regras RN01, RN11, RN12 em docs/PO/06-dominio-regras/02-regras-de-negocio.md.

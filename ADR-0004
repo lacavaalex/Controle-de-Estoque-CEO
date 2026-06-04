@@ -1,0 +1,41 @@
+Número do ADR: 0004
+Título: ORM / Query Builder e Estratégia de Migrations
+Data: 02/06/2026
+Responsável: dsgrupocinco (PO) — fase de fundação
+Status: Aceito
+
+#Contexto
+O ADR-0001 definiu o PostgreSQL como banco de dados do sistema, mas a camada de acesso a dados ainda usava arquivos JSON (repositórios Json* sob projeto/backend/data/). Na fase de fundação foi necessário escolher COMO o backend TypeScript/ESM (Express 5, tsconfig strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes) acessaria o Postgres e COMO o schema seria versionado (migrations), de modo que o time consiga retomar o trabalho sobre uma base coerente. O domínio é rico (modelo conceitual v2: Setor, Usuário, Produto, Lote, Pedido, ItemDoPedido, Movimentação) e tem invariantes (INV01–INV09) que se beneficiam de constraints no banco.
+
+#Decisão
+Foi decidido adotar o Drizzle ORM como camada de acesso a dados e o drizzle-kit como ferramenta de migrations. O schema é declarado como código TypeScript em src/db/schema.ts (fonte única da verdade), as migrations SQL são geradas por `drizzle-kit generate` e aplicadas por `drizzle-kit migrate`. O driver de conexão é o `pg` (node-postgres), e a configuração vem do .env via dotenv (ADR-0003), nunca hardcoded. O Drizzle fica encapsulado exclusivamente nos repositórios Pg* (atrás das interfaces I*Repository) — services, controllers e rotas não conhecem o ORM.
+
+#Justificativa
+A decisão de usar Drizzle baseou-se nas seguintes razões:
+
+- Tipagem forte alinhada ao tsconfig: o projeto usa TypeScript em modo strict com noUncheckedIndexedAccess e exactOptionalPropertyTypes. O Drizzle é TS-first e devolve resultados de consulta totalmente tipados a partir do schema, cooperando com essa rigidez em vez de exigir tipos manuais que divergem do banco (como aconteceria com o driver pg cru).
+- Schema como fonte única da verdade: declarar o schema em código e gerar as migrations a partir dele mantém schema, tipos e migrations sincronizados. Isso reduz drift e é exatamente o que uma "fundação que o time retoma" precisa.
+- Invariantes como constraints: enums nativos do Postgres, FKs, UNIQUE e CHECK (ex.: INV05 quantidade >= 0; INV07 XOR produto_id/descricao_livre; RN09 justificativa >= 10 caracteres; RN17 lote segregado com data) são declarados no próprio schema.
+- Baixo raio de impacto na arquitetura: a arquitetura em camadas já isolava a persistência atrás de interfaces (Json* -> Pg*). O Drizzle vive só nos repositórios Pg*, então uma eventual troca futura é contida.
+- Migrations versionadas e revisáveis: o drizzle-kit gera SQL legível em projeto/backend/drizzle/, que pode ser revisado em PR antes de aplicar.
+
+#Alternativas Consideradas
+Foram consideradas as seguintes alternativas:
+
+- Kysely + node-pg-migrate: query builder tipado (sem "ORM mágico") com migrations SQL escritas à mão. É a opção mais transparente e próxima do SQL puro, mas exige manter schema e tipos em dois lugares e escrever cada migration manualmente — mais propício a drift numa equipe estudantil.
+- node-pg-migrate + driver pg cru: migrations SQL puras e consultas com client.query. Menos dependências, porém sem tipagem nas consultas (resultados any) e muito boilerplate, contrariando o tsconfig strict do projeto.
+- Prisma ORM: maturidade e DX excelentes, mas usa um schema próprio (.prisma) fora do TypeScript, um cliente gerado pesado e um runtime/engine próprio — mais distante do estilo "schema é código TS" e mais pesado para o escopo do projeto.
+
+#Consequências
+A escolha do Drizzle traz as seguintes consequências:
+
+- Fluxo de migrations padronizado: alterar o schema passa a exigir `npm run db:generate` (gera a migration) e `npm run db:migrate` (aplica). A equipe deve commitar a pasta drizzle/ junto com a mudança de schema.
+- Curva de aprendizado do Drizzle: a sintaxe de consulta do Drizzle precisa ser aprendida, mas é próxima de SQL e bem documentada.
+- Acoplamento contido: o Drizzle só pode ser usado dentro dos repositórios Pg*; vazá-lo para services/controllers quebraria a regra de camadas e deve ser evitado em revisão.
+- Coexistência de ambiente: o Postgres de desenvolvimento sobe via docker compose publicado em 5433:5432 (a 5432 do host é usada por outro projeto). A DATABASE_URL no .env deve apontar para localhost:5433.
+
+#Referências
+- Drizzle ORM (PostgreSQL): https://orm.drizzle.team/docs/get-started-postgresql
+- drizzle-kit (migrations): https://orm.drizzle.team/docs/kit-overview
+- node-postgres (pg): https://node-postgres.com/
+- ADR-0001 (PostgreSQL), ADR-0003 (.env/dotenv) deste repositório.

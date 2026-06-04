@@ -86,6 +86,18 @@ describe("changeItemName", () => {
     ).rejects.toThrow("Nome inválido");
   });
 
+  it("deve lançar erro ao renomear para o nome de OUTRO item já existente", async () => {
+    // "002" é a Máscara Descartável; tentar renomeá-lo para "Luva Cirúrgica" (001) deve falhar
+    await expect(
+      service.changeItemName("002", "Luva Cirúrgica")
+    ).rejects.toThrow("Já existe um item com o mesmo nome no estoque");
+  });
+
+  it("deve permitir 'renomear' o item para o seu próprio nome atual", async () => {
+    const resultado = await service.changeItemName("001", "Luva Cirúrgica");
+    expect(resultado.id).toBe("001");
+  });
+
 });
 
 describe("createItem", () => {

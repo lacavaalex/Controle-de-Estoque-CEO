@@ -41,5 +41,11 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-  }
+  },
+
+  // O build (tsc -> dist/) cobre apenas as fontes de produção em src/.
+  // Exclui os testes (não devem ir para dist/ — era a origem do teste-fantasma
+  // em dist/services/ItemService.test.js) e os arquivos de config na raiz.
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts", "vitest.config.ts"]
 }

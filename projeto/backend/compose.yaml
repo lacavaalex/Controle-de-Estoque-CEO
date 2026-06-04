@@ -1,0 +1,27 @@
+# Postgres local para desenvolvimento do CEO-UFPE (ADR-0001).
+# Sobe com: docker compose up -d   (Compose V2 — sem hífen)
+#
+# ⚠️ Publicado em 5433:5432 de propósito: a porta 5432 do host já é usada por
+# outro projeto (container duque-postgres). Assim os dois coexistem.
+# A DATABASE_URL no .env deve apontar para localhost:5433.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ceo-estoque-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ceo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ceo}
+      POSTGRES_DB: ${POSTGRES_DB:-ceo_estoque}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - ceo_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ceo} -d ${POSTGRES_DB:-ceo_estoque}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  ceo_pgdata:
