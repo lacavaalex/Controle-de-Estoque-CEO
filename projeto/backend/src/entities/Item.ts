@@ -1,6 +1,10 @@
 export interface Item {
-    id: string;
+    id: number;
     name: string;
     category: string;
     quantity: number;
+    unit: string;
+    minimumStock: number;
+    maximumStock: number;
+    active: boolean;
 }
