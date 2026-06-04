@@ -5,11 +5,15 @@
 //             e delega a persistência atômica ao PgPedidoRepo. O status do
 //             pedido nasce 'pendente' (derivado dos itens pendentes — RN10).
 //
-// expedir() — processa UM item pendente: baixa lotes do setor de ORIGEM (HO) em
-//             ordem FEFO (RN20), registra a movimentação saída(HO)->entrada(CEO)
-//             (RN19/RN11) e grava qtdExpedida/statusItem/motivo (RN16) no item.
-//             Tudo na MESMA transação (estoque + auditoria nunca divergem —
-//             INV01/INV05). Ao final, recalcula o status do pedido (RN10).
+// expedir() — processa UM item pendente. ATENÇÃO ao duplo sentido de
+//             origem/destino: no PEDIDO, setorOrigemId = setor que SOLICITA
+//             (CEO) e setorDestinoId = almoxarifado HO. Os BENS fluem ao
+//             contrário (RN19/INV09): saem do HO e entram no CEO. Então:
+//             baixa lotes do HO (= pedido.setorDestinoId) em ordem FEFO (RN20),
+//             registra saída@HO + entrada@CEO, cria/atualiza o lote-CEO
+//             correspondente (RN19) e grava qtdExpedida/statusItem/motivo
+//             (RN16) no item. Tudo na MESMA transação (estoque + auditoria
+//             nunca divergem — INV01/INV05). Ao final, recalcula o pedido (RN10).
 //
 // A regra de alocação é PURA (domain/pedido.planejarExpedicaoItem); aqui só há
 // orquestração de I/O, espelhando LoteService.
@@ -29,7 +33,12 @@ import type {
   StatusItem,
   Unidade,
 } from "../entities/index.js";
-import { planejarExpedicaoItem, statusDerivadoDoPedido } from "../domain/pedido.js";
+import {
+  direcaoExpedicao,
+  planejarEntradaCeo,
+  planejarExpedicaoItem,
+  statusDerivadoDoPedido,
+} from "../domain/pedido.js";
 import type { IPedidoRepository, PedidoComItens } from "../interfaces/repository-interfaces/IPedidoRepo.js";
 
 type Tx = Parameters<Parameters<DB["transaction"]>[0]>[0];
@@ -45,8 +54,8 @@ export interface ItemNovoPedido {
 }
 
 export interface DadosNovoPedido {
-  setorOrigemId: number; // HO (almoxarifado) que fornece
-  setorDestinoId: number; // CEO/destinatário que recebe
+  setorOrigemId: number; // setor que SOLICITA (ex.: CEO) — direção da requisição
+  setorDestinoId: number; // almoxarifado HO que atende (sempre HO no MVP)
   solicitanteId: number;
   justificativa: string;
   itens: ItemNovoPedido[];
@@ -72,6 +81,9 @@ export class PedidoService {
     }
     if (!dados.itens || dados.itens.length === 0) {
       throw new Error("Pedido deve ter ao menos um item (RN09)");
+    }
+    if (!Number.isInteger(dados.setorOrigemId) || !Number.isInteger(dados.setorDestinoId)) {
+      throw new Error("setorOrigemId e setorDestinoId devem ser inteiros válidos");
     }
     if (dados.setorOrigemId === dados.setorDestinoId) {
       throw new Error("Setor de origem e destino não podem ser o mesmo");
@@ -144,7 +156,7 @@ export class PedidoService {
         .from(itemTable)
         .where(and(eq(itemTable.id, itemId), eq(itemTable.pedidoId, pedidoId)))
         .limit(1);
-      if (!item) throw new Error(`Item ${itemId} não pertence ao pedido ${pedidoId}`);
+      if (!item) throw new Error(`Item ${itemId} não encontrado no pedido ${pedidoId}`);
       if (item.statusItem !== "pendente") {
         throw new Error(`Item ${itemId} já foi processado (status ${item.statusItem})`);
       }
@@ -152,23 +164,30 @@ export class PedidoService {
         throw new Error("Item de descrição livre não pode ser expedido (sem lote no catálogo)");
       }
 
-      // 2. Lotes do produto no setor de ORIGEM (HO) e plano FEFO (domínio puro).
-      const lotes = (await tx
+      // Direção física (RN19/INV09): bens saem do HO (= pedido.setorDestinoId)
+      // e entram no CEO (= pedido.setorOrigemId), ao contrário da requisição.
+      const { setorHoId, setorCeoId } = direcaoExpedicao(pedido);
+
+      // 2. Lotes do produto no HO, travados (FOR UPDATE) contra expedições
+      //    concorrentes (INV05/INV08), e plano FEFO (domínio puro).
+      const lotesHo = (await tx
         .select()
         .from(loteTable)
         .where(
           and(
             eq(loteTable.produtoId, item.produtoId),
-            eq(loteTable.setorId, pedido.setorOrigemId),
+            eq(loteTable.setorId, setorHoId),
           ),
-        )) as Lote[];
+        )
+        .for("update")) as Lote[];
 
-      const plano = planejarExpedicaoItem(item.qtdSolicitada, lotes, hoje);
+      const plano = planejarExpedicaoItem(item.qtdSolicitada, lotesHo, hoje);
 
-      // 3. Aplica as baixas e movimentações saída(HO)->entrada(CEO) (RN19/RN11).
+      // 3. Baixa cada lote-HO e registra a saída@HO (RN11). quantidade negativa
+      //    espelha a convenção do seed (MOV saída = -qtd).
       const movimentacoes: string[] = [];
       for (const aloc of plano.alocacoes) {
-        const loteAtual = lotes.find((l) => l.id === aloc.loteId)!;
+        const loteAtual = lotesHo.find((l) => l.id === aloc.loteId)!;
         const novaQtd = loteAtual.quantidade - aloc.quantidade;
         await tx
           .update(loteTable)
@@ -181,14 +200,71 @@ export class PedidoService {
           tipo: "saida",
           loteId: aloc.loteId,
           produtoId: item.produtoId,
-          quantidade: aloc.quantidade,
-          setorOrigemId: pedido.setorOrigemId,
-          setorDestinoId: pedido.setorDestinoId,
+          quantidade: -aloc.quantidade,
+          setorOrigemId: setorHoId,
+          setorDestinoId: setorCeoId,
           responsavelId,
           pedidoId,
           observacao: `Expedição do pedido ${pedidoId} (item ${itemId}).`,
         });
         movimentacoes.push(movId);
+      }
+
+      // 3b. RN19/INV09 — segunda perna: cria/atualiza o lote-CEO e registra a
+      //     entrada@CEO. Lê os lotes-CEO travados para um upsert seguro.
+      if (plano.alocacoes.length > 0) {
+        const lotesCeo = (await tx
+          .select()
+          .from(loteTable)
+          .where(
+            and(
+              eq(loteTable.produtoId, item.produtoId),
+              eq(loteTable.setorId, setorCeoId),
+            ),
+          )
+          .for("update")) as Lote[];
+
+        const legs = planejarEntradaCeo(plano.alocacoes, lotesHo, lotesCeo);
+        for (const leg of legs) {
+          let loteCeoId: number;
+          if (leg.loteCeoExistenteId !== null) {
+            const [atualizado] = await tx
+              .update(loteTable)
+              .set({ quantidade: sql`${loteTable.quantidade} + ${leg.quantidade}` })
+              .where(eq(loteTable.id, leg.loteCeoExistenteId))
+              .returning({ id: loteTable.id });
+            loteCeoId = atualizado!.id;
+          } else {
+            const [criado] = await tx
+              .insert(loteTable)
+              .values({
+                produtoId: item.produtoId,
+                setorId: setorCeoId,
+                numeroLote: leg.numeroLote,
+                validade: leg.validade,
+                quantidade: leg.quantidade,
+                estado: "ativo",
+                ...(leg.fabricacao !== null ? { fabricacao: leg.fabricacao } : {}),
+              })
+              .returning({ id: loteTable.id });
+            loteCeoId = criado!.id;
+          }
+
+          const movEntradaId = await this.proximoIdMov(tx);
+          await tx.insert(movTable).values({
+            id: movEntradaId,
+            tipo: "entrada",
+            loteId: loteCeoId,
+            produtoId: item.produtoId,
+            quantidade: leg.quantidade,
+            setorOrigemId: setorHoId,
+            setorDestinoId: setorCeoId,
+            responsavelId,
+            pedidoId,
+            observacao: `Entrada-CEO automática via expedição do pedido ${pedidoId} (RN19).`,
+          });
+          movimentacoes.push(movEntradaId);
+        }
       }
 
       // 4. Grava o resultado no item-pai (RN16). loteExpedidoId só quando a saída

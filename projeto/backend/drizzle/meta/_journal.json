@@ -15,6 +15,13 @@
       "when": 1780462583277,
       "tag": "0001_deep_stryfe",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780543658328,
+      "tag": "0002_awesome_venus",
+      "breakpoints": true
     }
   ]
 }

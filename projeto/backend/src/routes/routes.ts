@@ -131,12 +131,14 @@ router.get(
 );
 
 // US-EP02-05 — entrada de lote (recebimento) — almoxarife/gestor HO.
+// Recebimento de fornecedor é exclusivo do almoxarifado (HO); lotes-CEO só
+// nascem via expedição (RN19), nunca por este endpoint.
 router.post(
   "/produtos/:id/lotes",
   auth,
   exigir((id, req) => {
     const setorId = Number(req.body?.setorId ?? id.setorId);
-    return podeEditarEstoque(id, setorId);
+    return id.setorTipo === "almoxarifado" && podeEditarEstoque(id, setorId);
   }),
   (req, res) => loteController.registrarEntrada(req, res),
 );

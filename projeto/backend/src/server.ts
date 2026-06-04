@@ -1,7 +1,11 @@
 import "dotenv/config";
 import express from "express";
 import { router } from "./routes/routes.js";
+import { validarConfigJwt } from "./auth/jwt.js";
 
+// Fail-fast: aborta o boot se a config de JWT (segredo/expiração) estiver
+// ausente ou malformada (ADR-0005), em vez de emitir tokens quebrados depois.
+validarConfigJwt();
 
 const app = express();
 app.use(express.json());

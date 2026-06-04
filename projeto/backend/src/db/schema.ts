@@ -192,6 +192,14 @@ export const lote = pgTable(
       "lote_segregado_tem_data",
       sql`(${t.estado} <> 'segregado') OR (${t.dataSegregacao} IS NOT NULL)`,
     ),
+    // RN19/INV09: a entrada-CEO via expedição soma num lote-CEO de mesmo
+    // (produto, setor, numeroLote) ou cria um novo. O índice único torna esse
+    // upsert seguro sob concorrência (junto com o SELECT ... FOR UPDATE).
+    uniqueIndex("lote_produto_setor_numero_unico").on(
+      t.produtoId,
+      t.setorId,
+      t.numeroLote,
+    ),
   ],
 );
 

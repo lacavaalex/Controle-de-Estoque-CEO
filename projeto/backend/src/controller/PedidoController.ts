@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import type { PedidoService, DadosNovoPedido } from "../services/PedidoService.js";
+import { podeVerSetor } from "../auth/rbac.js";
 
 export class PedidoController {
   constructor(private pedidoService: PedidoService) {}
@@ -28,9 +29,15 @@ export class PedidoController {
 
   // GET /pedidos/:id — detalha um pedido com seus itens.
   async detalhar(req: Request, res: Response): Promise<Response> {
+    const id = req.identidade!;
     try {
       const pedido = await this.pedidoService.buscarPorId(req.params.id as string);
       if (pedido === null) return res.status(404).json({ mensagem: "Pedido não encontrado" });
+      // RN12 — escopo de setor: só HO (global) ou quem participa do pedido
+      // (setor de origem OU destino) pode vê-lo.
+      if (!podeVerSetor(id, pedido.setorOrigemId) && !podeVerSetor(id, pedido.setorDestinoId)) {
+        return res.status(403).json({ mensagem: "Acesso negado para o seu perfil/setor" });
+      }
       return res.status(200).json({ pedido });
     } catch (error) {
       if (error instanceof Error) return res.status(400).json({ mensagem: error.message });

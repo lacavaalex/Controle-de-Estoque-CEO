@@ -19,9 +19,27 @@ function segredo(): string {
   return s;
 }
 
+/** Expiração: número (segundos) ou string de duração (ex.: "8h", "30m"). */
+function expiracao(): number | `${number}${"s" | "m" | "h" | "d"}` {
+  const raw = process.env.JWT_EXPIRES_IN ?? "8h";
+  if (/^\d+$/.test(raw)) return Number(raw); // segundos
+  if (/^\d+[smhd]$/.test(raw)) return raw as `${number}${"s" | "m" | "h" | "d"}`;
+  throw new Error(
+    `JWT_EXPIRES_IN inválido ("${raw}"): use segundos (ex.: "3600") ou duração (ex.: "8h", "30m").`,
+  );
+}
+
+/**
+ * Valida a configuração de JWT no boot (fail-fast): segredo presente e
+ * expiração bem-formada. Chamado por server.ts antes de aceitar requests.
+ */
+export function validarConfigJwt(): void {
+  segredo();
+  expiracao();
+}
+
 export function assinarToken(payload: PayloadToken): string {
-  const expiresIn = process.env.JWT_EXPIRES_IN ?? "8h";
-  return jwt.sign(payload, segredo(), { expiresIn } as jwt.SignOptions);
+  return jwt.sign(payload, segredo(), { expiresIn: expiracao() });
 }
 
 export function verificarToken(token: string): PayloadToken {

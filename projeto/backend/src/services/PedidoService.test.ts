@@ -139,4 +139,14 @@ describe("PedidoService.criar (RN09 / INV07)", () => {
       }),
     ).rejects.toThrow(/origem e destino/);
   });
+
+  it("rejeita setor não-inteiro (NaN) antes de chegar ao banco", async () => {
+    await expect(
+      service.criar({
+        ...base,
+        setorDestinoId: NaN,
+        itens: [{ produtoId: 1, qtdSolicitada: 1, unidade: "caixa" }],
+      }),
+    ).rejects.toThrow(/inteiros válidos/);
+  });
 });

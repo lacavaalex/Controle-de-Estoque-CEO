@@ -147,3 +147,78 @@ export function planejarExpedicaoItem(
     ...(motivoDivergencia !== undefined ? { motivoDivergencia } : {}),
   };
 }
+
+// =============================================================================
+// Direção física das movimentações de uma expedição (RN19/INV09) — PURO.
+//
+// Atenção ao duplo sentido de "origem/destino" no domínio:
+//  - No PEDIDO, origem/destino = direção da REQUISIÇÃO:
+//      setorOrigemId  = setor que SOLICITA (ex.: CEO)   [modelo conceitual 2.5]
+//      setorDestinoId = almoxarifado HO (sempre HO no MVP)
+//  - Na MOVIMENTAÇÃO, origem/destino = direção física dos BENS, que fluem ao
+//    contrário: saem do HO e entram no CEO. Por isso a expedição lê os lotes do
+//    HO (= pedido.setorDestinoId) e gera saída@HO + entrada@CEO.
+// =============================================================================
+
+export interface DirecaoExpedicao {
+  /** De onde os bens saem fisicamente: o almoxarifado HO. */
+  setorHoId: number;
+  /** Para onde os bens vão: o setor solicitante (CEO). */
+  setorCeoId: number;
+}
+
+/** RN19/INV09 — inverte a direção do pedido para a direção física dos bens. */
+export function direcaoExpedicao(pedido: {
+  setorOrigemId: number;
+  setorDestinoId: number;
+}): DirecaoExpedicao {
+  return { setorHoId: pedido.setorDestinoId, setorCeoId: pedido.setorOrigemId };
+}
+
+// =============================================================================
+// Segunda perna do RN19/INV09 — planeja a ENTRADA no CEO a partir das baixas
+// feitas no HO. Para cada alocação (saída de um lote-HO), decide se soma num
+// lote-CEO já existente (mesmo numeroLote + produto) ou cria um novo lote-CEO
+// copiando numeroLote/fabricacao/validade do lote-HO. PURO e testável.
+// =============================================================================
+
+/** Uma perna de entrada no CEO derivada de uma baixa no HO. */
+export interface EntradaCeoLeg {
+  /** Lote-HO de onde os bens saíram (origem dos metadados copiados). */
+  loteHoId: number;
+  numeroLote: string;
+  fabricacao: string | null;
+  validade: string;
+  quantidade: number; // positivo
+  // Quando há lote-CEO com mesmo numeroLote+produto: soma nele; senão cria novo.
+  loteCeoExistenteId: number | null;
+}
+
+/**
+ * RN19/INV09 — dado o plano de baixas no HO (`alocacoes`), os lotes-HO (para
+ * resolver numeroLote/fab/validade de cada loteId) e os lotes-CEO existentes,
+ * produz as pernas de entrada no CEO. Não faz I/O nem muta as entradas.
+ */
+export function planejarEntradaCeo(
+  alocacoes: AlocacaoLote[],
+  lotesHo: Lote[],
+  lotesCeo: Lote[],
+): EntradaCeoLeg[] {
+  return alocacoes.map((aloc) => {
+    const loteHo = lotesHo.find((l) => l.id === aloc.loteId);
+    if (!loteHo) {
+      throw new Error(`Lote-HO ${aloc.loteId} não encontrado ao planejar entrada-CEO`);
+    }
+    const loteCeo = lotesCeo.find(
+      (l) => l.numeroLote === loteHo.numeroLote && l.produtoId === loteHo.produtoId,
+    );
+    return {
+      loteHoId: loteHo.id,
+      numeroLote: loteHo.numeroLote,
+      fabricacao: loteHo.fabricacao,
+      validade: loteHo.validade,
+      quantidade: aloc.quantidade,
+      loteCeoExistenteId: loteCeo ? loteCeo.id : null,
+    };
+  });
+}

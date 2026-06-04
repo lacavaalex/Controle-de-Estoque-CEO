@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
 import type { Lote, StatusItem } from "../entities/index.js";
-import { planejarExpedicaoItem, statusDerivadoDoPedido } from "./pedido.js";
+import {
+  direcaoExpedicao,
+  planejarEntradaCeo,
+  planejarExpedicaoItem,
+  statusDerivadoDoPedido,
+} from "./pedido.js";
 
 // Helper: lote mínimo para os testes de expedição (só os campos usados pelo domínio).
 function lote(props: Partial<Lote> & Pick<Lote, "id" | "quantidade" | "validade">): Lote {
@@ -128,5 +133,65 @@ describe("planejarExpedicaoItem (RN16/RN19/RN20)", () => {
     expect(plano.qtdExpedida).toBe(4);
     expect(plano.alocacoes).toEqual([{ loteId: 3, quantidade: 4 }]);
     expect(plano.statusItem).toBe("atendido_parcial");
+  });
+});
+
+describe("direcaoExpedicao (RN19/INV09)", () => {
+  it("inverte a direção do pedido: bens saem do HO (=destino) p/ o CEO (=origem)", () => {
+    // Pedido: origem=CEO(7) solicita, destino=HO(1) atende.
+    const dir = direcaoExpedicao({ setorOrigemId: 7, setorDestinoId: 1 });
+    expect(dir.setorHoId).toBe(1); // bens saem do HO
+    expect(dir.setorCeoId).toBe(7); // bens entram no CEO
+  });
+});
+
+describe("planejarEntradaCeo (RN19/INV09 — 2ª perna)", () => {
+  it("cria novo lote-CEO copiando numeroLote/fabricacao/validade do lote-HO", () => {
+    const lotesHo = [
+      lote({ id: 10, quantidade: 0, validade: "2027-01-01", numeroLote: "LT-A", fabricacao: "2025-01-01", produtoId: 5 }),
+    ];
+    const legs = planejarEntradaCeo([{ loteId: 10, quantidade: 4 }], lotesHo, []);
+    expect(legs).toEqual([
+      {
+        loteHoId: 10,
+        numeroLote: "LT-A",
+        fabricacao: "2025-01-01",
+        validade: "2027-01-01",
+        quantidade: 4,
+        loteCeoExistenteId: null,
+      },
+    ]);
+  });
+
+  it("soma num lote-CEO existente de mesmo numeroLote + produto", () => {
+    const lotesHo = [lote({ id: 10, quantidade: 0, validade: "2027-01-01", numeroLote: "LT-A", produtoId: 5 })];
+    const lotesCeo = [lote({ id: 99, quantidade: 2, validade: "2027-01-01", numeroLote: "LT-A", setorId: 7, produtoId: 5 })];
+    const legs = planejarEntradaCeo([{ loteId: 10, quantidade: 4 }], lotesHo, lotesCeo);
+    expect(legs[0]!.loteCeoExistenteId).toBe(99);
+    expect(legs[0]!.quantidade).toBe(4);
+  });
+
+  it("não casa lote-CEO de numeroLote igual mas produto diferente", () => {
+    const lotesHo = [lote({ id: 10, quantidade: 0, validade: "2027-01-01", numeroLote: "LT-A", produtoId: 5 })];
+    const lotesCeo = [lote({ id: 99, quantidade: 2, validade: "2027-01-01", numeroLote: "LT-A", setorId: 7, produtoId: 6 })];
+    const legs = planejarEntradaCeo([{ loteId: 10, quantidade: 4 }], lotesHo, lotesCeo);
+    expect(legs[0]!.loteCeoExistenteId).toBeNull();
+  });
+
+  it("uma perna por alocação (FEFO multi-lote)", () => {
+    const lotesHo = [
+      lote({ id: 1, quantidade: 0, validade: "2026-08-01", numeroLote: "LT-1", produtoId: 5 }),
+      lote({ id: 2, quantidade: 0, validade: "2027-06-01", numeroLote: "LT-2", produtoId: 5 }),
+    ];
+    const legs = planejarEntradaCeo(
+      [{ loteId: 1, quantidade: 5 }, { loteId: 2, quantidade: 2 }],
+      lotesHo,
+      [],
+    );
+    expect(legs.map((l) => [l.numeroLote, l.quantidade])).toEqual([["LT-1", 5], ["LT-2", 2]]);
+  });
+
+  it("lança erro se a alocação referencia um lote-HO inexistente", () => {
+    expect(() => planejarEntradaCeo([{ loteId: 404, quantidade: 1 }], [], [])).toThrow();
   });
 });
