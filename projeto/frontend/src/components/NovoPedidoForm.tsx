@@ -5,11 +5,13 @@
 //   • justificativa >= 10 caracteres (RN09).
 //   • >= 1 item; cada item tem qtd >= 1 e (produto do catálogo XOR descrição
 //     livre) — INV07.
-//   • origem (HO/almoxarifado) != destino (setor do solicitante).
+//   • origem != destino.
 //
-// origem/destino vêm de GET /setores: destino = setor do próprio solicitante;
-// origem = o setor do tipo 'almoxarifado' (HO). Os produtos vêm do catálogo do
-// HO (GET /setores/:ho/catalogo).
+// Direção do PEDIDO (modelo conceitual v2): setorOrigemId = setor que SOLICITA
+// (o próprio setor do solicitante, ex.: CEO); setorDestinoId = o almoxarifado
+// HO que atende. Os BENS depois fluem ao contrário (expedição HO -> CEO, RN19).
+// origem/destino vêm de GET /setores; o catálogo vem do PRÓPRIO setor do
+// solicitante (GET /setores/:meuSetor/catalogo — RN12).
 // =============================================================================
 import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "@/context/AuthContext";

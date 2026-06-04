@@ -51,9 +51,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function login(email: string, senha: string): Promise<void> {
     const { token, usuario } = await authApi.login(email, senha);
     setToken(token);
-    setUsuario(usuario);
-    const { identidade } = await authApi.eu();
-    setIdentidade(identidade);
+    // Reidrata a identidade (perfil/setor) via /eu. Se essa 2ª chamada falhar,
+    // desfaz o token para não deixar sessão pela metade (token sem identidade).
+    try {
+      setUsuario(usuario);
+      const { identidade } = await authApi.eu();
+      setIdentidade(identidade);
+    } catch (err) {
+      setToken(null);
+      setUsuario(null);
+      setIdentidade(null);
+      throw err;
+    }
   }
 
   function logout(): void {

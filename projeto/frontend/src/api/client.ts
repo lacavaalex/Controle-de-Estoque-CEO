@@ -13,6 +13,9 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
 const TOKEN_KEY = "ceo.token";
 
+// Tradeoff (ADR-0005): o JWT fica em localStorage — simples e stateless, mas
+// legível por script injetado (XSS). Aceitável no piloto; se o requisito de
+// segurança subir, migrar para cookie httpOnly + CSRF no backend.
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }
