@@ -15,32 +15,35 @@ export class JsonItemRepo implements IItemRepository {
         return items;
     }
 
-    async getItemById(id: string): Promise<Item | null> {
+    async getItemById(id: number): Promise<Item | null> {
         const items = await readItems();
-        const item = items.find((item: Item) => item.id === id);
+        const item = items.find(item => item.id === id);
 
         return item ?? null;
     }
 
-    async updateItem(id: string, updateProperties: Partial<Omit<Item, "id">>): Promise<void> {
+    async updateItem(id: number, updateProperties: Partial<Omit<Item, "id">>): Promise<void> {
         const items = await readItems();
-        const itemIndex = items.findIndex((currentItem: Item) => currentItem.id === id);
+        const itemIndex = items.findIndex(item => item.id === id);
+        const item = items[itemIndex];
 
-        const updatedItem: Item = {
-            ...items[itemIndex],
+        if (!item) throw new Error(`Nenhum item com o id ${id} foi encontrado`)
+
+        items[itemIndex] = {
+            ...item,
             ...updateProperties,
-        };
+        }
 
-        items[itemIndex] = updatedItem;
         await writeItems(items);
     }
 
-    async deleteItem(id: string): Promise<void> {
+    async deleteItem(id: number): Promise<void> {
         const items = await readItems();
-        const itemIndex = items.findIndex((item: Item) => item.id === id);
+        const itemIndex = items.findIndex(item => item.id === id);
+
+        if (itemIndex === -1) throw new Error(`Nenhum item com o id ${id} foi encontrado`);
 
         items.splice(itemIndex, 1);
-
         await writeItems(items);
     }
 }

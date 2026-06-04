@@ -1,9 +1,10 @@
 import { readFile, writeFile } from "node:fs/promises";
+import type { Item } from "../entities/Item.js";
 import path from "path";
 
 const filePath = path.resolve(process.cwd(), "data", "InventoryDB.json");
 
-async function readItems() {
+async function readItems(): Promise<Item[]> {
   const data = await readFile(filePath, "utf-8");
   return JSON.parse(data);
 }

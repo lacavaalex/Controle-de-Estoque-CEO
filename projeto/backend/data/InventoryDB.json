@@ -1,68 +1,112 @@
 [
   {
-    "id": "001",
+    "id": 1,
     "name": "Luva Cirúrgica",
     "category": "EPI",
-    "quantity": 105
+    "quantity": 105,
+    "unit": "caixa",
+    "minimumStock": 20,
+    "maximumStock": 200,
+    "active": true
   },
   {
-    "id": "002",
+    "id": 2,
     "name": "Máscara Descartável (caixa)",
     "category": "EPI",
-    "quantity": 30
+    "quantity": 30,
+    "unit": "caixa",
+    "minimumStock": 15,
+    "maximumStock": 120,
+    "active": true
   },
   {
-    "id": "003",
+    "id": 3,
     "name": "Resina Composta A2",
     "category": "Material Restaurador",
-    "quantity": 48
+    "quantity": 48,
+    "unit": "seringa",
+    "minimumStock": 10,
+    "maximumStock": 80,
+    "active": true
   },
   {
-    "id": "004",
+    "id": 4,
     "name": "Anestésico Lidocaína 2%",
     "category": "Anestésico",
-    "quantity": 8
+    "quantity": 8,
+    "unit": "tubo",
+    "minimumStock": 10,
+    "maximumStock": 60,
+    "active": true
   },
   {
-    "id": "005",
+    "id": 5,
     "name": "Fio de Sutura 3-0",
     "category": "Material Cirúrgico",
-    "quantity": 20
+    "quantity": 20,
+    "unit": "unidade",
+    "minimumStock": 8,
+    "maximumStock": 50,
+    "active": true
   },
   {
-    "id": "006",
+    "id": 6,
     "name": "Broca Carbide FG (kit)",
     "category": "Instrumentais",
-    "quantity": 15
+    "quantity": 15,
+    "unit": "kit",
+    "minimumStock": 5,
+    "maximumStock": 30,
+    "active": true
   },
   {
-    "id": "007",
+    "id": 7,
     "name": "Papel Grau Cirúrgico (rolo)",
     "category": "Higienização",
-    "quantity": 6
+    "quantity": 6,
+    "unit": "rolo",
+    "minimumStock": 4,
+    "maximumStock": 25,
+    "active": true
   },
   {
-    "id": "008",
+    "id": 8,
     "name": "Ácido Fosfórico 37% (seringa)",
     "category": "Material Restaurador",
-    "quantity": 25
+    "quantity": 25,
+    "unit": "seringa",
+    "minimumStock": 8,
+    "maximumStock": 50,
+    "active": true
   },
   {
-    "id": "009",
+    "id": 9,
     "name": "Gaze Estéril (pacote)",
     "category": "Material Cirúrgico",
-    "quantity": 40
+    "quantity": 40,
+    "unit": "pacote",
+    "minimumStock": 10,
+    "maximumStock": 100,
+    "active": true
   },
   {
-    "id": "010",
+    "id": 10,
     "name": "Amalgama Encapsulado (caixa)",
     "category": "Material Restaurador",
-    "quantity": 106
+    "quantity": 106,
+    "unit": "caixa",
+    "minimumStock": 10,
+    "maximumStock": 150,
+    "active": true
   },
   {
-    "id": "010",
+    "id": 11,
     "name": "Sugador Descartável",
     "category": "Higienização",
-    "quantity": 0
+    "quantity": 0,
+    "unit": "pacote",
+    "minimumStock": 15,
+    "maximumStock": 100,
+    "active": true
   }
 ]
