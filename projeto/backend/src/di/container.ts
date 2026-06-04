@@ -5,8 +5,9 @@ import { PgMovimentacaoRepo } from "../repositories/PgMovimentacaoRepo.js";
 import { PgEstoqueCeoRepo } from "../repositories/PgEstoqueCeoRepo.js";
 import { ItemService } from "../services/ItemService.js";
 import { ItemController } from "../controller/ItemController.js";
+import { JsonItemRepo } from "../repositories/JsonItemRepo.js";
 
-const itemRepo         = new PgItemRepo();
+const itemRepo         = new JsonItemRepo();
 const usuarioRepo      = new PgUsuarioRepo();
 const solicitacaoRepo  = new PgSolicitacaoRepo();
 const movimentacaoRepo = new PgMovimentacaoRepo();

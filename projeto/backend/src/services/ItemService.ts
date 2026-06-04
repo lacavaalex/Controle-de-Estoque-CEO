@@ -46,14 +46,15 @@ export class ItemService implements IItemService{
         const items = await this.itemRepository.getAllItems()
         const item = items.find(item => item.id === id)
         if (item === undefined) throw new Error(`Nenhum item com o id ${id} foi encontrado`);
-        
+
         // Validação se já existe um item com o mesmo nome que está tentando atualizar
-        const hasName = items.some((item) => {item.name === name})
-        if (hasName === true) throw new Error('Já existe um item com o mesmo nome no estoque')
+        const hasName = items.some(item => item.name === name)
+        if (hasName === true && item.name !== name) throw new Error('Já existe um item com o mesmo nome no estoque')
 
         // Operação no BD
         try {
             await this.itemRepository.updateItem(id, {name: name})
+            item.name = name
             return item
         } catch {
             throw new Error('Erro ao tentar atualizar item')
@@ -69,7 +70,7 @@ export class ItemService implements IItemService{
 
         // Verifica se a categoria existe
         if (!this.category_options.includes(category)) throw new Error("Categoria inválida")
-
+        
         // Operação no BD
         try {
             await this.itemRepository.updateItem(id, {category: category})
