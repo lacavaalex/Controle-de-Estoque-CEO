@@ -177,3 +177,11 @@ export interface NovoPedido {
   justificativa: string;
   itens: ItemNovoPedido[];
 }
+
+// ─── Resultado da expedição (POST /pedidos/:id/itens/:itemId/expedir) ─────────
+// Espelha ResultadoExpedicao do backend (PedidoService.expedir).
+export interface ResultadoExpedicao {
+  item: ItemDoPedido;
+  movimentacoes: string[]; // ids MOV-NNN geradas (saída@HO + entrada@CEO)
+  statusPedido: StatusPedido;
+}

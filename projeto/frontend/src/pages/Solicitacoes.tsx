@@ -1,15 +1,17 @@
 // =============================================================================
-// Solicitações / Pedidos (EP04) — cria pedidos multi-item e acompanha o
-// processamento. Lista os pedidos do setor do usuário (origem OU destino, RN12)
-// e permite criar um novo (NovoPedidoForm).
+// Solicitações / Pedidos (EP04 + EP03) — cria pedidos multi-item, acompanha o
+// processamento e (para almoxarife/gestor HO) EXPEDE item-a-item (RN11/RN19).
+// Lista os pedidos do setor do usuário (origem OU destino, RN12).
 //
-// Fonte: GET /setores/:setorId/pedidos (lista) + POST /pedidos (criar). Usa o
-// setorId da própria identidade.
+// Fonte: GET /setores/:setorId/pedidos (lista) + POST /pedidos (criar) +
+// POST /pedidos/:id/itens/:itemId/expedir (processar). Usa o setorId da
+// própria identidade; a ação de expedir só aparece para quem pode processar.
 // =============================================================================
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { pedidosDoSetor } from "@/api/pedidos";
+import { expedirItem, pedidosDoSetor } from "@/api/pedidos";
 import { ApiError } from "@/api/client";
+import { podeProcessarPedidos } from "@/lib/rbac";
 import { NovoPedidoForm } from "@/components/NovoPedidoForm";
 import {
   classeBadgeItem,
@@ -21,10 +23,28 @@ import {
 import { formatarData } from "@/lib/data";
 import type { ItemDoPedido, PedidoComItens } from "@/types/domain";
 
-function DetalheItens({ itens }: { itens: ItemDoPedido[] }) {
+interface DetalheItensProps {
+  itens: ItemDoPedido[];
+  // Quando definido, mostra a ação "Expedir" nos itens elegíveis (almoxarife/HO).
+  onExpedir?: (itemId: number) => void;
+  expedindoId?: number | null;
+}
+
+// Um item é expedível pela UI quando: é produto de catálogo (tem lote), está
+// pendente e não é um item-filho de desdobramento. O backend revalida tudo.
+function itemExpedivel(item: ItemDoPedido): boolean {
+  return (
+    item.statusItem === "pendente" &&
+    item.produtoId !== null &&
+    item.itemPaiId === null
+  );
+}
+
+function DetalheItens({ itens, onExpedir, expedindoId }: DetalheItensProps) {
   if (itens.length === 0) {
     return <p className="text-sm text-gray-400">Sem itens.</p>;
   }
+  const podeExpedir = onExpedir !== undefined;
   return (
     <div className="overflow-x-auto rounded-md ring-1 ring-gray-200">
       <table className="min-w-full divide-y divide-gray-200 bg-white text-sm">
@@ -36,6 +56,7 @@ function DetalheItens({ itens }: { itens: ItemDoPedido[] }) {
             <th className="px-3 py-2">Unidade</th>
             <th className="px-3 py-2">Status</th>
             <th className="px-3 py-2">Divergência</th>
+            {podeExpedir && <th className="px-3 py-2 text-right">Ação</th>}
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
@@ -61,6 +82,29 @@ function DetalheItens({ itens }: { itens: ItemDoPedido[] }) {
               <td className="px-3 py-2 text-gray-500">
                 {item.motivoDivergencia ? rotuloMotivo(item.motivoDivergencia) : "—"}
               </td>
+              {podeExpedir && (
+                <td className="px-3 py-2 text-right">
+                  {itemExpedivel(item) ? (
+                    <button
+                      type="button"
+                      onClick={() => onExpedir(item.id)}
+                      disabled={expedindoId === item.id}
+                      className="rounded-md bg-brand px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-brand-strong disabled:opacity-60"
+                    >
+                      {expedindoId === item.id ? "Expedindo…" : "Expedir"}
+                    </button>
+                  ) : item.descricaoLivre !== null ? (
+                    <span
+                      className="text-xs text-gray-400"
+                      title="Itens de descrição livre não têm lote no catálogo"
+                    >
+                      sem lote
+                    </span>
+                  ) : (
+                    <span className="text-xs text-gray-300">—</span>
+                  )}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -72,12 +116,17 @@ function DetalheItens({ itens }: { itens: ItemDoPedido[] }) {
 export function Solicitacoes() {
   const { identidade } = useAuth();
   const setorId = identidade?.setorId ?? null;
+  // Almoxarife/gestor HO pode processar (expedir) itens — RN11. O backend
+  // revalida; aqui é só para mostrar a ação.
+  const podeProcessar = identidade !== null && podeProcessarPedidos(identidade);
 
   const [pedidos, setPedidos] = useState<PedidoComItens[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [expandidoId, setExpandidoId] = useState<string | null>(null);
   const [criando, setCriando] = useState(false);
+  const [expedindoId, setExpedindoId] = useState<number | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
 
   const carregar = useCallback(async () => {
     if (setorId === null) return;
@@ -91,6 +140,26 @@ export function Solicitacoes() {
       setCarregando(false);
     }
   }, [setorId]);
+
+  const aoExpedir = useCallback(
+    async (pedidoId: string, itemId: number) => {
+      setExpedindoId(itemId);
+      setAviso(null);
+      try {
+        const r = await expedirItem(pedidoId, itemId);
+        setAviso(
+          `Item expedido (${r.item.qtdExpedida}/${r.item.qtdSolicitada}). ` +
+            `${r.movimentacoes.length} movimentação(ões): ${r.movimentacoes.join(", ")}.`,
+        );
+        await carregar();
+      } catch (err) {
+        setAviso(err instanceof ApiError ? `Falha ao expedir: ${err.message}` : "Falha ao expedir o item.");
+      } finally {
+        setExpedindoId(null);
+      }
+    },
+    [carregar],
+  );
 
   useEffect(() => {
     void carregar();
@@ -128,6 +197,19 @@ export function Solicitacoes() {
               void carregar();
             }}
           />
+        </div>
+      )}
+
+      {aviso && (
+        <div className="mt-4 flex items-start justify-between gap-3 rounded-lg border border-brand/30 bg-brand-soft/40 p-3 text-sm text-brand-strong">
+          <span>{aviso}</span>
+          <button
+            type="button"
+            onClick={() => setAviso(null)}
+            className="shrink-0 font-medium underline underline-offset-2"
+          >
+            ok
+          </button>
         </div>
       )}
 
@@ -195,7 +277,15 @@ export function Solicitacoes() {
                           <p className="mb-3 text-sm text-gray-600">
                             <span className="font-medium">Justificativa:</span> {p.justificativa}
                           </p>
-                          <DetalheItens itens={p.itens} />
+                          <DetalheItens
+                            itens={p.itens}
+                            {...(podeProcessar
+                              ? {
+                                  onExpedir: (itemId: number) => void aoExpedir(p.id, itemId),
+                                  expedindoId,
+                                }
+                              : {})}
+                          />
                         </td>
                       </tr>
                     )}

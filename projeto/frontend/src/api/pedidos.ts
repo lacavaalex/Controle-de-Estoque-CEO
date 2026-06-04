@@ -1,6 +1,6 @@
 // Chamadas de pedido (EP04). Espelha PedidoController/routes do backend.
 import { api } from "./client";
-import type { NovoPedido, PedidoComItens } from "@/types/domain";
+import type { NovoPedido, PedidoComItens, ResultadoExpedicao } from "@/types/domain";
 
 /**
  * POST /pedidos — cria um pedido multi-item. O backend deriva solicitanteId da
@@ -25,4 +25,16 @@ export async function pedidosDoSetor(setorId: number): Promise<PedidoComItens[]>
 export async function detalharPedido(id: string): Promise<PedidoComItens> {
   const { pedido } = await api.get<{ pedido: PedidoComItens }>(`/pedidos/${id}`);
   return pedido;
+}
+
+/**
+ * POST /pedidos/:id/itens/:itemId/expedir — processa UM item (EP03/EP04-04).
+ * Só almoxarife/gestor HO (RN11). Baixa lotes do HO em FEFO, abastece o CEO
+ * (RN19) e devolve o item atualizado + movimentações + status do pedido.
+ */
+export async function expedirItem(
+  pedidoId: string,
+  itemId: number,
+): Promise<ResultadoExpedicao> {
+  return api.post<ResultadoExpedicao>(`/pedidos/${pedidoId}/itens/${itemId}/expedir`);
 }
