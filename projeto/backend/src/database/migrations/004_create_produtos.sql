@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS produtos (
-    id             BIGSERIAL         PRIMARY KEY,
-    nome           VARCHAR(150)      NOT NULL UNIQUE,
-    categoria      categoria_produto  NOT NULL,
-    unidade        unidade_medida    NOT NULL,
-    estoque_minimo DECIMAL(10,2)     NOT NULL DEFAULT 0 CHECK (estoque_minimo >= 0),
-    estoque_maximo DECIMAL(10,2)     NOT NULL DEFAULT 0 CHECK (estoque_maximo >= estoque_minimo),
-    ativo          BOOLEAN           NOT NULL DEFAULT TRUE
+    id        BIGSERIAL         PRIMARY KEY,
+    name      VARCHAR(150)      NOT NULL UNIQUE,
+    category  categoria_produto  NOT NULL,
+    unit      unidade_medida    NOT NULL,
+    min_stock DECIMAL(10,2)     NOT NULL DEFAULT 0 CHECK (min_stock >= 0),
+    max_stock DECIMAL(10,2)     NOT NULL DEFAULT 0 CHECK (max_stock >= min_stock),
+    active    BOOLEAN           NOT NULL DEFAULT TRUE
 );

@@ -1,29 +1,29 @@
-INSERT INTO usuarios (nome, email, senha_hash, cargo, role, unidade, avatar) VALUES
+INSERT INTO usuarios (name, email, password_hash, job_title, role, department, avatar) VALUES
 (
-    'Usuário Gestão (exemplo)',
+    'Usuario Gestao (exemplo)',
     'gestao@ufpe.br',
     '$2a$10$PLACEHOLDER_HASH_TROCAR_EM_PRODUCAO_XXXXXXXXXXXXXXXXXXX',
-    'Coordenação Administrativa',
+    'Coordenacao Administrativa',
     'gestao',
-    'HO — Almoxarifado Central',
+    'HO - Almoxarifado Central',
     'GE'
 ),
 (
-    'Usuário Almoxarife (exemplo)',
+    'Usuario Almoxarife (exemplo)',
     'almoxarife@ufpe.br',
     '$2a$10$PLACEHOLDER_HASH_TROCAR_EM_PRODUCAO_XXXXXXXXXXXXXXXXXXX',
-    'Técnico de Almoxarifado',
+    'Tecnico de Almoxarifado',
     'almoxarife',
-    'HO — Almoxarifado Central',
+    'HO - Almoxarifado Central',
     'AL'
 ),
 (
-    'Usuário Dentista (exemplo)',
+    'Usuario Dentista (exemplo)',
     'dentista@ufpe.br',
     '$2a$10$PLACEHOLDER_HASH_TROCAR_EM_PRODUCAO_XXXXXXXXXXXXXXXXXXX',
-    'Cirurgiã-Dentista',
+    'Cirurgiao-Dentista',
     'dentista',
-    'CEO — Centro de Especialidades Odontológicas',
+    'CEO - Centro de Especialidades Odontologicas',
     'DE'
 )
 ON CONFLICT (email) DO NOTHING;

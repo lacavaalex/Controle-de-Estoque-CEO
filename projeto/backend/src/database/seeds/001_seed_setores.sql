@@ -1,4 +1,4 @@
-INSERT INTO setores (nome) VALUES
-    ('HO — Almoxarifado Central'),
-    ('CEO — Centro de Especialidades Odontológicas')
-ON CONFLICT (nome) DO NOTHING;
+INSERT INTO setores (name) VALUES
+    ('HO - Almoxarifado Central'),
+    ('CEO - Centro de Especialidades Odontologicas')
+ON CONFLICT (name) DO NOTHING;

@@ -1,38 +1,38 @@
---Pedido expedido (histórico completo)
+--Pedido expedido (historico completo)
 INSERT INTO pedidos
-    (id, setor_origem_id, setor_destino_id, solicitante_id, justificativa, status, data_criacao)
+    (id, origin_sector_id, destination_sector_id, requester_id, justification, status, created_at)
 VALUES
 (
     'PED-001',
     1, 2,
     3,
-    'Reposição mensal de insumos odontológicos para atendimento do CEO.',
+    'Reposicao mensal de insumos odontologicos para atendimento do CEO.',
     'expedido',
     NOW() - INTERVAL '3 days'
 );
 
---Pedido pendente (aguardando análise)
+--Pedido pendente (aguardando analise)
 INSERT INTO pedidos
-    (id, setor_origem_id, setor_destino_id, solicitante_id, justificativa, status, data_criacao)
+    (id, origin_sector_id, destination_sector_id, requester_id, justification, status, created_at)
 VALUES
 (
     'PED-002',
     1, 2,
     3,
-    'Reposição urgente de anestésico para cirurgias agendadas na semana.',
+    'Reposicao urgente de anestesico para cirurgias agendadas na semana.',
     'pendente',
     NOW() - INTERVAL '1 hour'
 );
 
---Pedido em separação
+--Pedido em separacao
 INSERT INTO pedidos
-    (id, setor_origem_id, setor_destino_id, solicitante_id, justificativa, status, data_criacao)
+    (id, origin_sector_id, destination_sector_id, requester_id, justification, status, created_at)
 VALUES
 (
     'PED-003',
     1, 2,
     3,
-    'Materiais de higienização para o mês de junho.',
+    'Materiais de higienizacao para o mes de junho.',
     'em_separacao',
     NOW() - INTERVAL '6 hours'
 );

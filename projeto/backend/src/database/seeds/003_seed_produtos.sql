@@ -1,6 +1,6 @@
 SET client_encoding = 'UTF8';
 
-INSERT INTO produtos (nome, categoria, unidade, estoque_minimo, estoque_maximo, ativo) VALUES
+INSERT INTO produtos (name, category, unit, min_stock, max_stock, active) VALUES
 ('Luva de Procedimento M',        'EPI',                  'caixa',    30, 150, TRUE),
 ('Luva de Procedimento P',        'EPI',                  'caixa',    30, 150, TRUE),
 ('Luva de Procedimento G',        'EPI',                  'caixa',    20, 120, TRUE),
@@ -34,4 +34,4 @@ INSERT INTO produtos (nome, categoria, unidade, estoque_minimo, estoque_maximo, 
 ('Gesso Tipo III',                'Outros',               'pacote',   12,  80, TRUE),
 ('Alginato Tipo II',              'Outros',               'pacote',    8,  60, TRUE),
 ('Cera Utilidade No 7',           'Outros',               'pacote',    6,  50, TRUE)
-ON CONFLICT (nome) DO NOTHING;
+ON CONFLICT (name) DO NOTHING;
