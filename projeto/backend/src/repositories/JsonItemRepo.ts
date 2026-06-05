@@ -39,11 +39,10 @@ export class JsonItemRepo implements IItemRepository {
 
     async deleteItem(id: number): Promise<void> {
         const items = await readItems();
-        const itemIndex = items.findIndex(item => item.id === id);
+        const item = items.find(item => item.id === id);
 
-        if (itemIndex === -1) throw new Error(`Nenhum item com o id ${id} foi encontrado`);
+        if (item !== undefined){ item.active = false}
 
-        items.splice(itemIndex, 1);
         await writeItems(items);
     }
 }

@@ -16,7 +16,7 @@ export class ItemService implements IItemService{
     ]
 
     // Dá entrada de um item do inventário
-    async addStock(id: string, quantity: number): Promise<Item> {
+    async addStock(id: number, quantity: number): Promise<Item> {
         const item = await this.itemRepository.getItemById(id);
 
         // Validações do ID e Quantidade
@@ -38,7 +38,7 @@ export class ItemService implements IItemService{
     }
 
     // Metódo de renomeação de item
-    async changeItemName(id: string, name: string): Promise<Item> {
+    async changeItemName(id: number, name: string): Promise<Item> {
         // Validação se o nome é válido
         if (typeof name !== "string" || name.trim() === "") throw new Error("Nome inválido")
         
@@ -62,7 +62,7 @@ export class ItemService implements IItemService{
     }
 
     // Modifica a categoria de um item
-    async changeItemCategory(id: string, category: string): Promise<Item> {
+    async changeItemCategory(id: number, category: string): Promise<Item> {
         // Validação se o item existe
         const items = await this.itemRepository.getAllItems()
         const item = items.find(item => item.id === id)
@@ -83,20 +83,17 @@ export class ItemService implements IItemService{
     }
 
     // Cria um novo item no inventário
-    async createItem(newName: string, category: string): Promise<Item> {
+    async createItem(name: string, category: string, unit: string, minimumStock: number, maximumStock: number): Promise<Item> {
         const items = await this.itemRepository.getAllItems()
 
-        // Verifica se o item existe
-        const verifyExistsItem = items.find((i) => i.name === newName)
-        if (verifyExistsItem !== undefined) throw new Error("Item já existente")
+        // Verifica se o já item existe
+        const activeItems = items.filter(item => item.active === true)
+        const ExistsItem = activeItems.some(i => i.name === name)
+        if (ExistsItem === true) throw new Error("Item já existente")
         
-        // Verifica se a categoria existe
-        if (!this.category_options.includes(category)) throw new Error("Categoria inválida")
-
         // Cria novo item
         const newID = items.length
-        const formattedNewID = String(newID).padStart(3, "0")
-        const newItem: Item = {id: formattedNewID, name: newName, category:category, quantity: 0}
+        const newItem: Item = {id: newID, name: name, category:category, quantity: 0, unit: unit, minimumStock: minimumStock, maximumStock: maximumStock, active: true}
 
         // Add novo item no banco
         try {
