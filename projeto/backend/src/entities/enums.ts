@@ -85,3 +85,5 @@ export type StatusItemDispensacao =
 
 // RN07: status do item no CEO
 export type StatusEstoqueCeo = "Disponível" | "Baixo" | "Crítico" | "Indisponível";
+
+export type EstadoLote = "Disponível" | "Baixo" | "Crítico" | "Indisponível";
