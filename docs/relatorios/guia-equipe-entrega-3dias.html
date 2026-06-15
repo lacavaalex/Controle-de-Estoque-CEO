@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guia da Equipe — Entrega Final (3 dias)</title>
+<style>
+  :root { --ufpe:#990000; --ink:#1a1a1a; --soft:#666; --line:#e2e2e2; --bg:#fafafa; --ok:#0a7d33; --warn:#b35900; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--ink);
+         line-height: 1.5; max-width: 920px; margin: 0 auto; padding: 32px 28px; }
+  h1 { color: var(--ufpe); font-size: 26px; margin: 0 0 4px; }
+  h2 { color: var(--ufpe); font-size: 18px; margin: 26px 0 8px; padding-bottom: 4px; border-bottom: 2px solid var(--ufpe); }
+  h3 { font-size: 15px; margin: 14px 0 4px; }
+  .sub { color: var(--soft); font-size: 13px; margin-bottom: 18px; }
+  code, pre { font-family: "SF Mono", Consolas, monospace; font-size: 12.5px; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 3px; color: #b3005c; }
+  pre { background: #1e1e1e; color: #e8e8e8; padding: 12px 14px; border-radius: 6px; overflow-x: auto; line-height: 1.45; }
+  pre code { background: none; color: inherit; padding: 0; }
+  .box { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; margin: 12px 0; }
+  .box.alert { border-left: 4px solid var(--ufpe); background: #fff6f6; }
+  .box.go { border-left: 4px solid var(--ok); background: #f3fbf5; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 13.5px; }
+  th, td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--ufpe); color: #fff; font-weight: 600; }
+  tr:nth-child(even) td { background: #faf7f7; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; color:#fff; }
+  .p-done { background: var(--ok); } .p-todo { background: var(--ufpe); } .p-cut { background: var(--warn); }
+  ul, ol { margin: 6px 0 6px 0; padding-left: 22px; }
+  li { margin: 3px 0; }
+  .key { font-weight: 700; color: var(--ufpe); }
+  .footer { margin-top: 32px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--soft); font-size: 12px; }
+  @media print { body { padding: 0; } h2 { page-break-after: avoid; } table, pre, .box { page-break-inside: avoid; } }
+</style>
+</head>
+<body>
+
+<h1>Entrega Final — Guia rápido da equipe</h1>
+<div class="sub">CEO-UFPE · Controle de Estoque · 3 dias (15–17/06/2026) · documento para usar durante a reunião</div>
+
+<div class="box alert">
+  <strong>Meta única destes 3 dias:</strong> um fluxo funcionando de ponta a ponta para mostrar ao cliente —<br>
+  <strong>login → solicitante cria pedido com vários itens → almoxarife atende item por item → estoque do CEO sobe sozinho → dashboard mostra.</strong><br>
+  Profundidade &gt; largura. O que não serve a esse fluxo, a gente corta.
+</div>
+
+<h2>1. A decisão mais importante (por que estamos mexendo na base)</h2>
+<p>O backend acabou sendo construído <strong>duas vezes</strong>, em duas bases que <strong>não se encaixam</strong>:</p>
+<table>
+  <tr><th>Base</th><th>O que é</th><th>Roda o fluxo?</th></tr>
+  <tr><td><span class="key">feat/fundacao-backend</span></td><td>Drizzle ORM, serviços de pedido/estoque/auth, testes, docker pronto</td><td><span class="pill p-done">SIM</span> — login, pedido, expedição FEFO, estoque CEO automático, tudo testado</td></tr>
+  <tr><td>develop / Lote-Entity / db-*</td><td>SQL puro + repositórios à mão</td><td><span class="pill p-cut">NÃO</span> — <code>LoteService</code> vazio, repositórios apontam p/ tabelas que não existem</td></tr>
+  <tr><td>main (hoje)</td><td>versão antiga em arquivo JSON</td><td><span class="pill p-cut">NÃO</span> — ninguém constrói em cima dela</td></tr>
+</table>
+
+<div class="box go">
+  <strong>Decisão (ADR-0006):</strong> <span class="key">feat/fundacao-backend</span> vira a base oficial, indo para <code>main</code> por um <strong>Pull Request revisado</strong>.<br>
+  <strong>Regra nova: ninguém commita direto na <code>main</code> — só por PR. Vale para todo mundo, inclusive o Luiz.</strong> Isso conserta a higiene do git, não quebra.
+</div>
+
+<h2>2. Como o trabalho flui (sem pisar no pé um do outro)</h2>
+<ol>
+  <li><strong>Seg, manhã:</strong> Luiz abre o PR da base → <code>main</code> (a gente revisa e aprova juntos).</li>
+  <li><strong>Seg, ~2h, TODOS juntos:</strong> subir o projeto local (1 comando, ver abaixo) e percorrer o fluxo feliz juntos. É aqui que todo mundo entende a base.</li>
+  <li><strong>Depois:</strong> cada um pega <strong>um pacote</strong> (seção 4), trabalha no seu branch, e abre <strong>PRs pequenos</strong> para a <code>main</code>.</li>
+  <li><strong>Luiz</strong> faz o frontend em paralelo, contra o contrato de API.</li>
+</ol>
+
+<h2>3. Subir o projeto local — 1 comando</h2>
+<p>Precisa: Docker Desktop ligado + Node 20+. A partir de <code>projeto/backend</code>:</p>
+<pre><code># Windows (PowerShell)
+.\start.ps1
+
+# Mac/Linux/Git Bash
+bash start.sh</code></pre>
+<p>O script sobe o Postgres, instala tudo, cria o banco, popula dados de exemplo e sobe a API em <code>localhost:3000</code>. Para recomeçar do zero: <code>.\start.ps1 -Reset</code>.</p>
+<div class="box">
+  <strong>Usuários de teste</strong> (senha de todos: <code>ceoufpe2026</code>):<br>
+  gestor HO <code>ana.costa@ufpe.br</code> · almoxarife <code>joao.silva@ufpe.br</code> · solicitante CEO <code>rafael.moura@ufpe.br</code> · gestora CEO <code>helena.lima@ufpe.br</code><br>
+  Testes: <code>npm test</code> · Ver o banco: <code>npm run db:studio</code>
+</div>
+
+<h2>4. Os 5 pacotes a construir (escolham na reunião)</h2>
+<p>Cada pacote é uma <strong>fatia vertical</strong> (regra → serviço → rota → teste). O caminho feliz <em>já está pronto</em> na base — estes são os <strong>buracos</strong> em cima dele.</p>
+<table>
+  <tr><th>#</th><th>Pacote</th><th>O que entregar</th><th>Stories (Jira)</th></tr>
+  <tr>
+    <td><span class="pill p-todo">P1</span></td><td><strong>Estoque CEO: consumo + ajuste</strong></td>
+    <td>Gestor do CEO abate consumo clínico e corrige saldo por recontagem. Rotas <code>POST /lotes/:id/consumo</code>, <code>PATCH /lotes/:id/ajuste</code>. Espelhar <code>LoteService.ajustarQuantidade</code> (já existe).</td>
+    <td>CEO-238, CEO-239</td>
+  </tr>
+  <tr>
+    <td><span class="pill p-todo">P2</span></td><td><strong>Dashboards / KPIs</strong></td>
+    <td>Endpoint <code>GET /dashboard?setorId=</code>: total de produtos, lotes vencendo, críticos, pedidos pendentes, demanda represada. Reusar <code>domain/estoque.ts</code> (não recalcular na mão).</td>
+    <td>CEO-248, CEO-251, CEO-253</td>
+  </tr>
+  <tr>
+    <td><span class="pill p-todo">P3</span></td><td><strong>Ciclo do lote: segregação</strong></td>
+    <td><code>LoteService.segregar()</code> + <code>POST /lotes/:id/segregar</code> + lista de segregados. Estados de validade já existem em <code>estadoValidadeLote</code> — expor no payload.</td>
+    <td>CEO-213, CEO-214</td>
+  </tr>
+  <tr>
+    <td><span class="pill p-todo">P4</span></td><td><strong>Pedidos: robustez + teste de integração</strong></td>
+    <td>O que mais falta: <strong>teste de integração HTTP</strong> do fluxo (criar pedido → expedir → estoque CEO subiu). Abas/contadores por status e visibilidade por perfil.</td>
+    <td>CEO-245, CEO-247</td>
+  </tr>
+  <tr>
+    <td><span class="pill p-todo">P5</span></td><td><strong>Catálogo + seed + e-mail</strong></td>
+    <td>Polir CRUD de produto (validações, bloquear remoção com lote ativo), caprichar no seed de demonstração, e e-mail ao criar pedido (<span class="pill p-cut">cortável</span>).</td>
+    <td>CEO-246</td>
+  </tr>
+</table>
+
+<div class="box">
+  <strong>Já pronto na base (não refazer):</strong> login/JWT/RBAC, catálogo agregado, cadastro de produto e lote, criar pedido multi-item, expedição item-a-item com FEFO, estoque do CEO alimentado automático, status do pedido derivado.<br>
+  <span class="pill p-done">DONE-no-PR</span> CEO-236, CEO-240, CEO-243 — código pronto, fecham quando o PR de 2ª entrar.
+</div>
+
+<h2>5. Cronograma</h2>
+<table>
+  <tr><th>Quando</th><th>Quem</th><th>O quê</th></tr>
+  <tr><td>Seg 09:00</td><td>Luiz</td><td>PR da base → <code>main</code> (revisado)</td></tr>
+  <tr><td>Seg 09:30–11:30</td><td><strong>Todos</strong></td><td>Subir local + percorrer o fluxo juntos + escolher pacotes</td></tr>
+  <tr><td>Seg 11:30 → Ter</td><td>5 devs</td><td>Pacotes 1–5 (PRs pequenos)</td></tr>
+  <tr><td>Ter à tarde</td><td>Todos</td><td>1ª integração frontend ↔ API real</td></tr>
+  <tr><td>Qua manhã</td><td>Todos</td><td>Fechar pontas, teste de integração verde, ensaio da demo</td></tr>
+  <tr><td>Qua tarde</td><td>Luiz</td><td>Demo</td></tr>
+</table>
+
+<h2>6. Regras de bolso</h2>
+<ul>
+  <li><code>main</code> só por <strong>PR</strong>. Rode <code>npm test</code> antes de pedir review.</li>
+  <li>PRs <strong>pequenos</strong> e por pacote — fáceis de revisar na correria.</li>
+  <li>Mexeu no contrato de API? Avisa no grupo e atualiza <code>05-contrato-api.md</code>.</li>
+  <li>Reusar as funções de <code>domain/*</code> (FEFO, status, validade) — não reescrever regra.</li>
+  <li>Ordem de corte se apertar: e-mail → UI de segregados → ajuste de inventário.</li>
+</ul>
+
+<div class="footer">
+  Detalhes técnicos completos: <code>docs/PO/07-roadmap-metricas/04-entrega-final-3dias.md</code> ·
+  Contrato de API: <code>05-contrato-api.md</code> · Decisão da base: <code>ADR-0006</code>.
+</div>
+
+</body>
+</html>

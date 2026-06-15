@@ -1,0 +1,47 @@
+Número do ADR: 0006
+Título: Base única de backend (feat/fundacao-backend → main) e fluxo de Pull Request
+Data: 15/06/2026
+Responsável: Luiz Taiguara (PO)
+Status: Aceito
+
+#Contexto
+A 3 dias da entrega, o backend está construído DUAS VEZES, em duas fundações incompatíveis entre si:
+
+- Fundação A — linhagem `develop` / `feature/Lote-Entity` (e `feature/database-schema`, `feature/db-english-columns`, `bugfix-item-service`): SQL puro (migrations + seeds) com repositórios `Pg*Repo` escritos à mão.
+- Fundação B — `feat/fundacao-backend`: Drizzle ORM (`src/db/schema.ts`), serviços Auth/Pedido/Produto/Estoque/Lote, JWT+bcrypt+RBAC, `compose.yaml`, seed e testes.
+
+`main` hoje NÃO é nenhuma das duas — é a semente antiga em arquivo JSON (`Item{id,name,category,quantity}`, `User` sem setor). Ou seja, ninguém está construindo sobre `main`; ela já está "morta".
+
+As duas fundações não se fundem: ORM diferente, nomes de entidade diferentes (Solicitacao/Item/Usuario vs Pedido/Produto/Setor), camada de repositório diferente.
+
+#Decisão
+1. **Adotar a Fundação B (`feat/fundacao-backend`) como base única.** Levá-la para `main` via um Pull Request revisado. A partir daí, `main` é o tronco oficial.
+2. **Abandonar a Fundação A** (`develop`, `feature/Lote-Entity`, `feature/database-schema`, `feature/db-english-columns`, `bugfix-item-service`) para fins da entrega. Aproveitamos dela apenas dois itens pontuais, portados por cima da B (gatilho `updated_at` em lotes e índices secundários de performance).
+3. **Regra nova de fluxo: `main` só recebe código via Pull Request.** Ninguém faz commit direto em `main` — nem o PO. O próprio "trocar a fundação" é um PR que a equipe revisa e aprova.
+
+#Justificativa
+A decisão é por EVIDÊNCIA do que roda, não por preferência:
+
+- **A Fundação B já executa o fluxo completo do MVP** (login → criar pedido multi-item → expedir item-a-item com FEFO → estoque do CEO alimentado automaticamente → status do pedido derivado), de ponta a ponta, com ~960 linhas de teste passando, `docker compose` + migrations + seed prontos.
+- **A Fundação A não executa nada disso.** `LoteService.ts` está vazio (0 bytes); não há `PedidoService`; os repositórios `Pg*Repo` consultam tabelas que não existem no schema; os enums divergem do modelo (`gestao` em vez de `gestor/solicitante`, `em_separacao` em vez do status derivado, sem `consumo`). Só o caminho legado `/items` roda.
+- **Temos 3 dias.** Entregamos a partir do que funciona, não do que precisaria ser terminado de novo.
+- O schema da B é 1:1 com o modelo conceitual v2 e com as regras de negócio (linha livre via `descricao_livre` + CHECK XOR, justificativa ≥ 10, índice único FEFO, sequências `PED-NNN`/`MOV-NNN`).
+
+Sobre "não commitar em main": a equipe está certa — normalmente é assim. O problema é que `main` hoje é a semente antiga abandonada. Esta decisão CONSERTA isso: a troca de fundação entra como PR revisado e, daí em diante, a regra "nada direto em main, só via PR" passa a valer de verdade para todos. Não é quebrar a higiene do git; é instituí-la.
+
+#Alternativas Consideradas
+- **Resetar `develop` para a B e manter gitflow:** exigiria force-push em `develop` com 6 pessoas no meio do trabalho — alto risco de perder código e confundir clones. Descartado pela proximidade do prazo.
+- **Fundir o SQL da A dentro da B:** reintroduz o "split-brain" v1 na camada TypeScript da B por ~2 arquivos aproveitáveis. Em vez disso, portamos esses 2 itens cirurgicamente (gatilho + índices) numa migration nova.
+- **Terminar a Fundação A:** significaria escrever do zero PedidoService, LoteService, FEFO, auto-alimentação do CEO e toda a auth — exatamente o que a B já tem testado. Inviável em 3 dias.
+
+#Consequências
+- Em ~meia hora de PR, todos passam a ter uma base estável e rodável (o que falta hoje). Cada dev recria seu branch a partir de `main`.
+- O trabalho não-aproveitado da Fundação A (especialmente o schema SQL) fica preservado no histórico e nos branches; nada é apagado.
+- Curva de aprendizado de Drizzle para quem só viu SQL puro — mitigada pelo kickoff de ~2h (subir e percorrer o fluxo juntos) e pela camada `domain/*` pura, fácil de ler e testar.
+- Disciplina de PR a partir de agora: revisão obrigatória, menos conflito, histórico limpo na reta final.
+
+#Referências
+- Modelo conceitual v2: docs/PO/06-dominio-regras/03-modelo-conceitual.md
+- Backlog/épicos: docs/PO/05-backlog/01-epicos.md, 02-user-stories.md
+- ADR-0001 (PostgreSQL), ADR-0003 (.env/dotenv), ADR-0004 (Drizzle), ADR-0005 (JWT)
+- Roadmap da entrega (pacotes de trabalho + guia local): docs/PO/07-roadmap-metricas/04-entrega-final-3dias.md
