@@ -12,7 +12,7 @@
 - Base única do backend = **`feat/fundacao-backend`** → vai para **`main`** via PR.
 - Fundação A (`develop`, `feature/Lote-Entity`, `feature/db-*`, `bugfix-item-service`) **abandonada** para a entrega.
 - **Regra nova: `main` só via Pull Request.** Ninguém commita direto.
-- Quem faz a troca de base: **Luiz**, segunda de manhã, como PR revisado.
+- Quem faz a troca de base: **Luiz**, terça de manhã (16/06), como PR revisado. **Prazo final: quinta 18/06 às 23:59.**
 
 ---
 
@@ -36,7 +36,7 @@ Rotas já expostas: `/login` `/logout` `/eu` `/usuarios` `/setores` `/setores/:i
 Pré-requisitos: Node 20+, Docker Desktop.
 
 ```bash
-# 1. estar na base certa (após o PR de segunda, será a própria main)
+# 1. estar na base certa (após o PR de terça, será a própria main)
 git checkout main            # antes do PR: git checkout feat/fundacao-backend
 cd projeto/backend
 
@@ -136,8 +136,8 @@ Cada pacote é uma fatia vertical (domínio → service → controller → rota 
 
 ## 4. Track do PO (Luiz) — frontend + integração
 
-- **Segunda AM:** abrir e mergear o PR `feat/fundacao-backend → main`; publicar o contrato de API (`05-contrato-api.md`); conduzir o kickoff de 2h.
-- **Segunda PM → quarta:** vibe-codar as telas contra o contrato + mock, trocando pelo backend conforme os PRs entram:
+- **Terça AM (16/06):** abrir e mergear o PR `feat/fundacao-backend → main`; publicar o contrato de API (`05-contrato-api.md`); conduzir o kickoff de 2h.
+- **Terça PM → quinta:** vibe-codar as telas contra o contrato + mock, trocando pelo backend conforme os PRs entram:
   - Login + troca de senha (EP01) · Catálogo/Estoque (EP02) · Novo Pedido multi-item + linha livre (EP04-01/02) · Processamento item-a-item do almoxarife (EP04-04) · Estoque CEO + consumo (EP03) · Dashboard por perfil (EP05) · Lotes/segregação (EP07).
 - **Identidade UFPE (EP06):** cor primária `#990000`, desktop-first.
 
@@ -147,13 +147,14 @@ Cada pacote é uma fatia vertical (domínio → service → controller → rota 
 
 | Quando | Quem | O quê |
 |--------|------|-------|
-| Seg 09:00 | Luiz | PR fundação → `main` (revisado) |
-| Seg 09:30–11:30 | **Todos** | Kickoff: subir local, percorrer o caminho feliz juntos, escolher pacotes |
-| Seg 11:30 → Ter | 5 devs | Pacotes 1–5 (PRs pequenos em `main`) |
-| Seg PM → Qua | Luiz | Frontend contra contrato + mock |
-| Ter PM | Todos | Primeira integração FE↔API real |
-| Qua AM | Todos | Fechar pontas, teste de integração verde, ensaio da demo |
-| Qua PM | Luiz | Demo |
+| **Seg 15/06** (hoje) | Todos | Reunião: alinhar a decisão da base + alocar os pacotes |
+| **Ter 16/06** AM | Luiz | PR fundação → `main` (revisado) |
+| Ter 16/06 (~2h) | **Todos** | Kickoff: subir local, percorrer o caminho feliz juntos |
+| Ter 16/06 → Qua 17/06 | 5 devs | Pacotes 1–5 (PRs pequenos em `main`) |
+| Ter 16/06 PM → Qui | Luiz | Frontend contra contrato + mock |
+| Ter 16/06 PM | Todos | Primeira integração FE↔API real |
+| Qua 17/06 | Todos | Fechar pontas, teste de integração verde, ensaio |
+| **Qui 18/06 até 23:59** | Todos | Últimos ajustes e **ENTREGA do projeto** |
 
 **Cortáveis sob pressão (nesta ordem):** e-mail (P5) → segregação avançada/lotes-segregados UI (P3) → gráfico de consumo mensal (fora do escopo, sem histórico) → ajuste de inventário (P1, *Could*).
 
@@ -161,7 +162,7 @@ Cada pacote é uma fatia vertical (domínio → service → controller → rota 
 
 ## 6. Riscos da reta final
 
-- **Conflito de contrato FE↔BE:** mitigado pelo `05-contrato-api.md` travado na segunda.
+- **Conflito de contrato FE↔BE:** mitigado pelo `05-contrato-api.md` travado na terça (início dos trabalhos).
 - **Curva do Drizzle:** mitigada pelo kickoff e pela camada `domain/*` pura.
 - **Quebrar `main`:** mitigado pela regra de PR + `npm test` antes de mergear.
 - **Vinicius/level desconhecido:** dar a ele o pacote mais fechado e bem especificado (P1 ou P3), com um revisor de plantão.

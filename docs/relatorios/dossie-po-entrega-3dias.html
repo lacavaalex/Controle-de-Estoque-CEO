@@ -64,7 +64,7 @@
   <li><strong>Achado central:</strong> o backend foi feito <strong>duas vezes</strong>, em bases incompatíveis. Uma delas (<span class="key">feat/fundacao-backend</span>) <strong>já roda o fluxo inteiro, testado</strong>. A outra não roda.</li>
   <li><strong>Decisão:</strong> adotar <code>feat/fundacao-backend</code> como base única, levá-la à <code>main</code> por <strong>PR</strong>, e instituir <strong>“main só por PR”</strong>. (ADR-0006.)</li>
   <li><strong>Faltam 5 pacotes</strong> em cima da base: consumo/ajuste do CEO, dashboards, segregação, robustez de pedidos + teste de integração, catálogo/seed/e-mail.</li>
-  <li><strong>Time:</strong> você (frontend + o PR da fundação na quinta) + 5 devs de backend (Alex, Bruno, Kaique, Vinícius, José Romildo). Wallyson (banco) já entregou — o modelo de dados v2 é desenho dele (ver seção 4.1).</li>
+  <li><strong>Time:</strong> você (frontend + o PR da fundação na terça) + 5 devs de backend (Alex, Bruno, Kaique, Vinícius, José Romildo). Wallyson (banco) já entregou — o modelo de dados v2 é desenho dele (ver seção 4.1).</li>
   <li><strong>Jira:</strong> já limpei — sprint <em>“Entrega Final (3 dias)”</em> ativa com as 13 stories certas, sem dono (o time escolhe na reunião).</li>
 </ul>
 
@@ -141,7 +141,7 @@
   <tr><td>EP07 (parcial)</td><td>estados de validade (<code>estadoValidadeLote</code>); FEFO ignora vencido/segregado</td></tr>
   <tr><td>Infra</td><td>docker compose (Postgres 5433), migrations, seed realista, fail-fast de JWT</td></tr>
 </table>
-<p><span class="pill p-done">DONE-no-PR</span> As stories <strong>CEO-236 / CEO-240 / CEO-243</strong> têm o código pronto e testado; ficam “In Progress” com comentário e fecham quando o PR da fundação (quinta) entrar.</p>
+<p><span class="pill p-done">DONE-no-PR</span> As stories <strong>CEO-236 / CEO-240 / CEO-243</strong> têm o código pronto e testado; ficam “In Progress” com comentário e fecham quando o PR da fundação (terça) entrar.</p>
 
 <h3 id="wallyson">4.1 O trabalho do Wallyson (como foi usado — para você explicar a ele)</h3>
 <div class="box go">
@@ -238,20 +238,21 @@ bash start.sh
 <h2 id="crono">8. Cronograma e papéis</h2>
 <table>
   <tr><th>Quando</th><th>Quem</th><th>O quê</th></tr>
-  <tr><td>Qui 09:00</td><td>Você</td><td>PR da base → <code>main</code> (revisado pelo time)</td></tr>
-  <tr><td>Qui 09:30–11:30</td><td><strong>Todos</strong></td><td>Subir local + percorrer o fluxo juntos + escolher pacotes</td></tr>
-  <tr><td>Qui 11:30 → Sex</td><td>5 devs</td><td>Pacotes 1–5 (PRs pequenos)</td></tr>
-  <tr><td>Qui tarde → Dia 3</td><td>Você</td><td>Frontend contra o contrato + mock</td></tr>
-  <tr><td>Sex tarde</td><td>Todos</td><td>1ª integração frontend ↔ API real</td></tr>
-  <tr><td>Dia 3, manhã</td><td>Todos</td><td>Fechar pontas, teste de integração verde, ensaio da demo</td></tr>
-  <tr><td>Dia 3, tarde</td><td>Você</td><td>Demo</td></tr>
+  <tr><td><strong>Seg 15/06</strong> (hoje)</td><td>Todos</td><td>Reunião: alinhar a decisão da base + alocar os pacotes</td></tr>
+  <tr><td><strong>Ter 16/06</strong> manhã</td><td>Você</td><td>PR da base → <code>main</code> (revisado pelo time)</td></tr>
+  <tr><td>Ter 16/06 ~2h</td><td><strong>Todos</strong></td><td>Subir local + percorrer o fluxo juntos (kickoff)</td></tr>
+  <tr><td>Ter 16/06 → Qua 17/06</td><td>5 devs</td><td>Pacotes 1–5 (PRs pequenos)</td></tr>
+  <tr><td>Ter 16/06 tarde → Qui</td><td>Você</td><td>Frontend contra o contrato + mock</td></tr>
+  <tr><td>Ter 16/06 tarde</td><td>Todos</td><td>1ª integração frontend ↔ API real</td></tr>
+  <tr><td>Qua 17/06</td><td>Todos</td><td>Fechar pontas, teste de integração verde, ensaio</td></tr>
+  <tr><td><strong>Qui 18/06 até 23:59</strong></td><td>Todos</td><td>Últimos ajustes e <strong>ENTREGA do projeto</strong></td></tr>
 </table>
-<p style="font-size:12px;color:#5a5a5a;">Hoje é segunda (15/06); o <strong>trabalho começa quinta (18/06)</strong>. “Dia 3” = o dia da entrega/demo que vocês combinarem (sáb/dom ou conforme o prazo).</p>
+<p style="font-size:12px;color:#5a5a5a;">Hoje é <strong>segunda (15/06)</strong> — dia de reunião/planejamento. Os 3 dias de trabalho são <strong>ter 16, qua 17 e qui 18</strong>. <strong>Prazo final: quinta 18/06 às 23:59.</strong></p>
 
 <h2 id="riscos">9. Riscos e plano de corte</h2>
 <table>
   <tr><th>Risco</th><th>Mitigação</th></tr>
-  <tr><td>Conflito de contrato frontend ↔ backend</td><td><code>05-contrato-api.md</code> travado na quinta (início); mudou, avisa no grupo</td></tr>
+  <tr><td>Conflito de contrato frontend ↔ backend</td><td><code>05-contrato-api.md</code> travado na terça (início); mudou, avisa no grupo</td></tr>
   <tr><td>Curva do Drizzle p/ quem só viu SQL</td><td>Kickoff de 2h + camada <code>domain/*</code> pura e fácil de ler</td></tr>
   <tr><td>Quebrar a <code>main</code></td><td>Regra de PR + <code>npm test</code> antes de mergear</td></tr>
   <tr><td>Dev de nível incerto travar</td><td>Pacote mais fechado (P1/P3) + revisor de plantão</td></tr>
