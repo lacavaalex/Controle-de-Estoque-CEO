@@ -1,0 +1,5 @@
+# Garante quebras de linha corretas nos scripts de bootstrap, independente do SO.
+# start.sh PRECISA de LF (senão o bash falha com "bad interpreter").
+projeto/backend/start.sh text eol=lf
+# start.ps1 prefere CRLF (PowerShell no Windows).
+projeto/backend/start.ps1 text eol=crlf

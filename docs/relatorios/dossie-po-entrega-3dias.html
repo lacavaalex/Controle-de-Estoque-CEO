@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dossiê do PO — Entrega Final (3 dias)</title>
+<style>
+  :root { --ufpe:#990000; --ink:#1a1a1a; --soft:#5a5a5a; --line:#e2e2e2; --bg:#fafafa; --ok:#0a7d33; --warn:#b35900; --info:#0b5cad; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--ink);
+         line-height: 1.55; max-width: 960px; margin: 0 auto; padding: 36px 30px; }
+  h1 { color: var(--ufpe); font-size: 28px; margin: 0 0 4px; }
+  h2 { color: var(--ufpe); font-size: 20px; margin: 32px 0 10px; padding-bottom: 5px; border-bottom: 2px solid var(--ufpe); }
+  h3 { font-size: 16px; margin: 18px 0 6px; color:#333; }
+  h4 { font-size: 14px; margin: 12px 0 4px; color: var(--ufpe); }
+  .sub { color: var(--soft); font-size: 13px; margin-bottom: 10px; }
+  .toc { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 14px 20px; margin: 18px 0 26px; columns: 2; font-size: 13.5px; }
+  .toc a { color: var(--ufpe); text-decoration: none; } .toc a:hover { text-decoration: underline; }
+  code, pre { font-family: "SF Mono", Consolas, monospace; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 3px; color: #b3005c; font-size: 12.5px; }
+  pre { background: #1e1e1e; color: #e8e8e8; padding: 13px 15px; border-radius: 6px; overflow-x: auto; font-size: 12.5px; line-height: 1.5; }
+  pre code { background: none; color: inherit; padding: 0; }
+  .box { border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; margin: 14px 0; background: var(--bg); }
+  .box.alert { border-left: 4px solid var(--ufpe); background: #fff6f6; }
+  .box.go { border-left: 4px solid var(--ok); background: #f3fbf5; }
+  .box.info { border-left: 4px solid var(--info); background: #f2f8fe; }
+  .box.warn { border-left: 4px solid var(--warn); background: #fff9f0; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 13px; }
+  th, td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--ufpe); color: #fff; font-weight: 600; }
+  tr:nth-child(even) td { background: #faf7f7; }
+  .pill { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 1px 8px; border-radius: 10px; color:#fff; white-space: nowrap; }
+  .p-done { background: var(--ok); } .p-todo { background: var(--ufpe); } .p-cut { background: var(--warn); } .p-info { background: var(--info); }
+  ul, ol { margin: 6px 0; padding-left: 22px; } li { margin: 3px 0; }
+  .key { font-weight: 700; color: var(--ufpe); }
+  .q { font-style: italic; color: var(--soft); }
+  .footer { margin-top: 36px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--soft); font-size: 12px; }
+  @media print { body { padding: 0; font-size: 13px; } h2 { page-break-after: avoid; } table, pre, .box { page-break-inside: avoid; } .toc { columns: 2; } }
+</style>
+</head>
+<body>
+
+<h1>Dossiê do PO — Entrega Final em 3 dias</h1>
+<div class="sub">CEO-UFPE · Controle de Estoque · Luiz Taiguara (PO) · 15–17/06/2026</div>
+<div class="sub">Documento de estudo para a reunião: contém o diagnóstico completo, a decisão técnica e seus porquês, os pacotes de trabalho com detalhe de código, o estado do Jira e os riscos. Você deve conseguir explicar tudo isto e conduzir a divisão de tarefas com o time.</div>
+
+<div class="toc">
+  <a href="#tldr">0. Resumo executivo (TL;DR)</a><br>
+  <a href="#diag">1. Diagnóstico: 3 fontes da verdade</a><br>
+  <a href="#decisao">2. A decisão da base (e como defendê-la)</a><br>
+  <a href="#arq">3. Como a base funciona (arquitetura)</a><br>
+  <a href="#pronto">4. O que já está pronto</a><br>
+  <a href="#pacotes">5. Os 5 pacotes (detalhe técnico)</a><br>
+  <a href="#run">6. Como rodar e testar local</a><br>
+  <a href="#jira">7. Estado do Jira (o que arrumei)</a><br>
+  <a href="#crono">8. Cronograma e papéis</a><br>
+  <a href="#riscos">9. Riscos e plano de corte</a><br>
+  <a href="#reuniao">10. Roteiro da reunião + respostas a objeções</a>
+</div>
+
+<h2 id="tldr">0. Resumo executivo (TL;DR)</h2>
+<ul>
+  <li><strong>Meta:</strong> um fluxo ponta-a-ponta demonstrável — <span class="key">login → pedido multi-item → almoxarife expede item-a-item (FEFO) → estoque do CEO sobe sozinho → dashboard reflete</span>.</li>
+  <li><strong>Achado central:</strong> o backend foi feito <strong>duas vezes</strong>, em bases incompatíveis. Uma delas (<span class="key">feat/fundacao-backend</span>) <strong>já roda o fluxo inteiro, testado</strong>. A outra não roda.</li>
+  <li><strong>Decisão:</strong> adotar <code>feat/fundacao-backend</code> como base única, levá-la à <code>main</code> por <strong>PR</strong>, e instituir <strong>“main só por PR”</strong>. (ADR-0006.)</li>
+  <li><strong>Faltam 5 pacotes</strong> em cima da base: consumo/ajuste do CEO, dashboards, segregação, robustez de pedidos + teste de integração, catálogo/seed/e-mail.</li>
+  <li><strong>Time:</strong> você (frontend + o PR da fundação na terça) + 5 devs de backend (Alex, Bruno, Kaique, Vinícius, José Romildo). Wallyson (banco) já entregou — o modelo de dados v2 é desenho dele (ver seção 4.1).</li>
+  <li><strong>Jira:</strong> já limpei — sprint <em>“Entrega Final (3 dias)”</em> ativa com as 13 stories certas, sem dono (o time escolhe na reunião).</li>
+</ul>
+
+<h2 id="diag">1. Diagnóstico: as 3 fontes da verdade</h2>
+
+<h3>Documentação (docs/PO) — excelente e atual</h3>
+<p>37 user stories priorizadas em MoSCoW (25 Must / 10 Should / 2 Could), épicos EP01–EP07 com dependências claras, regras de negócio e modelo conceitual v2. <strong>Esta é a sua especificação real</strong> e está em ótimo estado. Onde houver dúvida de regra, a resposta está em <code>06-dominio-regras</code>.</p>
+
+<h3>Código — a documentação descreve muito mais do que a <code>main</code> contém</h3>
+<p>A <code>main</code> hoje é a semente antiga: <code>Item{id,name,category,quantity}</code> e <code>User</code> <strong>sem setor</strong> (e setor é base de todo o RBAC). Todo o trabalho de verdade está em <strong>branches não mergeados</strong> — e, pior, foi construído em duas linhagens que brigam entre si (seção 2).</p>
+
+<h3>Jira — estava bagunçado, mas continha o backlog bom</h3>
+<p>Eram 197 issues, 19 épicos (10 vazios, legado), 145 sem dono, sprint “ativa” que terminou em 10/06. O backlog limpo (EP01–EP07) existia, soterrado. <strong>Já reconciliei</strong> (seção 7).</p>
+
+<div class="box warn">
+  <strong>Divergências que você deve conhecer (doc × Jira × código):</strong>
+  <ul>
+    <li>O mapeamento antigo <code>.jira-sync</code> (stories = CEO-212..249) está <strong>errado</strong>: CEO-212/216–221 são <em>épicos</em>; as stories vão de CEO-213 a CEO-269.</li>
+    <li>A doc fala de um sistema rico; o que está em <code>main</code> é a semente. O “done” real depende do branch, não da main.</li>
+  </ul>
+</div>
+
+<h2 id="decisao">2. A decisão da base (e como defendê-la)</h2>
+<p>Existem duas fundações de backend, em branches diferentes, que <strong>não se fundem</strong> (ORM diferente, nomes de entidade diferentes, camada de repositório diferente):</p>
+
+<table>
+  <tr><th>Critério</th><th>Fundação A — <code>develop</code>/<code>Lote-Entity</code>/<code>db-*</code></th><th>Fundação B — <span class="key">feat/fundacao-backend</span></th></tr>
+  <tr><td>Banco</td><td>SQL puro + repositórios <code>Pg*Repo</code> à mão</td><td>Drizzle ORM + <code>schema.ts</code></td></tr>
+  <tr><td>Entidades</td><td>Solicitacao / Item / Usuario / EstoqueCeo</td><td>Pedido / Produto / Setor (alinhado ao modelo v2)</td></tr>
+  <tr><td>Roda o fluxo feliz?</td><td><span class="pill p-cut">NÃO</span></td><td><span class="pill p-done">SIM</span></td></tr>
+  <tr><td>Testes</td><td>2 arquivos (só o item legado)</td><td>8 arquivos, ~960 linhas, na lógica que importa</td></tr>
+  <tr><td>Infra p/ rodar</td><td>sem docker compose; SQL v2 sem código vivo</td><td>compose + migrations + seed + JWT prontos</td></tr>
+</table>
+
+<div class="box alert">
+  <strong>A prova decisiva:</strong> a Fundação A está em “split-brain” — o SQL foi atualizado para o modelo v2, mas a camada TypeScript ficou na v1. Concretamente: <code>LoteService.ts</code> tem <strong>0 bytes (vazio)</strong>, não há <code>PedidoService</code>, e os repositórios consultam <strong>tabelas que não existem</strong>. Só o caminho legado <code>/items</code> roda. A Fundação B implementa o modelo v2 de ponta a ponta: <code>PedidoService.expedir()</code> faz a alocação FEFO, a baixa no HO, a <strong>dupla movimentação saída@HO + entrada@CEO</strong>, cria/atualiza o lote-CEO (RN19) e recalcula o status derivado — tudo numa transação, com teste.
+</div>
+
+<div class="box go">
+  <strong>Decisão (ADR-0006):</strong> Fundação B vira a base. Vai para <code>main</code> por <strong>PR revisado</strong>. Fundação A é abandonada para a entrega (aproveitamos só o gatilho <code>updated_at</code> e índices secundários, portados por cima). <strong>Regra nova: <code>main</code> só por PR — ninguém commita direto, nem você.</strong>
+</div>
+
+<div class="box info">
+  <strong>Por que isto responde ao “não commita na main” do time:</strong> normalmente eles têm razão. O detalhe é que a <code>main</code> de hoje é a versão antiga abandonada — está “morta”. Esta decisão <strong>conserta</strong> a higiene: a troca entra como PR que vocês revisam, e daí em diante a regra “nada direto na main” passa a valer de verdade. Você não está quebrando o processo; está instituindo-o. <strong>Leve o ADR-0006 impresso.</strong>
+</div>
+
+<h3>Por que não as alternativas</h3>
+<ul>
+  <li><strong>Resetar <code>develop</code> para a B:</strong> exige force-push com 6 pessoas no meio do trabalho — risco de perder código. Descartado pelo prazo.</li>
+  <li><strong>Fundir o SQL da A na B:</strong> reintroduz o split-brain v1 por ~2 arquivos aproveitáveis. Melhor portar cirurgicamente.</li>
+  <li><strong>Terminar a Fundação A:</strong> seria reescrever PedidoService, FEFO, auto-alimentação e auth — exatamente o que a B já tem testado. Inviável em 3 dias.</li>
+</ul>
+
+<h2 id="arq">3. Como a base funciona (arquitetura) — para você explicar</h2>
+<p>A base tem camadas limpas, o que permite a fan-out sem conflito:</p>
+<ul>
+  <li><strong><code>domain/*</code></strong> — funções <strong>puras</strong> de regra de negócio (sem banco). Ex.: <code>planejarExpedicaoItem</code> (FEFO), <code>statusDerivadoDoPedido</code> (RN10), <code>statusProduto</code> (RN03–06), <code>estadoValidadeLote</code> (vencido/vencendo/atenção/ok). <strong>São testáveis isoladamente e devem ser reusadas — ninguém reescreve regra.</strong></li>
+  <li><strong><code>services/*</code></strong> — orquestram I/O (banco) em cima do domínio, dentro de transações. Ex.: <code>PedidoService</code>, <code>EstoqueService</code>, <code>LoteService</code>, <code>AuthService</code>.</li>
+  <li><strong><code>repositories/Pg*Repo</code></strong> — acesso ao Postgres via Drizzle.</li>
+  <li><strong><code>controller/*</code> + <code>routes/routes.ts</code></strong> — HTTP, com middleware de <code>autenticar</code> (JWT) e <code>exigir</code> (RBAC).</li>
+  <li><strong><code>auth/*</code></strong> — jwt, bcrypt (<code>senha.ts</code>), guards RBAC (<code>podeVerSetor</code>, <code>podeProcessarPedidos</code>, <code>podeEditarEstoque</code>, <code>podeCriarPedido</code>).</li>
+</ul>
+<div class="box info">
+  <strong>Conceito que confunde (e você vai precisar explicar):</strong> no <em>pedido</em>, “origem” = quem <em>pede</em> (ex.: CEO) e “destino” = o almoxarifado HO. Mas os <em>bens</em> fluem ao contrário: <strong>saem do HO e entram no CEO</strong>. Por isso a expedição lê os lotes do HO e gera saída@HO + entrada@CEO. Está documentado no próprio código (<code>direcaoExpedicao</code>).
+</div>
+
+<h2 id="pronto">4. O que já está pronto (não refazer)</h2>
+<table>
+  <tr><th>Área</th><th>Pronto na base</th></tr>
+  <tr><td>EP01 Auth</td><td>login JWT, bcrypt, <code>/logout</code>, <code>/eu</code>, provisionar usuário (gestor-only), RBAC completo</td></tr>
+  <tr><td>EP02 Catálogo/Estoque HO</td><td><code>estoqueDoSetor</code> (qtd + status), <code>catalogoParaSolicitante</code> (sem lote), filtros, CRUD de produto, entrada de lote, ajuste simples</td></tr>
+  <tr><td>EP04 Pedidos</td><td><code>criar</code> (RN09, linha livre XOR), <code>expedir</code> item-a-item FEFO, status derivado, desdobramento em lotes (RF05.17)</td></tr>
+  <tr><td>EP03 Estoque CEO</td><td><strong>alimentação automática na expedição</strong> (a parte difícil) — pronta e testada</td></tr>
+  <tr><td>EP07 (parcial)</td><td>estados de validade (<code>estadoValidadeLote</code>); FEFO ignora vencido/segregado</td></tr>
+  <tr><td>Infra</td><td>docker compose (Postgres 5433), migrations, seed realista, fail-fast de JWT</td></tr>
+</table>
+<p><span class="pill p-done">DONE-no-PR</span> As stories <strong>CEO-236 / CEO-240 / CEO-243</strong> têm o código pronto e testado; ficam “In Progress” com comentário e fecham quando o PR da fundação (terça) entrar.</p>
+
+<h3 id="wallyson">4.1 O trabalho do Wallyson (como foi usado — para você explicar a ele)</h3>
+<div class="box go">
+  <p><strong>Pergunta honesta:</strong> o backend antigo do Wallyson foi descartado? <strong>Não.</strong> A resposta tem nuance, e a verdade é boa para ele:</p>
+  <ul>
+    <li><strong>O desenho do modelo de dados é dele.</strong> Ele transformou o modelo conceitual nas 7 tabelas normalizadas (setor, usuário, produto, lote, pedido, item_do_pedido, movimentação), os enums e o índice FEFO. Isso são as stories <strong>CEO-121</strong> e <strong>CEO-180</strong> (ambas <em>Done</em>). A base que mantivemos (<code>feat/fundacao-backend</code>) tem <strong>exatamente as mesmas 7 tabelas e os mesmos enums</strong> — ela reexpressou o modelo dele em Drizzle (o ORM da ADR-0004). O esqueleto do sistema é o desenho dele.</li>
+    <li><strong>O que NÃO foi usado:</strong> os arquivos SQL puros e a camada TypeScript v1 daquela linhagem (que tinha ficado pela metade — <code>LoteService</code> vazio, repos apontando p/ tabelas inexistentes). Construir o fluxo em cima dela custaria dias. Por isso a base é a B.</li>
+    <li><strong>O que recuperamos da versão dele (porque era melhor):</strong> os <strong>índices de performance</strong> e o <strong>trigger <code>updated_at</code></strong> — a base B não os tinha. Foram portados em <code>drizzle/0003_indices_e_trigger_wallyson.sql</code> e vão acelerar o dashboard (Pacote 2). Ele tem uma task no sprint para revisar/fechar esse port.</li>
+  </ul>
+  <p><strong>Frase para dizer a ele (verdadeira pela evidência):</strong> <span class="q">“Seu modelo de dados é a fundação do que estamos construindo — as mesmas 7 tabelas e enums. E seu índice/trigger era melhor que o da versão nova, então mantivemos. Só trocamos o SQL puro pelo Drizzle, que é o ORM que a gente decidiu na ADR.”</span></p>
+</div>
+
+<h2 id="pacotes">5. Os 5 pacotes (detalhe técnico para alocar)</h2>
+<p>Cada pacote é fatia vertical (domínio → serviço → rota → teste), baixo conflito, entra por PR. <strong>Sem dono fixo</strong> — decidam na reunião. Abaixo, o suficiente para você explicar cada um e estimar dificuldade.</p>
+
+<h3><span class="pill p-todo">P1</span> Estoque do CEO: consumo + ajuste &nbsp;<span class="q">(EP03-03 / EP03-04 · CEO-238, CEO-239)</span></h3>
+<ul>
+  <li><strong>Objetivo:</strong> o gestor do CEO abate consumo clínico e corrige saldo por recontagem.</li>
+  <li><strong>Construir:</strong> <code>registrarConsumo(...)</code> e <code>ajustarInventario(...)</code> — transacional, gera <code>Movimentacao</code> tipo <code>consumo</code>/<code>ajuste</code> (delta). Consumo &gt; saldo → erro “Faça ajuste de inventário…”. Rotas <code>POST /lotes/:id/consumo</code>, <code>PATCH /lotes/:id/ajuste</code>.</li>
+  <li><strong>Onde apoiar:</strong> <code>LoteService.ajustarQuantidade</code> já existe — mesmo padrão de transação, só novos tipos de movimentação. RBAC: reusar <code>podeEditarEstoque</code>.</li>
+  <li><strong>Dificuldade:</strong> média-baixa. <strong>Bom para quem precisa de escopo fechado</strong> (ex.: Vinícius).</li>
+</ul>
+
+<h3><span class="pill p-todo">P2</span> Dashboards / KPIs &nbsp;<span class="q">(EP05-01/04/06 · CEO-248, CEO-251, CEO-253)</span></h3>
+<ul>
+  <li><strong>Objetivo:</strong> endpoints de agregação que o front consome por perfil.</li>
+  <li><strong>Construir:</strong> <code>GET /dashboard?setorId=</code> com total de produtos, lotes vencendo (≤30/≤60d), críticos, pedidos pendentes e <strong>demanda represada</strong> (top itens <code>aguardando_reposicao</code>). <code>GET /setores/:id/pedidos?status=</code> para a fila e contadores.</li>
+  <li><strong>Onde apoiar:</strong> reusar <code>statusProduto</code> e <code>estadoValidadeLote</code> de <code>domain/estoque.ts</code> — <strong>não recalcular na mão</strong>.</li>
+  <li><strong>Dificuldade:</strong> média (é leitura/agregação, sem escrita → baixo risco de conflito). <strong>Encaixa em quem fez dashboard/cadastro</strong> (ex.: Bruno).</li>
+</ul>
+
+<h3><span class="pill p-todo">P3</span> Ciclo de vida do lote: segregação &nbsp;<span class="q">(EP07-01/02 · CEO-213, CEO-214)</span></h3>
+<ul>
+  <li><strong>Objetivo:</strong> expor estados de validade + ação de segregar lote vencido.</li>
+  <li><strong>Construir:</strong> <code>LoteService.segregar(loteId, responsavelId, observacao)</code> → estado <code>segregado</code> + <code>data_segregacao</code> + <code>Movimentacao</code> tipo <code>segregacao</code>. <code>POST /lotes/:id/segregar</code> + <code>GET /setores/:id/lotes-segregados</code>. Confirmar por teste que segregado some da expedição.</li>
+  <li><strong>Onde apoiar:</strong> <code>estadoValidadeLote</code> já existe; <code>LoteService</code> já tem entrada/ajuste como molde.</li>
+  <li><strong>Dificuldade:</strong> média-baixa, escopo fechado. <strong>Bom para quem já mexeu com Lote</strong> (ex.: José Romildo).</li>
+</ul>
+
+<h3><span class="pill p-todo">P4</span> Pedidos: robustez + teste de integração &nbsp;<span class="q">(EP04-06/08 · CEO-245, CEO-247)</span></h3>
+<ul>
+  <li><strong>Objetivo:</strong> fechar pontas e <strong>provar</strong> o caminho feliz ponta-a-ponta.</li>
+  <li><strong>Construir:</strong> o que mais falta — <strong>teste de integração HTTP</strong>: criar pedido → expedir item → <code>GET /setores/:ceo/estoque</code> mostra o saldo subindo. Abas/contadores por status e visibilidade por perfil. Casos de borda (expedir item já processado, expedir linha livre deve barrar, item indisponível vira <code>aguardando_reposicao</code>).</li>
+  <li><strong>Onde apoiar:</strong> <code>PedidoService.test.ts</code> e <code>PgPedidoRepo.test.ts</code> já existem — estender.</li>
+  <li><strong>Dificuldade:</strong> média-alta (exige entender o fluxo todo). <strong>Para o dev mais forte de backend</strong> (ex.: Kaique).</li>
+</ul>
+
+<h3><span class="pill p-todo">P5</span> Catálogo + seed + e-mail &nbsp;<span class="q">(EP02 / EP04-07 · CEO-246)</span></h3>
+<ul>
+  <li><strong>Objetivo:</strong> polir o catálogo, garantir uma demo coesa e a ponte de e-mail.</li>
+  <li><strong>Construir:</strong> validações faltantes no CRUD de produto (categoria/unidade inválida, bloquear remoção com lote ativo = RN13) com teste; caprichar o <code>seed</code> de demonstração (um pedido pronto p/ expedir na frente do cliente, lotes vencendo, item “Não Tem”); e-mail ao criar pedido (<span class="pill p-cut">cortável</span> — pode ser um stub que loga).</li>
+  <li><strong>Onde apoiar:</strong> <code>ProdutoService</code>, <code>src/db/seed.ts</code>.</li>
+  <li><strong>Dificuldade:</strong> média; o e-mail é o primeiro a cair. <strong>Encaixa em quem domina services/catálogo</strong> (ex.: Alex, se ficar no backend).</li>
+</ul>
+
+<div class="box info">
+  <strong>Sugestão de encaixe (hipótese, não imposição):</strong> as sugestões entre parênteses vêm do histórico de commits de cada um. Trate como ponto de partida; deixem o time escolher. Observação honesta: <strong>Vinícius</strong> tem pouquíssimos commits no histórico — dê a ele o pacote mais fechado (P1 ou P3) com um revisor de plantão.
+</div>
+
+<h2 id="run">6. Como rodar e testar local</h2>
+<p>Precisa: Docker Desktop ligado, Node 20+. A partir de <code>projeto/backend</code>, <strong>um comando</strong>:</p>
+<pre><code># Windows (PowerShell)
+.\start.ps1
+# Mac / Linux / Git Bash
+bash start.sh
+# recomeçar o banco do zero:  .\start.ps1 -Reset   (ou  bash start.sh --reset)</code></pre>
+<p>O script sobe o Postgres (porta <strong>5433</strong>, de propósito — a 5432 já é usada por outro projeto), instala deps, aplica migrations, popula o seed e sobe a API em <code>localhost:3000</code>.</p>
+<div class="box">
+  <strong>Usuários de teste</strong> (senha de todos: <code>ceoufpe2026</code>):<br>
+  gestor HO <code>ana.costa@ufpe.br</code> · almoxarife HO <code>joao.silva@ufpe.br</code> · solicitante CEO <code>rafael.moura@ufpe.br</code> · gestora CEO <code>helena.lima@ufpe.br</code><br>
+  Testes: <code>npm test</code> · Inspecionar o banco: <code>npm run db:studio</code>
+</div>
+<div class="box info">
+  <strong>Você, no frontend:</strong> dá para vibe-codar as telas <strong>sem o backend</strong>, contra o <code>05-contrato-api.md</code> + um mock. Troca pelo real quando os PRs entram. Assim você nunca fica bloqueado esperando o time.
+</div>
+
+<h2 id="jira">7. Estado do Jira (o que já arrumei)</h2>
+<ul>
+  <li><strong>Fechei</strong> a sprint vencida (terminou 10/06).</li>
+  <li><strong>Criei e ativei</strong> a sprint <span class="key">“Entrega Final (3 dias)”</span> com as 13 stories do fluxo, <strong>todas sem dono</strong> (o time escolhe na reunião).</li>
+  <li><strong>CEO-236/240/243</strong> ganharam comentário “código pronto, fecha no PR da fundação”.</li>
+  <li><strong>Deixei intactos</strong> o épico legado (CEO-256, 84 issues) e os 10 épicos vazios — são arquivo.</li>
+</ul>
+<table>
+  <tr><th>Pacote</th><th>Stories no Jira</th></tr>
+  <tr><td><span class="pill p-done">pronto, fecha no PR</span></td><td>CEO-236, CEO-240, CEO-243</td></tr>
+  <tr><td>P1 consumo/ajuste CEO</td><td>CEO-238, CEO-239</td></tr>
+  <tr><td>P2 dashboards</td><td>CEO-248, CEO-251, CEO-253</td></tr>
+  <tr><td>P3 segregação</td><td>CEO-213, CEO-214</td></tr>
+  <tr><td>P4 pedidos robustez</td><td>CEO-245, CEO-247</td></tr>
+  <tr><td>P5 catálogo/e-mail</td><td>CEO-246</td></tr>
+</table>
+
+<h2 id="crono">8. Cronograma e papéis</h2>
+<table>
+  <tr><th>Quando</th><th>Quem</th><th>O quê</th></tr>
+  <tr><td><strong>Seg 15/06</strong> (hoje)</td><td>Todos</td><td>Reunião: alinhar a decisão da base + alocar os pacotes</td></tr>
+  <tr><td><strong>Ter 16/06</strong> manhã</td><td>Você</td><td>PR da base → <code>main</code> (revisado pelo time)</td></tr>
+  <tr><td>Ter 16/06 ~2h</td><td><strong>Todos</strong></td><td>Subir local + percorrer o fluxo juntos (kickoff)</td></tr>
+  <tr><td>Ter 16/06 → Qua 17/06</td><td>5 devs</td><td>Pacotes 1–5 (PRs pequenos)</td></tr>
+  <tr><td>Ter 16/06 tarde → Qui</td><td>Você</td><td>Frontend contra o contrato + mock</td></tr>
+  <tr><td>Ter 16/06 tarde</td><td>Todos</td><td>1ª integração frontend ↔ API real</td></tr>
+  <tr><td>Qua 17/06</td><td>Todos</td><td>Fechar pontas, teste de integração verde, ensaio</td></tr>
+  <tr><td><strong>Qui 18/06 até 23:59</strong></td><td>Todos</td><td>Últimos ajustes e <strong>ENTREGA do projeto</strong></td></tr>
+</table>
+<p style="font-size:12px;color:#5a5a5a;">Hoje é <strong>segunda (15/06)</strong> — dia de reunião/planejamento. Os 3 dias de trabalho são <strong>ter 16, qua 17 e qui 18</strong>. <strong>Prazo final: quinta 18/06 às 23:59.</strong></p>
+
+<h2 id="riscos">9. Riscos e plano de corte</h2>
+<table>
+  <tr><th>Risco</th><th>Mitigação</th></tr>
+  <tr><td>Conflito de contrato frontend ↔ backend</td><td><code>05-contrato-api.md</code> travado na terça (início); mudou, avisa no grupo</td></tr>
+  <tr><td>Curva do Drizzle p/ quem só viu SQL</td><td>Kickoff de 2h + camada <code>domain/*</code> pura e fácil de ler</td></tr>
+  <tr><td>Quebrar a <code>main</code></td><td>Regra de PR + <code>npm test</code> antes de mergear</td></tr>
+  <tr><td>Dev de nível incerto travar</td><td>Pacote mais fechado (P1/P3) + revisor de plantão</td></tr>
+  <tr><td>Não dar tempo</td><td>Ordem de corte abaixo</td></tr>
+</table>
+<p><strong>Ordem de corte se apertar:</strong> e-mail (P5) → UI de lotes segregados (P3) → gráfico de consumo mensal (fora de escopo, sem histórico) → ajuste de inventário (P1, é <em>Could</em>). <strong>O núcleo que NÃO pode cair:</strong> criar pedido → expedir → estoque CEO sobe → aparece no dashboard.</p>
+
+<h2 id="reuniao">10. Roteiro da reunião + respostas a objeções</h2>
+<h4>Sequência sugerida (≈30 min)</h4>
+<ol>
+  <li>Meta única dos 3 dias (1 frase). <span class="q">“Vamos entregar UM fluxo redondo, não tudo pela metade.”</span></li>
+  <li>O achado: backend feito 2 vezes; uma roda, a outra não. Mostrar a tabela da seção 2.</li>
+  <li>A decisão + a regra de PR (ADR-0006 impresso).</li>
+  <li>Todos sobem o projeto local juntos (1 comando) e percorrem o fluxo.</li>
+  <li>Apresentar os 5 pacotes; cada um escolhe o seu.</li>
+  <li>Combinar: PRs pequenos, <code>npm test</code> antes do review, contrato é lei.</li>
+</ol>
+<h4>Se vier objeção…</h4>
+<ul>
+  <li><span class="q">“Não pode commitar na main.”</span> → Concordo. Por isso é um <strong>PR revisado</strong>, e a partir daí a regra “só PR” vale pra todos. A main de hoje é a versão antiga abandonada; estamos consertando, não quebrando.</li>
+  <li><span class="q">“Meu branch vai pro lixo?”</span> → Nada é apagado; fica no histórico. Estamos escolhendo a base que <strong>roda o fluxo</strong> para caber em 3 dias. O schema SQL da Fundação A, inclusive, é bom e aproveitamos partes.</li>
+  <li><span class="q">“Não conheço Drizzle.”</span> → Por isso o kickoff de 2h juntos. A regra de negócio está em funções puras (<code>domain/*</code>), fáceis de ler; você quase não toca no ORM.</li>
+  <li><span class="q">“E o estoque do CEO, alguém fez?”</span> → A parte difícil (alimentar o CEO automaticamente na expedição) <strong>já está pronta e testada</strong>. Falta só consumo/ajuste (P1).</li>
+</ul>
+
+<div class="footer">
+  Fontes: <code>ADR-0006</code> · <code>docs/PO/07-roadmap-metricas/04-entrega-final-3dias.md</code> · <code>05-contrato-api.md</code> · backlog em <code>docs/PO/05-backlog</code> · regras em <code>docs/PO/06-dominio-regras</code>. Script de bootstrap: <code>projeto/backend/start.ps1</code> / <code>start.sh</code>.
+</div>
+
+</body>
+</html>
