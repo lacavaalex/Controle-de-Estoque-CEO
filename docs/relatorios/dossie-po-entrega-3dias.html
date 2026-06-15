@@ -64,7 +64,7 @@
   <li><strong>Achado central:</strong> o backend foi feito <strong>duas vezes</strong>, em bases incompatíveis. Uma delas (<span class="key">feat/fundacao-backend</span>) <strong>já roda o fluxo inteiro, testado</strong>. A outra não roda.</li>
   <li><strong>Decisão:</strong> adotar <code>feat/fundacao-backend</code> como base única, levá-la à <code>main</code> por <strong>PR</strong>, e instituir <strong>“main só por PR”</strong>. (ADR-0006.)</li>
   <li><strong>Faltam 5 pacotes</strong> em cima da base: consumo/ajuste do CEO, dashboards, segregação, robustez de pedidos + teste de integração, catálogo/seed/e-mail.</li>
-  <li><strong>Time:</strong> você (frontend + o PR de 2ª) + 5 devs de backend (Alex, Bruno, Kaique, Vinícius, José Romildo). Wallyson (banco) já entregou e está fora.</li>
+  <li><strong>Time:</strong> você (frontend + o PR da fundação na quinta) + 5 devs de backend (Alex, Bruno, Kaique, Vinícius, José Romildo). Wallyson (banco) já entregou — o modelo de dados v2 é desenho dele (ver seção 4.1).</li>
   <li><strong>Jira:</strong> já limpei — sprint <em>“Entrega Final (3 dias)”</em> ativa com as 13 stories certas, sem dono (o time escolhe na reunião).</li>
 </ul>
 
@@ -141,7 +141,18 @@
   <tr><td>EP07 (parcial)</td><td>estados de validade (<code>estadoValidadeLote</code>); FEFO ignora vencido/segregado</td></tr>
   <tr><td>Infra</td><td>docker compose (Postgres 5433), migrations, seed realista, fail-fast de JWT</td></tr>
 </table>
-<p><span class="pill p-done">DONE-no-PR</span> As stories <strong>CEO-236 / CEO-240 / CEO-243</strong> têm o código pronto e testado; ficam “In Progress” com comentário e fecham quando o PR de 2ª entrar.</p>
+<p><span class="pill p-done">DONE-no-PR</span> As stories <strong>CEO-236 / CEO-240 / CEO-243</strong> têm o código pronto e testado; ficam “In Progress” com comentário e fecham quando o PR da fundação (quinta) entrar.</p>
+
+<h3 id="wallyson">4.1 O trabalho do Wallyson (como foi usado — para você explicar a ele)</h3>
+<div class="box go">
+  <p><strong>Pergunta honesta:</strong> o backend antigo do Wallyson foi descartado? <strong>Não.</strong> A resposta tem nuance, e a verdade é boa para ele:</p>
+  <ul>
+    <li><strong>O desenho do modelo de dados é dele.</strong> Ele transformou o modelo conceitual nas 7 tabelas normalizadas (setor, usuário, produto, lote, pedido, item_do_pedido, movimentação), os enums e o índice FEFO. Isso são as stories <strong>CEO-121</strong> e <strong>CEO-180</strong> (ambas <em>Done</em>). A base que mantivemos (<code>feat/fundacao-backend</code>) tem <strong>exatamente as mesmas 7 tabelas e os mesmos enums</strong> — ela reexpressou o modelo dele em Drizzle (o ORM da ADR-0004). O esqueleto do sistema é o desenho dele.</li>
+    <li><strong>O que NÃO foi usado:</strong> os arquivos SQL puros e a camada TypeScript v1 daquela linhagem (que tinha ficado pela metade — <code>LoteService</code> vazio, repos apontando p/ tabelas inexistentes). Construir o fluxo em cima dela custaria dias. Por isso a base é a B.</li>
+    <li><strong>O que recuperamos da versão dele (porque era melhor):</strong> os <strong>índices de performance</strong> e o <strong>trigger <code>updated_at</code></strong> — a base B não os tinha. Foram portados em <code>drizzle/0003_indices_e_trigger_wallyson.sql</code> e vão acelerar o dashboard (Pacote 2). Ele tem uma task no sprint para revisar/fechar esse port.</li>
+  </ul>
+  <p><strong>Frase para dizer a ele (verdadeira pela evidência):</strong> <span class="q">“Seu modelo de dados é a fundação do que estamos construindo — as mesmas 7 tabelas e enums. E seu índice/trigger era melhor que o da versão nova, então mantivemos. Só trocamos o SQL puro pelo Drizzle, que é o ORM que a gente decidiu na ADR.”</span></p>
+</div>
 
 <h2 id="pacotes">5. Os 5 pacotes (detalhe técnico para alocar)</h2>
 <p>Cada pacote é fatia vertical (domínio → serviço → rota → teste), baixo conflito, entra por PR. <strong>Sem dono fixo</strong> — decidam na reunião. Abaixo, o suficiente para você explicar cada um e estimar dificuldade.</p>
@@ -211,7 +222,7 @@ bash start.sh
 <ul>
   <li><strong>Fechei</strong> a sprint vencida (terminou 10/06).</li>
   <li><strong>Criei e ativei</strong> a sprint <span class="key">“Entrega Final (3 dias)”</span> com as 13 stories do fluxo, <strong>todas sem dono</strong> (o time escolhe na reunião).</li>
-  <li><strong>CEO-236/240/243</strong> ganharam comentário “código pronto, fecha no PR de 2ª”.</li>
+  <li><strong>CEO-236/240/243</strong> ganharam comentário “código pronto, fecha no PR da fundação”.</li>
   <li><strong>Deixei intactos</strong> o épico legado (CEO-256, 84 issues) e os 10 épicos vazios — são arquivo.</li>
 </ul>
 <table>
@@ -227,19 +238,20 @@ bash start.sh
 <h2 id="crono">8. Cronograma e papéis</h2>
 <table>
   <tr><th>Quando</th><th>Quem</th><th>O quê</th></tr>
-  <tr><td>Seg 09:00</td><td>Você</td><td>PR da base → <code>main</code> (revisado pelo time)</td></tr>
-  <tr><td>Seg 09:30–11:30</td><td><strong>Todos</strong></td><td>Subir local + percorrer o fluxo juntos + escolher pacotes</td></tr>
-  <tr><td>Seg 11:30 → Ter</td><td>5 devs</td><td>Pacotes 1–5 (PRs pequenos)</td></tr>
-  <tr><td>Seg tarde → Qua</td><td>Você</td><td>Frontend contra o contrato + mock</td></tr>
-  <tr><td>Ter tarde</td><td>Todos</td><td>1ª integração frontend ↔ API real</td></tr>
-  <tr><td>Qua manhã</td><td>Todos</td><td>Fechar pontas, teste de integração verde, ensaio da demo</td></tr>
-  <tr><td>Qua tarde</td><td>Você</td><td>Demo</td></tr>
+  <tr><td>Qui 09:00</td><td>Você</td><td>PR da base → <code>main</code> (revisado pelo time)</td></tr>
+  <tr><td>Qui 09:30–11:30</td><td><strong>Todos</strong></td><td>Subir local + percorrer o fluxo juntos + escolher pacotes</td></tr>
+  <tr><td>Qui 11:30 → Sex</td><td>5 devs</td><td>Pacotes 1–5 (PRs pequenos)</td></tr>
+  <tr><td>Qui tarde → Dia 3</td><td>Você</td><td>Frontend contra o contrato + mock</td></tr>
+  <tr><td>Sex tarde</td><td>Todos</td><td>1ª integração frontend ↔ API real</td></tr>
+  <tr><td>Dia 3, manhã</td><td>Todos</td><td>Fechar pontas, teste de integração verde, ensaio da demo</td></tr>
+  <tr><td>Dia 3, tarde</td><td>Você</td><td>Demo</td></tr>
 </table>
+<p style="font-size:12px;color:#5a5a5a;">Hoje é segunda (15/06); o <strong>trabalho começa quinta (18/06)</strong>. “Dia 3” = o dia da entrega/demo que vocês combinarem (sáb/dom ou conforme o prazo).</p>
 
 <h2 id="riscos">9. Riscos e plano de corte</h2>
 <table>
   <tr><th>Risco</th><th>Mitigação</th></tr>
-  <tr><td>Conflito de contrato frontend ↔ backend</td><td><code>05-contrato-api.md</code> travado na segunda; mudou, avisa no grupo</td></tr>
+  <tr><td>Conflito de contrato frontend ↔ backend</td><td><code>05-contrato-api.md</code> travado na quinta (início); mudou, avisa no grupo</td></tr>
   <tr><td>Curva do Drizzle p/ quem só viu SQL</td><td>Kickoff de 2h + camada <code>domain/*</code> pura e fácil de ler</td></tr>
   <tr><td>Quebrar a <code>main</code></td><td>Regra de PR + <code>npm test</code> antes de mergear</td></tr>
   <tr><td>Dev de nível incerto travar</td><td>Pacote mais fechado (P1/P3) + revisor de plantão</td></tr>

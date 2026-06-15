@@ -113,19 +113,31 @@ bash start.sh</code></pre>
 
 <div class="box">
   <strong>Já pronto na base (não refazer):</strong> login/JWT/RBAC, catálogo agregado, cadastro de produto e lote, criar pedido multi-item, expedição item-a-item com FEFO, estoque do CEO alimentado automático, status do pedido derivado.<br>
-  <span class="pill p-done">DONE-no-PR</span> CEO-236, CEO-240, CEO-243 — código pronto, fecham quando o PR de 2ª entrar.
+  <span class="pill p-done">DONE-no-PR</span> CEO-236, CEO-240, CEO-243 — código pronto, fecham quando o PR da fundação entrar.
+</div>
+
+<h2>4.1 O trabalho do Wallyson na base nova</h2>
+<div class="box go">
+  <strong>O modelo de dados v2 que estamos usando é desenho do Wallyson.</strong> Ele transformou o modelo conceitual nas 7 tabelas normalizadas (setor, usuário, produto, lote, pedido, item_do_pedido, movimentação), os enums e o índice FEFO — entregue nas stories <strong>CEO-121</strong> (“criar script SQL de todas as tabelas conforme o diagrama E-R”) e <strong>CEO-180</strong> (“Criar Postgres”), ambas <em>Done</em>.
+  <ul>
+    <li>A base <code>feat/fundacao-backend</code> <strong>reexpressou esse mesmo modelo em Drizzle</strong> (o ORM que escolhemos na ADR-0004) e construiu a aplicação por cima. Mesmas tabelas, mesmos enums, mesma ideia de FEFO — o esqueleto é o dele.</li>
+    <li>Os <strong>índices de performance e o trigger <code>updated_at</code></strong> que ele escreveu eram melhores que a base nova (que não os tinha). Por isso foram <strong>portados</strong> para a base v2 em <code>drizzle/0003_indices_e_trigger_wallyson.sql</code> — vão acelerar justamente as consultas do dashboard (Pacote 2).</li>
+    <li>Há uma task no sprint para o Wallyson <strong>revisar/fechar</strong> esse port (a migration já está pronta como ponto de partida).</li>
+  </ul>
+  Resumindo: o trabalho dele <strong>não foi descartado</strong> — é a fundação do modelo, e a parte mais eficiente (índices/trigger) foi mantida.
 </div>
 
 <h2>5. Cronograma</h2>
 <table>
   <tr><th>Quando</th><th>Quem</th><th>O quê</th></tr>
-  <tr><td>Seg 09:00</td><td>Luiz</td><td>PR da base → <code>main</code> (revisado)</td></tr>
-  <tr><td>Seg 09:30–11:30</td><td><strong>Todos</strong></td><td>Subir local + percorrer o fluxo juntos + escolher pacotes</td></tr>
-  <tr><td>Seg 11:30 → Ter</td><td>5 devs</td><td>Pacotes 1–5 (PRs pequenos)</td></tr>
-  <tr><td>Ter à tarde</td><td>Todos</td><td>1ª integração frontend ↔ API real</td></tr>
-  <tr><td>Qua manhã</td><td>Todos</td><td>Fechar pontas, teste de integração verde, ensaio da demo</td></tr>
-  <tr><td>Qua tarde</td><td>Luiz</td><td>Demo</td></tr>
+  <tr><td>Qui 09:00</td><td>Luiz</td><td>PR da base → <code>main</code> (revisado)</td></tr>
+  <tr><td>Qui 09:30–11:30</td><td><strong>Todos</strong></td><td>Subir local + percorrer o fluxo juntos + escolher pacotes</td></tr>
+  <tr><td>Qui 11:30 → Sex</td><td>5 devs</td><td>Pacotes 1–5 (PRs pequenos)</td></tr>
+  <tr><td>Sex à tarde</td><td>Todos</td><td>1ª integração frontend ↔ API real</td></tr>
+  <tr><td>Dia 3, manhã</td><td>Todos</td><td>Fechar pontas, teste de integração verde, ensaio da demo</td></tr>
+  <tr><td>Dia 3, tarde</td><td>Luiz</td><td>Demo</td></tr>
 </table>
+<p style="font-size:12.5px;color:#666;">Trabalho começa <strong>quinta (18/06)</strong>. “Dia 3” = o dia da entrega/demo que vocês combinarem.</p>
 
 <h2>6. Regras de bolso</h2>
 <ul>
