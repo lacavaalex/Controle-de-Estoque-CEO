@@ -41,6 +41,7 @@ export class PgLoteRepo implements ILoteRepo {
     return (rowCount ?? 0) > 0;
   }
 
+  // Atualiza campos de um lote
   async updateLote(
     id: number,
     dados: Partial<Omit<Lote, "id" | "updated_at">>
