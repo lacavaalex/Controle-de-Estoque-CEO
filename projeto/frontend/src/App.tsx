@@ -1,33 +1,30 @@
-import { useState, useEffect } from "react";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Login } from "./components/Login";
 import { Dashboard } from "./components/Dashboard";
-import type { User } from "./types/user";
 
-function App() {
-  const [usuarioLogado, setUsuarioLogado] = useState<User | null>(null);
+function ConteudoApp() {
+  const { usuarioLogado, carregandoSessao, logout } = useAuth();
 
-  useEffect(() => {
-    const dadosSessao = localStorage.getItem("usuario_ceo");
-    if (dadosSessao) {
-      setUsuarioLogado(JSON.parse(dadosSessao));
-    }
-  }, []);
-
-  function handleLogout() {
-    localStorage.removeItem("usuario_ceo");
-    setUsuarioLogado(null);
+  if (carregandoSessao) {
+    return <div style={{ padding: "20px", textAlign: "center" }}>Carregando...</div>;
   }
 
- if (!usuarioLogado) {
-    return <Login onLoginSuccess={(user) => setUsuarioLogado(user)} />;
+  if (!usuarioLogado) {
+    return <Login />;
   }
 
   return (
     <Dashboard 
       usuario={usuarioLogado} 
-      onLogout={handleLogout} 
+      onLogout={logout} 
     />
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <AuthProvider>
+      <ConteudoApp />
+    </AuthProvider>
+  );
+}

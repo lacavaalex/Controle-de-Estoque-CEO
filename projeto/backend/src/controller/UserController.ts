@@ -1,5 +1,7 @@
 import type { IUserService } from "../interfaces/service-interfaces/IUserService.js";
 import type { Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "../middlewares/authMiddleware.js";
 
 export class UserController {
     constructor(private userService: IUserService) {}
@@ -9,7 +11,14 @@ export class UserController {
 
         try {
             const loggedUser = await this.userService.login(email, senha);
-            return res.status(200).json({ usuario: loggedUser });
+            
+            const token = jwt.sign(
+                { id: loggedUser.id, cargo: loggedUser.cargo, email: loggedUser.email },
+                JWT_SECRET,
+                { expiresIn: "8h" }
+            );
+
+            return res.status(200).json({ usuario: loggedUser, token });
         } catch (error) {
             if (error instanceof Error) {
                 return res.status(401).json({ mensagem: error.message });

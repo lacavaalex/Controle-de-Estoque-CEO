@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { efetuarLogin } from "../services/api";
 import type { User } from "../types/user";
+import { useAuth } from "../contexts/AuthContext";
 
-export function Login({ onLoginSuccess }: { onLoginSuccess: (user: User) => void }) {
+export function Login() {
+    const { autenticar } = useAuth(); 
     const [email, setEmail] = useState<string>("");
     const [senha, setSenha] = useState<string>("");
     
     const [erro, setErro] = useState<string>("");
     const [carregando, setCarregando] = useState<boolean>(false);
-    
-    const [usuarioLogado, setUsuarioLogado] = useState<User | null>(null);
 
     async function handleSubmeter(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault(); 
@@ -18,15 +18,11 @@ export function Login({ onLoginSuccess }: { onLoginSuccess: (user: User) => void
 
         try {
             const dados = await efetuarLogin(email, senha);
+            
+            autenticar(dados.usuario, dados.token); 
 
-            localStorage.setItem("usuario_ceo", JSON.stringify(dados.usuario));
-            onLoginSuccess(dados.usuario);
         } catch (err) {
-            if (err instanceof Error) {
-                setErro(err.message);
-            } else {
-                setErro("Ocorreu um erro inesperado.");
-            }
+            if (err instanceof Error) setErro(err.message);
         } finally {
             setCarregando(false);
         }
