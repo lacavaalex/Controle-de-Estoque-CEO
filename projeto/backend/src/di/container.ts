@@ -1,25 +1,64 @@
-import { PgItemRepo } from "../repositories/PgItemRepo.js";
-import { PgUsuarioRepo } from "../repositories/PgUsuarioRepo.js";
-import { PgSolicitacaoRepo } from "../repositories/PgSolicitacaoRepo.js";
-import { PgMovimentacaoRepo } from "../repositories/PgMovimentacaoRepo.js";
-import { PgEstoqueCeoRepo } from "../repositories/PgEstoqueCeoRepo.js";
+import { JsonItemRepo } from "../repositories/JsonItemRepo.js";
 import { ItemService } from "../services/ItemService.js";
 import { ItemController } from "../controller/ItemController.js";
 
-const itemRepo         = new PgItemRepo();
-const usuarioRepo      = new PgUsuarioRepo();
-const solicitacaoRepo  = new PgSolicitacaoRepo();
-const movimentacaoRepo = new PgMovimentacaoRepo();
-const estoqueCeoRepo   = new PgEstoqueCeoRepo();
+import { JsonUserRepo } from "../repositories/JsonUserRepo.js";
+import { UserService } from "../services/UserService.js";
+import { UserController } from "../controller/UserController.js";
 
-const itemService    = new ItemService(itemRepo);
+// Stack v2: persistência Postgres (Drizzle) + auth real (JWT + RBAC).
+import { PgUsuarioRepo } from "../repositories/PgUsuarioRepo.js";
+import { PgSetorRepo } from "../repositories/PgSetorRepo.js";
+import { PgProdutoRepo } from "../repositories/PgProdutoRepo.js";
+import { PgLoteRepo } from "../repositories/PgLoteRepo.js";
+import { AuthService } from "../services/AuthService.js";
+import { AuthController } from "../controller/AuthController.js";
+import { EstoqueService } from "../services/EstoqueService.js";
+import { ProdutoService } from "../services/ProdutoService.js";
+import { ProdutoController } from "../controller/ProdutoController.js";
+import { LoteService } from "../services/LoteService.js";
+import { LoteController } from "../controller/LoteController.js";
+import { PgPedidoRepo } from "../repositories/PgPedidoRepo.js";
+import { PedidoService } from "../services/PedidoService.js";
+import { PedidoController } from "../controller/PedidoController.js";
+
+// --- Legado v1 (Item/User em JSON) — mantido até a migração das rotas ---
+const itemRepo = new JsonItemRepo();
+const itemService = new ItemService(itemRepo);
 const itemController = new ItemController(itemService);
+
+const userRepo = new JsonUserRepo();
+const userService = new UserService(userRepo);
+const userController = new UserController(userService);
+
+// --- v2 (Postgres + auth) ---
+const usuarioRepo = new PgUsuarioRepo();
+const setorRepo = new PgSetorRepo();
+const produtoRepo = new PgProdutoRepo();
+const loteRepo = new PgLoteRepo();
+
+const authService = new AuthService(usuarioRepo, setorRepo);
+const authController = new AuthController(authService);
+
+const estoqueService = new EstoqueService(produtoRepo, loteRepo, setorRepo);
+
+const produtoService = new ProdutoService(produtoRepo, loteRepo);
+const produtoController = new ProdutoController(produtoService);
+
+const loteService = new LoteService();
+const loteController = new LoteController(loteService, loteRepo);
+
+const pedidoRepo = new PgPedidoRepo();
+const pedidoService = new PedidoService(pedidoRepo);
+const pedidoController = new PedidoController(pedidoService);
 
 export {
   itemController,
-  itemRepo,
-  usuarioRepo,
-  solicitacaoRepo,
-  movimentacaoRepo,
-  estoqueCeoRepo,
+  userController,
+  authController,
+  setorRepo,
+  estoqueService,
+  produtoController,
+  loteController,
+  pedidoController,
 };

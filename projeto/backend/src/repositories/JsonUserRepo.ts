@@ -2,7 +2,6 @@ import type { IUserRepository } from "../interfaces/repository-interfaces/IUserR
 import type { User } from "../entities/User.js";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "path";
-import bcrypt from "bcrypt";
 
 interface UserRow extends User {
     senha: string;
@@ -28,9 +27,7 @@ export class JsonUserRepo implements IUserRepository {
     
     async createUser(user: User, senhaObscura: string): Promise<void> {
         const users = await readUsersRaw();
-        const salt = await bcrypt.genSalt(10);
-        const senhaCriptografada = await bcrypt.hash(senhaObscura, salt);
-        const newUserRow: UserRow = { ...user, senha: senhaCriptografada };
+        const newUserRow: UserRow = { ...user, senha: senhaObscura };
         users.push(newUserRow);
         await writeUsersRaw(users);
     }
@@ -55,29 +52,6 @@ export class JsonUserRepo implements IUserRepository {
         if (!found) return null;
 
         const { senha, ...user } = found;
-
         return { user, senhaSalva: senha };
-    }
-
-    async updateUser(id: string, dados: { email?: string; senha?: string }): Promise<User> {
-        const rows = await readUsersRaw();
-        const index = rows.findIndex((u) => u.id === id);
-
-        if (index === -1) {
-            throw new Error("usuario nao encontrado no banco de dados.");
-        }
-
-        const userRow = rows[index];
-        if (!userRow) {
-            throw new Error("usuario nao encontrado no banco de dados.");
-        }
-
-        if (dados.email) userRow.email = dados.email;
-        if (dados.senha) userRow.senha = dados.senha;
-
-        await writeUsersRaw(rows);
-
-        const { senha, ...userAtualizado } = userRow;
-        return userAtualizado;
     }
 }

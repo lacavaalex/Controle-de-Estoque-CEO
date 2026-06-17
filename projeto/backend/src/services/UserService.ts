@@ -1,7 +1,6 @@
 import type { User } from "../entities/User.js";
 import type { IUserService } from "../interfaces/service-interfaces/IUserService.js";
 import type { IUserRepository } from "../interfaces/repository-interfaces/IUserRepo.js";
-import bcrypt from "bcrypt";
 
 export interface RegisterDto {
     nome: string;
@@ -16,13 +15,7 @@ export class UserService implements IUserService {
     async login(email: string, senhaDigitada: string): Promise<User> {
         const resultado = await this.userRepository.buscarSenhaPorEmail(email);
 
-        if (!resultado) {
-            throw new Error("E-mail ou senha incorretos!");
-        }
-        
-        const senhaValida = await bcrypt.compare(senhaDigitada, resultado.senhaSalva);
-        
-        if (!senhaValida) {
+        if (!resultado || resultado.senhaSalva !== senhaDigitada) {
             throw new Error("E-mail ou senha incorretos!");
         }
 
@@ -53,19 +46,5 @@ export class UserService implements IUserService {
         await this.userRepository.createUser(newUser, dados.senha);
 
         return newUser;
-    }
-
-    // valida os dados e envia para o repositorio atualizar no banco
-    async update(id: string, dados: { email?: string; senha?: string }): Promise<User> {
-        const users = await this.userRepository.getAllUsers();
-        
-        // checa se o email novo ja existe em outra conta
-        if (dados.email) {
-            const emailEmUso = users.find((u) => u.email === dados.email && u.id !== id);
-            if (emailEmUso) throw new Error("este e-mail ja esta cadastrado no sistema.");
-        }
-
-        // chama o repositorio para salvar
-        return await this.userRepository.updateUser(id, dados);
     }
 }

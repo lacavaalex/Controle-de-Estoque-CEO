@@ -32,7 +32,7 @@ export class ItemService implements IItemService{
             await this.itemRepository.updateItem(id, {quantity: newQuantity})
             item.quantity = newQuantity
             return item
-        } catch {
+        } catch (error) {
             throw new Error('Erro ao tentar dar entrada no item')
         }
     }
@@ -47,38 +47,18 @@ export class ItemService implements IItemService{
         const item = items.find(item => item.id === id)
         if (item === undefined) throw new Error(`Nenhum item com o id ${id} foi encontrado`);
         
-        // Validação se já existe um item com o mesmo nome que está tentando atualizar
-        const hasName = items.some((item) => {item.name === name})
+        // Validação se já existe OUTRO item com o mesmo nome que está tentando atualizar
+        // (corpo de arrow em bloco antes nunca retornava, então o check era morto)
+        const hasName = items.some((outro) => outro.id !== id && outro.name === name)
         if (hasName === true) throw new Error('Já existe um item com o mesmo nome no estoque')
 
         // Operação no BD
         try {
             await this.itemRepository.updateItem(id, {name: name})
             return item
-        } catch {
+        } catch(error){
             throw new Error('Erro ao tentar atualizar item')
         }
-    }
-
-    // Modifica a categoria de um item
-    async changeItemCategory(id: string, category: string): Promise<Item> {
-        // Validação se o item existe
-        const items = await this.itemRepository.getAllItems()
-        const item = items.find(item => item.id === id)
-        if (item === undefined) throw new Error(`Nenhum item com o id ${id} foi encontrado`)
-
-        // Verifica se a categoria existe
-        if (!this.category_options.includes(category)) throw new Error("Categoria inválida")
-
-        // Operação no BD
-        try {
-            await this.itemRepository.updateItem(id, {category: category})
-            item.category = category
-            return item
-        } catch {
-            throw new Error("Erro ao tentar atualizar o item")
-        }
-        
     }
 
     // Cria um novo item no inventário
@@ -104,12 +84,5 @@ export class ItemService implements IItemService{
         } catch {
             throw new Error('Erro ao inserir item no banco de dados')
         }
-    }
-
-    // Lista todos os itens
-    async listItems(): Promise<Item[]> {
-        const items = await this.itemRepository.getAllItems()
-        if (items.length === 0) throw new Error("Estoque vazio")
-        return items
     }
 }

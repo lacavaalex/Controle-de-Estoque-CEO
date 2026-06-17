@@ -1,9 +1,9 @@
-import type { Usuario } from "../../entities/Usuario.js";
+import type { Usuario, NovoUsuario } from "../../entities/index.js";
 
 export interface IUsuarioRepository {
-  findById(id: number): Promise<Usuario | null>;
-  findByEmail(email: string): Promise<Usuario | null>;   // RF01.1: login por e-mail
-  findAll(): Promise<Usuario[]>;
-  create(usuario: Omit<Usuario, "id">): Promise<Usuario>;
-  update(id: number, data: Partial<Omit<Usuario, "id">>): Promise<Usuario | null>;
+  criar(usuario: NovoUsuario): Promise<Usuario>;
+  listar(): Promise<Usuario[]>;
+  buscarPorId(id: number): Promise<Usuario | null>;
+  buscarPorEmail(email: string): Promise<Usuario | null>;
+  atualizar(id: number, props: Partial<Omit<Usuario, "id">>): Promise<void>;
 }

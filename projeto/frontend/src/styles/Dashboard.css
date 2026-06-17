@@ -1,0 +1,26 @@
+/* ============================================================
+   Dashboard.css — tiles de KPI
+   (o layout de sidebar antigo foi substituído por Shell.css)
+   ============================================================ */
+
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-5);
+  min-height: 104px;
+}
+.kpi-value { font-size: var(--fs-28); font-weight: 700; line-height: 1.1; color: var(--ink); }
+.kpi-label { margin-top: var(--sp-2); font-size: var(--fs-14); color: var(--ink-2); font-weight: 600; }
+.kpi-hint  { margin-top: 2px; font-size: var(--fs-12); color: var(--ink-3); }
+
+/* Tom semântico: borda inferior sutil + cor do número (sem side-stripe lateral) */
+.kpi-danger .kpi-value { color: var(--danger); }
+.kpi-warn   .kpi-value { color: var(--warn); }
+.kpi-info   .kpi-value { color: var(--info); }
+.kpi-neutral .kpi-value { color: var(--ufpe-bordo); }
+
+.kpi-link { text-decoration: none; display: block; transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease); }
+.kpi-link:hover { text-decoration: none; transform: translateY(-1px); }
+.kpi-link:hover .kpi { box-shadow: var(--shadow-1); border-color: #d8d4d4; }
+.kpi-link:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--radius-lg); }
