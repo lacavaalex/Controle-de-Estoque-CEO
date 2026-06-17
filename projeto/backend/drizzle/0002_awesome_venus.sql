@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "lote_produto_setor_numero_unico" ON "lote" USING btree ("produto_id","setor_id","numero_lote");

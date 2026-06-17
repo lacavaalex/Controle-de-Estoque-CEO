@@ -1,62 +1,63 @@
-import { getPool } from "../database/connection.js";
-import type { IMovimentacaoRepository } from "../interfaces/repository-interfaces/IMovimentacaoRepo.js";
-import type { Movimentacao } from "../entities/Movimentacao.js";
-
-const COLUNAS = `
-  id, tipo, item_id, item_nome, quantidade, unidade, origem, destino,
-  responsavel, data AT TIME ZONE 'UTC' AS data, solicitacao_id
-`;
+import { eq, or, sql } from "drizzle-orm";
+import type {
+  IMovimentacaoRepository,
+  NovaMovimentacaoSemId,
+} from "../interfaces/repository-interfaces/IMovimentacaoRepo.js";
+import type { Movimentacao } from "../entities/index.js";
+import { db as defaultDb, type DB } from "../db/client.js";
+import { movimentacao } from "../db/schema.js";
 
 export class PgMovimentacaoRepo implements IMovimentacaoRepository {
-  private get pool() {
-    return getPool();
+  constructor(private db: DB = defaultDb) {}
+
+  // Próximo id formatado MOV-NNN a partir da sequência (lpad com 3 dígitos,
+  // crescendo além disso naturalmente). Aceita um executor para participar de
+  // transações (db.transaction(tx => ...)).
+  private async proximoId(executor: DB = this.db): Promise<string> {
+    // O driver pg devolve QueryResult; as linhas ficam em `.rows`.
+    const resultado = await executor.execute<{ id: string }>(
+      sql`SELECT 'MOV-' || lpad(nextval('seq_movimentacao')::text, 3, '0') AS id`,
+    );
+    const row = resultado.rows[0];
+    if (!row) throw new Error("Falha ao gerar id da movimentação");
+    return row.id;
   }
 
-  async findRecent(limite = 10): Promise<Movimentacao[]> {
-    const { rows } = await this.pool.query<Movimentacao>(
-      `SELECT ${COLUNAS} FROM movimentacao ORDER BY data DESC LIMIT $1`,
-      [limite]
-    );
-    return rows;
+  async registrar(mov: NovaMovimentacaoSemId): Promise<Movimentacao> {
+    // Se o chamador passou um executor de transação em mov, não há campo para
+    // isso na interface; transações são orquestradas pelo service via db.transaction
+    // chamando este repo com uma instância ligada à tx (ver LoteService).
+    const id = await this.proximoId();
+    const [criada] = await this.db
+      .insert(movimentacao)
+      .values({ ...mov, id })
+      .returning();
+    if (!criada) throw new Error("Falha ao registrar movimentação");
+    return criada;
   }
 
-  async findAll(): Promise<Movimentacao[]> {
-    const { rows } = await this.pool.query<Movimentacao>(
-      `SELECT ${COLUNAS} FROM movimentacao ORDER BY data DESC`
-    );
-    return rows;
+  async buscarPorId(id: string): Promise<Movimentacao | null> {
+    const [achada] = await this.db
+      .select()
+      .from(movimentacao)
+      .where(eq(movimentacao.id, id))
+      .limit(1);
+    return achada ?? null;
   }
 
-  async findById(id: string): Promise<Movimentacao | null> {
-    const { rows } = await this.pool.query<Movimentacao>(
-      `SELECT ${COLUNAS} FROM movimentacao WHERE id = $1`,
-      [id]
-    );
-    return rows[0] ?? null;
+  async listarPorLote(loteId: number): Promise<Movimentacao[]> {
+    return this.db.select().from(movimentacao).where(eq(movimentacao.loteId, loteId));
   }
 
-  async create(mov: Omit<Movimentacao, "data">): Promise<Movimentacao> {
-    const { rows } = await this.pool.query<Movimentacao>(
-      `INSERT INTO movimentacao
-         (id, tipo, item_id, item_nome, quantidade, unidade,
-          origem, destino, responsavel, solicitacao_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-       RETURNING ${COLUNAS}`,
-      [
-        mov.id, mov.tipo, mov.item_id, mov.item_nome, mov.quantidade,
-        mov.unidade, mov.origem, mov.destino, mov.responsavel,
-        mov.solicitacao_id,
-      ]
-    );
-    return rows[0]!;
-  }
-
-  async getNextId(): Promise<string> {
-    const { rows } = await this.pool.query<{ max_num: number }>(
-      `SELECT COALESCE(MAX(CAST(SUBSTRING(id FROM 5) AS INT)), 0) AS max_num
-       FROM movimentacao`
-    );
-    const proximo = (rows[0]?.max_num ?? 0) + 1;
-    return `MOV-${String(proximo).padStart(3, "0")}`;
+  async listarPorSetor(setorId: number): Promise<Movimentacao[]> {
+    return this.db
+      .select()
+      .from(movimentacao)
+      .where(
+        or(
+          eq(movimentacao.setorOrigemId, setorId),
+          eq(movimentacao.setorDestinoId, setorId),
+        ),
+      );
   }
 }

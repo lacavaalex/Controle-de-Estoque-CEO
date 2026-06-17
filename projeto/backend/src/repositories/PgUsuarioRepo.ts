@@ -1,61 +1,33 @@
-import { getPool } from "../database/connection.js";
+import { eq } from "drizzle-orm";
 import type { IUsuarioRepository } from "../interfaces/repository-interfaces/IUsuarioRepo.js";
-import type { Usuario } from "../entities/Usuario.js";
-
-const COLUNAS = "id, nome, email, senha_hash, cargo, role, unidade, avatar";
+import type { Usuario, NovoUsuario } from "../entities/index.js";
+import { db as defaultDb, type DB } from "../db/client.js";
+import { usuario } from "../db/schema.js";
 
 export class PgUsuarioRepo implements IUsuarioRepository {
-  private get pool() {
-    return getPool();
+  constructor(private db: DB = defaultDb) {}
+
+  async criar(novo: NovoUsuario): Promise<Usuario> {
+    const [criado] = await this.db.insert(usuario).values(novo).returning();
+    if (!criado) throw new Error("Falha ao criar usuário");
+    return criado;
   }
 
-  async findById(id: number): Promise<Usuario | null> {
-    const { rows } = await this.pool.query<Usuario>(
-      `SELECT ${COLUNAS} FROM usuario WHERE id = $1`,
-      [id]
-    );
-    return rows[0] ?? null;
+  async listar(): Promise<Usuario[]> {
+    return this.db.select().from(usuario);
   }
 
-  async findByEmail(email: string): Promise<Usuario | null> {
-    const { rows } = await this.pool.query<Usuario>(
-      `SELECT ${COLUNAS} FROM usuario WHERE email = $1`,
-      [email]
-    );
-    return rows[0] ?? null;
+  async buscarPorId(id: number): Promise<Usuario | null> {
+    const [achado] = await this.db.select().from(usuario).where(eq(usuario.id, id)).limit(1);
+    return achado ?? null;
   }
 
-  async findAll(): Promise<Usuario[]> {
-    const { rows } = await this.pool.query<Usuario>(
-      `SELECT ${COLUNAS} FROM usuario ORDER BY nome`
-    );
-    return rows;
+  async buscarPorEmail(email: string): Promise<Usuario | null> {
+    const [achado] = await this.db.select().from(usuario).where(eq(usuario.email, email)).limit(1);
+    return achado ?? null;
   }
 
-  async create(usuario: Omit<Usuario, "id">): Promise<Usuario> {
-    const { rows } = await this.pool.query<Usuario>(
-      `INSERT INTO usuario (nome, email, senha_hash, cargo, role, unidade, avatar)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)
-       RETURNING ${COLUNAS}`,
-      [
-        usuario.nome, usuario.email, usuario.senha_hash,
-        usuario.cargo, usuario.role, usuario.unidade, usuario.avatar,
-      ]
-    );
-    return rows[0]!;
-  }
-
-  async update(id: number, dados: Partial<Omit<Usuario, "id">>): Promise<Usuario | null> {
-    const campos = Object.keys(dados) as (keyof typeof dados)[];
-    if (campos.length === 0) return this.findById(id);
-
-    const sets = campos.map((c, idx) => `${c} = $${idx + 2}`).join(", ");
-    const valores = [id, ...campos.map((c) => dados[c])];
-
-    const { rows } = await this.pool.query<Usuario>(
-      `UPDATE usuario SET ${sets} WHERE id = $1 RETURNING ${COLUNAS}`,
-      valores
-    );
-    return rows[0] ?? null;
+  async atualizar(id: number, props: Partial<Omit<Usuario, "id">>): Promise<void> {
+    await this.db.update(usuario).set(props).where(eq(usuario.id, id));
   }
 }
