@@ -1,29 +1,44 @@
-import React from 'react';
-// Importamos os componentes da biblioteca de rotas que instalamos
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-// Importando as nossas páginas
-import Login from './pages/Login';
-import Cadastro from './pages/Cadastro';
-import Dashboard from './pages/Dashboard';
+import { AuthProvider } from "./auth/AuthContext.jsx";
+import RequireAuth from "./auth/RequireAuth.jsx";
+import AppShell from "./app/AppShell.jsx";
 
-// Função principal que o Vite usa para renderizar o app no navegador
-function App() {
+import Login from "./pages/Login.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
+import Estoque from "./pages/Estoque.jsx";
+import NovoPedido from "./pages/NovoPedido.jsx";
+import Pedidos from "./pages/Pedidos.jsx";
+import PedidoDetalhe from "./pages/PedidoDetalhe.jsx";
+
+export default function App() {
   return (
-    // O Router serve para monitorar o endereço (URL) do navegador
-    <Router>
-      <Routes>
-        {/* Definindo que o caminho vazio (/) mostra o Login */}
-        <Route path="/" element={<Login />} />
-        
-        {/* Definindo que o caminho (/dashboard) mostra o Dashboard */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        
-        {/* Definindo que o caminho (/cadastro) mostra o Cadastro */}
-        <Route path="/cadastro" element={<Cadastro />} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Pública */}
+          <Route path="/login" element={<Login />} />
+
+          {/* Protegidas — dentro da casca da aplicação */}
+          <Route
+            element={
+              <RequireAuth>
+                <AppShell />
+              </RequireAuth>
+            }
+          >
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/estoque" element={<Estoque />} />
+            <Route path="/pedidos" element={<Pedidos />} />
+            <Route path="/pedidos/novo" element={<NovoPedido />} />
+            <Route path="/pedidos/:id" element={<PedidoDetalhe />} />
+          </Route>
+
+          {/* Raiz e fallback */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
-
-export default App;

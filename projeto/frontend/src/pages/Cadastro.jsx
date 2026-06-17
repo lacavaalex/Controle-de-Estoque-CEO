@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/App.css';
 
@@ -42,7 +42,7 @@ function Cadastro() {
         const erroDados = await resposta.json();
         alert(erroDados.mensagem);
       }
-    } catch (error) {
+    } catch {
       alert("Servidor desligado! Conecte o backend.");
     }
   };

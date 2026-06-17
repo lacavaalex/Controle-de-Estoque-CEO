@@ -1,64 +1,88 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../styles/Dashboard.css';
+import { Link } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext.jsx";
+import { useFetch } from "../app/useFetch.js";
+import { dashboard } from "../api/dashboard.js";
+import { ApiError } from "../api/client.js";
+import { ROTULO_PERFIL } from "../app/nav.js";
+import { PageHead, ErrorState } from "../app/ui.jsx";
+import "../styles/Dashboard.css";
 
-function Dashboard() {
-  const [isRetracted, setIsRetracted] = useState(false);
-  const navigate = useNavigate();
-  
-  const usuarioLogado = localStorage.getItem('usuario_ceo');
-  const usuario = usuarioLogado ? JSON.parse(usuarioLogado) : { nome: 'Usuário', cargo: 'gestor' };
+function Kpi({ label, value, tone, to, hint }) {
+  const body = (
+    <div className={`kpi kpi-${tone || "neutral"}`}>
+      <div className="kpi-value num">{value}</div>
+      <div className="kpi-label">{label}</div>
+      {hint && <div className="kpi-hint">{hint}</div>}
+    </div>
+  );
+  return to ? <Link to={to} className="kpi-link">{body}</Link> : body;
+}
 
-  const logout = () => {
-    localStorage.removeItem('usuario_ceo');
-    navigate('/');
-  };
+export default function Dashboard() {
+  const { user } = useAuth();
+  const req = useFetch(
+    () => (user?.setorId ? dashboard(user.setorId) : Promise.resolve(null)),
+    [user?.setorId],
+  );
+
+  // Endpoint do dashboard é do Pacote 2 (🔨). Se ainda não existir, mostramos
+  // um aviso honesto em vez de fingir números.
+  const indisponivel = req.error instanceof ApiError && (req.error.status === 404 || req.error.status === 501);
+  const d = req.data || {};
 
   return (
-    <div className={`dashboard-layout ${isRetracted ? 'retracted' : ''}`}>
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          {!isRetracted && <span style={{ fontWeight: 'bold', color: '#990000', fontSize: '18px' }}>CEO UFPE</span>}
-          <button 
-            onClick={() => setIsRetracted(!isRetracted)} 
-            style={{ width: 'auto', background: 'none', color: '#333', padding: '5px', border: 'none', cursor: 'pointer' }}
-          >
-            {isRetracted ? '→' : '←'}
-          </button>
-        </div>
+    <div>
+      <PageHead
+        title="Dashboard"
+        sub={`Visão do setor — ${ROTULO_PERFIL[user?.perfil] || user?.perfil}.`}
+      />
 
-        <nav className="menu">
-          <div className="menu-item">
-             <span style={{ marginRight: isRetracted ? '0' : '10px' }}>📦</span> 
-             {!isRetracted && <span>Estoque</span>}
+      {req.loading ? (
+        <div className="grid-kpi">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="kpi"><div className="skeleton" style={{ height: 34, width: "50%" }} /><div className="skeleton" style={{ height: 12, width: "70%", marginTop: 10 }} /></div>
+          ))}
+        </div>
+      ) : indisponivel ? (
+        <div className="alert alert-info">
+          O painel de indicadores (KPIs) ainda está sendo entregue no backend (Pacote 2). Assim que a rota
+          <code> GET /dashboard </code> entrar, os números aparecem aqui automaticamente — sem mudança no front.
+        </div>
+      ) : req.error ? (
+        <ErrorState error={req.error} onRetry={req.reload} />
+      ) : (
+        <>
+          <div className="grid-kpi">
+            <Kpi label="Produtos cadastrados" value={d.totalProdutos ?? 0} tone="neutral" to="/estoque" />
+            <Kpi label="Produtos críticos" value={d.produtosCriticos ?? 0} tone="danger" to="/estoque" hint="abaixo do mínimo" />
+            <Kpi label="Lotes vencendo (30d)" value={d.lotesVencendo30 ?? 0} tone="warn" hint={`${d.lotesVencendo60 ?? 0} em 60 dias`} />
+            <Kpi label="Pedidos pendentes" value={d.pedidosPendentes ?? 0} tone="info" to="/pedidos" />
           </div>
-          {usuario?.cargo === 'gestor' && (
-            <div className="menu-item" onClick={() => navigate('/cadastro')}>
-              <span style={{ marginRight: isRetracted ? '0' : '10px' }}>👤</span> 
-              {!isRetracted && <span>Cadastrar Usuário</span>}
+
+          {/* Demanda represada */}
+          <h3 style={{ margin: "var(--sp-6) 0 var(--sp-3)" }}>Demanda represada</h3>
+          {!d.demandaRepresada?.length ? (
+            <div className="panel"><div className="empty"><h4>Sem demanda represada</h4><p>Nenhum item aguardando reposição no momento.</p></div></div>
+          ) : (
+            <div className="table-wrap">
+              <table className="data">
+                <thead>
+                  <tr><th>Produto</th><th className="num">Qtd. solicitada</th><th className="num">Nº pedidos</th></tr>
+                </thead>
+                <tbody>
+                  {d.demandaRepresada.map((r) => (
+                    <tr key={r.produtoId}>
+                      <td>{r.nome}</td>
+                      <td className="num">{r.qtdSolicitadaTotal}</td>
+                      <td className="num">{r.numPedidos}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
-        </nav>
-
-        <div className="user-section" style={{ marginTop: 'auto', padding: '20px', borderTop: '1px solid #f0f0f0' }}>
-          <button onClick={logout} style={{ backgroundColor: '#444', color: '#fff', border: 'none', padding: '10px', borderRadius: '4px', cursor: 'pointer', width: '100%' }}>
-            {isRetracted ? 'Sair' : 'Sair do Sistema'}
-          </button>
-        </div>
-      </aside>
-
-      <main className="content">
-        <header>
-          <h1>Painel de Controle</h1>
-          <hr style={{ border: '0', borderTop: '1px solid #e0e0e0', margin: '20px 0' }} />
-        </header>
-        
-        <div className="placeholder-real">
-          <p>Welcome ao sistema de gestão do CEO. Selecione uma opção no menu lateral para começar a gerenciar o inventário.</p>
-        </div>
-      </main>
+        </>
+      )}
     </div>
   );
 }
-
-export default Dashboard;

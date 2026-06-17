@@ -1,0 +1,11 @@
+# Ferramentas locais de desenvolvimento (por desenvolvedor — não versionar)
+.claude/
+.impeccable/
+
+# Artefatos de teste/relatório gerados localmente
+*.vitest-result.json
+.vitest-result.json
+junit.xml
+
+# Sistema
+.DS_Store

@@ -1,105 +1,26 @@
-:root {
-  --sidebar-width: 260px;
-  --sidebar-retracted: 100px;
-  --bordo-ufpe: #990000;
-  --bg-main: #f8f9fa;
-  --text-dark: #1a1a1a;
-  --transition-speed: 0.25s;
-}
+/* ============================================================
+   Dashboard.css — tiles de KPI
+   (o layout de sidebar antigo foi substituído por Shell.css)
+   ============================================================ */
 
-.dashboard-layout {
-  display: flex;
-  min-height: 100vh;
-  width: 100vw;
-  margin: 0;
-  padding: 0;
-  background-color: var(--bg-main);
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-5);
+  min-height: 104px;
 }
+.kpi-value { font-size: var(--fs-28); font-weight: 700; line-height: 1.1; color: var(--ink); }
+.kpi-label { margin-top: var(--sp-2); font-size: var(--fs-14); color: var(--ink-2); font-weight: 600; }
+.kpi-hint  { margin-top: 2px; font-size: var(--fs-12); color: var(--ink-3); }
 
-/* SIDEBAR - Fixada e colada no limite esquerdo físico da tela */
-.sidebar {
-  width: var(--sidebar-width);
-  height: 100vh;
-  background-color: #ffffff;
-  border-right: 1px solid #e0e0e0;
-  display: flex;
-  flex-direction: column;
-  transition: width var(--transition-speed) ease;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 100;
-}
+/* Tom semântico: borda inferior sutil + cor do número (sem side-stripe lateral) */
+.kpi-danger .kpi-value { color: var(--danger); }
+.kpi-warn   .kpi-value { color: var(--warn); }
+.kpi-info   .kpi-value { color: var(--info); }
+.kpi-neutral .kpi-value { color: var(--ufpe-bordo); }
 
-.dashboard-layout.retracted .sidebar {
-  width: var(--sidebar-retracted);
-}
-
-.sidebar-header {
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-/* Esconde textos ao retrair */
-.dashboard-layout.retracted .menu-item span,
-.dashboard-layout.retracted .user-section span,
-.dashboard-layout.retracted .sidebar-header span {
-  display: none;
-}
-
-.menu {
-  flex-grow: 1;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.menu-item {
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  color: #444;
-  font-size: 16px;
-  transition: 0.2s;
-  white-space: nowrap;
-}
-
-.menu-item:hover {
-  background-color: rgba(153, 0, 0, 0.05);
-  color: var(--bordo-ufpe);
-  font-weight: 500;
-}
-
-/* CONTEÚDO PRINCIPAL */
-.content {
-  flex-grow: 1;
-  padding: 40px;
-  background-color: var(--bg-main);
-  min-width: 0;
-  text-align: left;
-  margin-left: var(--sidebar-width);
-  transition: margin-left var(--transition-speed) ease;
-}
-
-.dashboard-layout.retracted .content {
-  margin-left: var(--sidebar-retracted);
-}
-
-.content header h1 {
-  font-size: 32px;
-  color: var(--text-dark);
-  margin: 0 0 10px 0;
-  letter-spacing: -0.5px;
-}
-
-.placeholder-real p {
-  color: #555;
-  font-size: 16px;
-  line-height: 1.5;
-}
+.kpi-link { text-decoration: none; display: block; transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease); }
+.kpi-link:hover { text-decoration: none; transform: translateY(-1px); }
+.kpi-link:hover .kpi { box-shadow: var(--shadow-1); border-color: #d8d4d4; }
+.kpi-link:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--radius-lg); }
