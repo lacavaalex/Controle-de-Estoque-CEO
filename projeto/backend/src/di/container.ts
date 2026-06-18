@@ -2,10 +2,6 @@ import { JsonItemRepo } from "../repositories/JsonItemRepo.js";
 import { ItemService } from "../services/ItemService.js";
 import { ItemController } from "../controller/ItemController.js";
 
-import { JsonUserRepo } from "../repositories/JsonUserRepo.js";
-import { UserService } from "../services/UserService.js";
-import { UserController } from "../controller/UserController.js";
-
 // Stack v2: persistência Postgres (Drizzle) + auth real (JWT + RBAC).
 import { PgUsuarioRepo } from "../repositories/PgUsuarioRepo.js";
 import { PgSetorRepo } from "../repositories/PgSetorRepo.js";
@@ -26,10 +22,6 @@ import { PedidoController } from "../controller/PedidoController.js";
 const itemRepo = new JsonItemRepo();
 const itemService = new ItemService(itemRepo);
 const itemController = new ItemController(itemService);
-
-const userRepo = new JsonUserRepo();
-const userService = new UserService(userRepo);
-const userController = new UserController(userService);
 
 // --- v2 (Postgres + auth) ---
 const usuarioRepo = new PgUsuarioRepo();
@@ -54,7 +46,6 @@ const pedidoController = new PedidoController(pedidoService);
 
 export {
   itemController,
-  userController,
   authController,
   setorRepo,
   estoqueService,
