@@ -184,6 +184,5 @@ router.post(
 router.post("/items", async (req, res) => await itemController.createItem(req, res));
 router.patch("/items/:id/stock", async (req, res) => await itemController.addStock(req, res));
 router.patch("/items/:id/name", async (req, res) => await itemController.changeItemName(req, res));
-router.post("/registrar", (req, res) => userController.register(req, res));
 
 export { router };
