@@ -1,7 +1,6 @@
 import express from "express";
 import {
   itemController,
-  userController,
   authController,
   setorRepo,
   estoqueService,
