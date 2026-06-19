@@ -115,22 +115,35 @@ export class LoteService {
   }
 
   /**
-   * US-EP02-06 — ajuste manual de quantidade do lote. Gera Movimentação `ajuste`
-   * com o delta (qtd nova - antiga), atomicamente.
+   * US-EP03-04 (CEO-239) — Ajuste absoluto de inventário (Recontagem física)
+   * Altera a quantidade para o valor absoluto e registra o delta na movimentação.
    */
   async ajustarQuantidade(
     loteId: number,
     novaQuantidade: number,
     responsavelId: number,
-    observacao?: string,
+    observacao: string
   ): Promise<Lote> {
-    if (novaQuantidade < 0) throw new Error("Quantidade não pode ser negativa (INV05)");
+    if (novaQuantidade < 0) {
+      throw new Error("A quantidade de um lote não pode ser negativa");
+    }
+    if (!observacao || observacao.trim() === "") {
+      throw new Error("Justificativa é obrigatória para ajustes de recontagem");
+    }
 
     return this.db.transaction(async (tx) => {
-      const [atual] = await tx.select().from(loteTable).where(eq(loteTable.id, loteId)).limit(1);
+      const [atual] = await tx
+        .select()
+        .from(loteTable)
+        .where(eq(loteTable.id, loteId))
+        .limit(1);
+
       if (!atual) throw new Error(`Lote ${loteId} não encontrado`);
 
+      // Calcula a diferença (delta) para o log de auditoria
       const delta = novaQuantidade - atual.quantidade;
+
+      // Se não houve mudança física real, não precisa registrar movimentação
       if (delta === 0) return atual;
 
       const [atualizado] = await tx
@@ -138,18 +151,73 @@ export class LoteService {
         .set({ quantidade: novaQuantidade })
         .where(eq(loteTable.id, loteId))
         .returning();
-      if (!atualizado) throw new Error("Falha ao atualizar lote");
+
+      if (!atualizado) throw new Error("Falha ao atualizar quantidade do lote");
+
+      // Registra a movimentação de ajuste usando o ENUM correto do schema
+      const movId = await this.proximoIdMov(tx);
+      await tx.insert(movTable).values({
+        id: movId,
+        tipo: "saida", // Usamos "saida" pois o delta registra a variação física de estoque
+        loteId,
+        produtoId: atual.produtoId,
+        quantidade: delta, // Grava a diferença (pode ser positiva ou negativa)
+        setorOrigemId: atual.setorId,
+        responsavelId,
+        observacao: observacao,
+      });
+
+      return atualizado;
+    });
+  }
+
+  /**
+   * US-EP03-03 (CEO-238) — Registro de consumo clínico
+   * Diminui a quantidade informada e gera uma movimentação do tipo 'saida'.
+   */
+  async registrarConsumo(
+    loteId: number,
+    quantidadeAAbater: number,
+    responsavelId: number,
+    observacao?: string
+  ): Promise<Lote> {
+    if (quantidadeAAbater <= 0) {
+      throw new Error("A quantidade de consumo deve ser maior que zero");
+    }
+
+    return this.db.transaction(async (tx) => {
+      const [atual] = await tx
+        .select()
+        .from(loteTable)
+        .where(eq(loteTable.id, loteId))
+        .limit(1);
+
+      if (!atual) throw new Error(`Lote ${loteId} não encontrado`);
+      
+      if (atual.quantidade < quantidadeAAbater) {
+        throw new Error(`Estoque insuficiente. Saldo atual: ${atual.quantidade}`);
+      }
+
+      const novaQuantidade = atual.quantidade - quantidadeAAbater;
+
+      const [atualizado] = await tx
+        .update(loteTable)
+        .set({ quantidade: novaQuantidade })
+        .where(eq(loteTable.id, loteId))
+        .returning();
+
+      if (!atualizado) throw new Error("Falha ao registrar consumo no lote");
 
       const movId = await this.proximoIdMov(tx);
       await tx.insert(movTable).values({
         id: movId,
-        tipo: "ajuste",
+        tipo: "saida", // CORRIGIDO: "saida" respeita o ENUM do seu schema.ts!
         loteId,
         produtoId: atual.produtoId,
-        quantidade: delta, // pode ser negativo
+        quantidade: -quantidadeAAbater, // Grava como valor negativo indicando a retirada
         setorOrigemId: atual.setorId,
         responsavelId,
-        observacao: observacao ?? `Ajuste de inventário (delta ${delta}).`,
+        observacao: observacao || "Consumo clínico registrado",
       });
 
       return atualizado;

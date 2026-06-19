@@ -54,25 +54,44 @@ export class LoteController {
     }
   }
 
-  // US-EP02-06 — ajuste de quantidade do lote.
+  // US-EP02-06 / US-EP03-04 — ajuste absoluto por recontagem de inventário
   async ajustar(req: Request, res: Response): Promise<Response> {
     const loteId = Number(req.params.loteId);
     const { quantidade, observacao } = req.body ?? {};
     const responsavelId = req.identidade?.usuarioId;
     if (responsavelId === undefined) return res.status(401).json({ mensagem: "Não autenticado" });
+    
     try {
       const lote = await this.loteService.ajustarQuantidade(
         loteId,
-        Number(quantidade),
+        Number(quantidade), // Quantidade absoluta informada pelo Gestor
         responsavelId,
-        observacao,
+        observacao
       );
       return res.status(200).json({ lote });
     } catch (error) {
-      if (error instanceof Error) {
-        const status = error.message.includes("não encontrado") ? 404 : 400;
-        return res.status(status).json({ mensagem: error.message });
-      }
+      if (error instanceof Error) return res.status(400).json({ mensagem: error.message });
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
+
+  // US-EP03-03 — registro de consumo clínico
+  async consumir(req: Request, res: Response): Promise<Response> {
+    const loteId = Number(req.params.loteId);
+    const { quantidade, observacao } = req.body ?? {};
+    const responsavelId = req.identidade?.usuarioId;
+    if (responsavelId === undefined) return res.status(401).json({ mensagem: "Não autenticado" });
+
+    try {
+      const lote = await this.loteService.registrarConsumo(
+        loteId,
+        Number(quantidade), // Quantidade a subtrair do estoque
+        responsavelId,
+        observacao
+      );
+      return res.status(200).json({ lote });
+    } catch (error) {
+      if (error instanceof Error) return res.status(400).json({ mensagem: error.message });
       return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
