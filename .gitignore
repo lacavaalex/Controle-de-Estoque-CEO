@@ -1,0 +1,18 @@
+# Insumos de domínio do cliente — NÃO versionar (dados brutos de materiais do CEO).
+# Removidos da raiz em 19/06 (CEO-271). Quem precisar, pega na pasta compartilhada do grupo.
+*.xlsx
+*.pdf
+!docs/**/*.pdf
+
+# Ambiente / dependências
+node_modules/
+.env
+.env.local
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
