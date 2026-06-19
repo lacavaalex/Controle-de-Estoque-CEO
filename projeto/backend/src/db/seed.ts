@@ -207,8 +207,7 @@ async function seed() {
       { produtoId: P("Broca Carbide 1014"), setorId: ho.id, numeroLote: "LT-2025-050", fabricacao: emDias(-60), validade: emDias(420), quantidade: 80, estado: "ativo" },
       // Crítico
       { produtoId: P("Curetas Periodontais"), setorId: ho.id, numeroLote: "LT-2025-051", fabricacao: emDias(-50), validade: emDias(500), quantidade: 15, estado: "ativo" },
-      { produtoId: P("Clorexidina 2%"), setorId: ho.id, numeroLote: "LT-2025-080", fabricacao: emDias(-15), validade: emDias(28), quantidade: 90, estado: "vencido" },
-      { produtoId: P("Hipoclorito de Sódio"), setorId: ho.id, numeroLote: "LT-2025-081", fabricacao: emDias(-70), validade: emDias(53), quantidade: 180, estado: "ativo" },
+      { produtoId: P("Clorexidina 2%"), setorId: ho.id, numeroLote: "LT-2025-080", fabricacao: emDias(-90), validade: emDias(28), quantidade: 90, estado: "ativo" },      { produtoId: P("Hipoclorito de Sódio"), setorId: ho.id, numeroLote: "LT-2025-081", fabricacao: emDias(-70), validade: emDias(53), quantidade: 180, estado: "ativo" },
       { produtoId: P("Selante de Fóssulas"), setorId: ho.id, numeroLote: "LT-2025-090", fabricacao: emDias(-40), validade: emDias(680), quantidade: 22, estado: "ativo" },
       // SEGREGADO (RN17) — sala de biossegurança, fora do estoque ativo
       { produtoId: P("Resina Composta A2"), setorId: ho.id, numeroLote: "LT-2024-099", fabricacao: emDias(-500), validade: emDias(-120), quantidade: 6, estado: "segregado", dataSegregacao: emDias(-110), observacaoSegregacao: "Carga inicial — material já estava na sala de biossegurança." },

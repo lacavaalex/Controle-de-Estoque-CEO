@@ -7,7 +7,8 @@ import {
   catalogoDoSetor, 
   lotesDoProduto, 
   registrarConsumoLote, 
-  ajustarSaldoLote 
+  ajustarSaldoLote,
+  segregarLote
 } from "../api/estoque.js";
 import { CATEGORIAS, STATUS_ESTOQUE, PERFIL } from "../api/constants.js";
 import { PageHead, StatusEstoque, TableSkeleton, ErrorState, EmptyState } from "../app/ui.jsx";
@@ -93,7 +94,7 @@ export default function Estoque() {
   // Componente que renderiza os lotes reais filhos sob a linha pai correspondente
   function DetalheLotes({ produtoId, setorId }) {
     const lotesReq = useFetch(
-      () => lotesDoProduto(produtoId, setorId),
+      () => lotesDoProduto(produtoId, setorId, true),
       [produtoId, setorId]
     );
 
@@ -149,16 +150,16 @@ export default function Estoque() {
                         >
                           Recontar
                         </button>
+                        {l.estadoValidade === "vencido" && (
+                          <button 
+                            className="btn btn-sm btn-danger" 
+                            style={{ marginLeft: "5px", padding: "2px 8px" }}
+                            onClick={(e) => { e.stopPropagation(); handleSegregar(l.id); }}
+                          >
+                            Segregar
+                          </button>
+                        )}
                       </td>
-                      {l.estadoValidade === "vencido" && (
-                        <button 
-                          className="btn btn-sm btn-danger" 
-                          style={{ marginLeft: "5px", padding: "2px 8px" }}
-                          onClick={(e) => { e.stopPropagation(); handleSegregar(l.id); }}
-                        >
-                          ⚠️ Segregar
-                        </button>
-                      )}
                     </tr>
                   ))}
                 </tbody>

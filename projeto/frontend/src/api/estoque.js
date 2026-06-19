@@ -25,8 +25,12 @@ export async function catalogoDoSetor(setorId, filtros) {
 }
 
 // GET /produtos/:id/lotes → { lotes: [...] } (não exibir a solicitante)
-export async function lotesDoProduto(produtoId, setorId) {
-  const q = setorId ? `?setorId=${setorId}` : "";
+export async function lotesDoProduto(produtoId, setorId, incluirInativos = false) {
+  const p = new URLSearchParams();
+  if (setorId) p.set("setorId", setorId);
+  if (incluirInativos) p.set("incluirInativos", "true");
+  
+  const q = p.toString() ? `?${p.toString()}` : "";
   const data = await api.get(`/produtos/${produtoId}/lotes${q}`);
   return data.lotes ?? [];
 }
