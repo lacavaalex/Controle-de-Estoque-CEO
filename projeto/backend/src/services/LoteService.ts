@@ -223,4 +223,46 @@ export class LoteService {
       return atualizado;
     });
   }
+
+  async segregar(
+    loteId: number,
+    responsavelId: number,
+    observacao: string,
+    hoje: Date = new Date()
+  ): Promise<Lote> {
+    if (!observacao || observacao.trim() === "") {
+      throw new Error("Uma observação é obrigatória para a segregação do lote");
+    }
+
+    return this.db.transaction(async (tx) => {
+      const [atual] = await tx.select().from(loteTable).where(eq(loteTable.id, loteId)).limit(1);
+      if (!atual) throw new Error(`Lote ${loteId} não encontrado`);
+
+      const [atualizado] = await tx
+        .update(loteTable)
+        .set({
+          estado: "segregado", // RN17 / CEO-213
+          dataSegregacao: hoje.toISOString().slice(0, 10), // CHECK lote_segregado_tem_data
+          observacaoSegregacao: observacao,
+        })
+        .where(eq(loteTable.id, loteId))
+        .returning();
+
+      if (!atualizado) throw new Error("Falha ao atualizar estado do lote para segregado");
+
+      const movId = await this.proximoIdMov(tx);
+      await tx.insert(movTable).values({
+        id: movId,
+        tipo: "segregacao", // Enum tipo_movimentacao
+        loteId,
+        produtoId: atual.produtoId,
+        quantidade: 0, // Segregação não altera quantidade fisicamente, muda o estado de disponibilidade
+        setorOrigemId: atual.setorId,
+        responsavelId,
+        observacao,
+      });
+
+      return atualizado;
+    });
+  }
 }

@@ -95,4 +95,19 @@ export class LoteController {
       return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
+
+  async segregarLote(req: Request, res: Response): Promise<Response> {
+    const loteId = Number(req.params.loteId);
+    const { observacao } = req.body ?? {};
+    const responsavelId = req.identidade?.usuarioId;
+    if (responsavelId === undefined) return res.status(401).json({ mensagem: "Não autenticado" });
+
+    try {
+      const lote = await this.loteService.segregar(loteId, responsavelId, observacao);
+      return res.status(200).json({ lote });
+    } catch (error) {
+      if (error instanceof Error) return res.status(400).json({ mensagem: error.message });
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
 }

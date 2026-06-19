@@ -187,4 +187,12 @@ router.post(
   (req, res) => pedidoController.expedir(req, res),
 );
 
+// US-EP07-01 — Segregação de lote por vencimento ou descarte
+router.post(
+  "/lotes/:loteId/segregar",
+  auth,
+  exigir((id) => id.perfil === "gestor" || id.perfil === "almoxarife"),
+  (req, res) => loteController.segregarLote(req, res)
+);
+
 export { router };

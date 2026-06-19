@@ -48,3 +48,11 @@ export async function ajustarSaldoLote(loteId, quantidade, observacao) {
   const resposta = await api.patch(`/lotes/${loteId}/ajuste`, { quantidade, observacao });
   return resposta.data;
 }
+
+/**
+ * US-EP07-01 — Segrega um lote ativo ou vencido no setor
+ */
+export async function segregarLote(loteId, observacao) {
+  const resposta = await api.post(`/lotes/${loteId}/segregar`, { observacao });
+  return resposta.data;
+}

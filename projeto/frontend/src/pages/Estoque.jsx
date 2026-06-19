@@ -150,6 +150,15 @@ export default function Estoque() {
                           Recontar
                         </button>
                       </td>
+                      {l.estadoValidade === "vencido" && (
+                        <button 
+                          className="btn btn-sm btn-danger" 
+                          style={{ marginLeft: "5px", padding: "2px 8px" }}
+                          onClick={(e) => { e.stopPropagation(); handleSegregar(l.id); }}
+                        >
+                          ⚠️ Segregar
+                        </button>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -159,6 +168,22 @@ export default function Estoque() {
         </td>
       </tr>
     );
+  }
+
+  async function handleSegregar(loteId) {
+    const obs = prompt("Justificativa para a segregação do lote (Obrigatório):", "Material vencido identificado na recontagem");
+    if (!obs || obs.trim() === "") {
+      alert("É obrigatório informar o motivo da segregação!");
+      return;
+    }
+
+    try {
+      await segregarLote(loteId, obs);
+      alert("Lote enviado para a sala de biossegurança (segregado)!");
+      itensReq.reload();
+    } catch (err) {
+      alert(err.response?.data?.mensagem || "Erro ao segregar lote");
+    }
   }
 
   return (
