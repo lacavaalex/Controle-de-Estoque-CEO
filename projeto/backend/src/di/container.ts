@@ -47,9 +47,9 @@ const pedidoRepo = new PgPedidoRepo();
 const pedidoService = new PedidoService(pedidoRepo);
 const pedidoController = new PedidoController(pedidoService);
 
-// Agente de Email da Dispensação (EP08) — antecâmara de rascunhos.
+// Agente de Email da Dispensação (EP08) — antecâmara de rascunhos + triagem.
 const rascunhoRepo = new PgRascunhoRepo();
-const rascunhoService = new RascunhoService(rascunhoRepo);
+const rascunhoService = new RascunhoService(rascunhoRepo, pedidoRepo, usuarioRepo);
 const rascunhoController = new RascunhoController(rascunhoService);
 
 export {

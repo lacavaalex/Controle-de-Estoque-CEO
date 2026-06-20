@@ -4,13 +4,13 @@
 // sobre o índice único de message_id (inbox pattern). O backend continua dono
 // único do banco; o agente só escreve por aqui (POST /rascunhos).
 // =============================================================================
-import { eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import type {
   IRascunhoRepository,
   ResultadoUpsertRascunho,
 } from "../interfaces/repository-interfaces/IRascunhoRepo.js";
-import type { PedidoRascunho, NovoPedidoRascunho } from "../entities/index.js";
-import { db as defaultDb, type DB } from "../db/client.js";
+import type { PedidoRascunho, NovoPedidoRascunho, StatusTriagem } from "../entities/index.js";
+import { db as defaultDb, type DB, type Tx } from "../db/client.js";
 import { pedidoRascunho } from "../db/schema.js";
 
 export class PgRascunhoRepo implements IRascunhoRepository {
@@ -43,5 +43,44 @@ export class PgRascunhoRepo implements IRascunhoRepository {
       .where(eq(pedidoRascunho.messageId, messageId))
       .limit(1);
     return linha ?? null;
+  }
+
+  // ─── Triagem (CEO-276) ──────────────────────────────────────────────────────
+
+  async buscarPorId(id: number, tx?: Tx): Promise<PedidoRascunho | null> {
+    const executor = tx ?? this.db;
+    // Na transação da promoção, trava a linha (FOR UPDATE) contra aprovação dupla.
+    const base = executor.select().from(pedidoRascunho).where(eq(pedidoRascunho.id, id)).limit(1);
+    const [linha] = tx ? await base.for("update") : await base;
+    return linha ?? null;
+  }
+
+  async listarPorStatus(status: StatusTriagem): Promise<PedidoRascunho[]> {
+    return this.db
+      .select()
+      .from(pedidoRascunho)
+      .where(eq(pedidoRascunho.statusTriagem, status))
+      .orderBy(desc(pedidoRascunho.criadoEm));
+  }
+
+  async marcarAprovado(id: number, pedidoId: string, tx: Tx): Promise<void> {
+    await tx
+      .update(pedidoRascunho)
+      .set({ statusTriagem: "aprovado", pedidoId, processadoEm: new Date() })
+      .where(eq(pedidoRascunho.id, id));
+  }
+
+  async marcarDescartado(id: number): Promise<boolean> {
+    // UPDATE condicional: só transiciona se ainda 'pendente'. Atômico no nível da
+    // linha — se uma aprovação concorrente já mudou o status, casa 0 linhas e
+    // NÃO sobrescreve (evita descartar um rascunho que já virou pedido).
+    const afetadas = await this.db
+      .update(pedidoRascunho)
+      .set({ statusTriagem: "descartado", processadoEm: new Date() })
+      .where(
+        and(eq(pedidoRascunho.id, id), eq(pedidoRascunho.statusTriagem, "pendente")),
+      )
+      .returning({ id: pedidoRascunho.id });
+    return afetadas.length > 0;
   }
 }

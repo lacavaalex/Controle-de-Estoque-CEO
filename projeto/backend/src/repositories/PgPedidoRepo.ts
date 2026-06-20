@@ -7,12 +7,8 @@ import type {
   PedidoComItens,
 } from "../interfaces/repository-interfaces/IPedidoRepo.js";
 import type { ItemDoPedido, StatusPedido } from "../entities/index.js";
-import { db as defaultDb, type DB } from "../db/client.js";
+import { db as defaultDb, type DB, type Tx } from "../db/client.js";
 import { itemDoPedido, pedido } from "../db/schema.js";
-
-// Executor de transação (callback de db.transaction): compartilha a API de
-// consulta com DB, mas não é o NodePgDatabase completo.
-type Tx = Parameters<Parameters<DB["transaction"]>[0]>[0];
 
 // Aninha os itens-filho (itemPaiId != null — RF05.17) sob seus itens-pai.
 // O array resultante contém apenas os itens RAIZ; cada um leva `desdobramentos`.
@@ -49,28 +45,43 @@ export class PgPedidoRepo implements IPedidoRepository {
     return row.id;
   }
 
+  /**
+   * Cria pedido (gera PED-NNN) + itens atomicamente. Aceita um `tx` externo
+   * (ex.: a promoção rascunho→pedido, que precisa criar o pedido E marcar o
+   * rascunho na MESMA transação). Sem `tx`, abre a própria — comportamento
+   * standalone preservado.
+   */
   async criar(
     cabecalho: NovoPedidoSemId,
     itens: NovoItemSemPedido[],
+    tx?: Tx,
   ): Promise<PedidoComItens> {
     if (itens.length === 0) throw new Error("Pedido deve ter ao menos um item (RN09)");
 
-    return this.db.transaction(async (tx) => {
-      const id = await this.proximoId(tx);
+    if (tx) return this.criarNaTransacao(tx, cabecalho, itens);
+    return this.db.transaction((novaTx) => this.criarNaTransacao(novaTx, cabecalho, itens));
+  }
 
-      const [cabecalhoCriado] = await tx
-        .insert(pedido)
-        .values({ ...cabecalho, id })
-        .returning();
-      if (!cabecalhoCriado) throw new Error("Falha ao criar pedido");
+  // Corpo da criação sobre um executor transacional (próprio ou emprestado).
+  private async criarNaTransacao(
+    tx: Tx,
+    cabecalho: NovoPedidoSemId,
+    itens: NovoItemSemPedido[],
+  ): Promise<PedidoComItens> {
+    const id = await this.proximoId(tx);
 
-      const itensCriados = await tx
-        .insert(itemDoPedido)
-        .values(itens.map((i) => ({ ...i, pedidoId: id })))
-        .returning();
+    const [cabecalhoCriado] = await tx
+      .insert(pedido)
+      .values({ ...cabecalho, id })
+      .returning();
+    if (!cabecalhoCriado) throw new Error("Falha ao criar pedido");
 
-      return { ...cabecalhoCriado, itens: itensCriados };
-    });
+    const itensCriados = await tx
+      .insert(itemDoPedido)
+      .values(itens.map((i) => ({ ...i, pedidoId: id })))
+      .returning();
+
+    return { ...cabecalhoCriado, itens: itensCriados };
   }
 
   async buscarPorId(id: string): Promise<PedidoComItens | null> {

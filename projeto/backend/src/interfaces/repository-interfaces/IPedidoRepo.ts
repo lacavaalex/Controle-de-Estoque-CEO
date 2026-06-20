@@ -5,6 +5,7 @@ import type {
   Pedido,
   StatusPedido,
 } from "../../entities/index.js";
+import type { Tx } from "../../db/client.js";
 
 // `id` (PED-NNN) é gerado pelo repositório a partir da sequência; o payload de
 // criação do cabeçalho omite o id e o status (derivado — nasce 'pendente').
@@ -26,7 +27,14 @@ export interface PedidoComItens extends Pedido {
 
 export interface IPedidoRepository {
   // Cria o pedido (gera PED-NNN) e seus itens, atomicamente. Retorna o agregado.
-  criar(cabecalho: NovoPedidoSemId, itens: NovoItemSemPedido[]): Promise<PedidoComItens>;
+  // `tx` opcional: quando informado, opera na transação do chamador (ex.: a
+  // promoção rascunho→pedido cria o pedido e marca o rascunho juntos); sem ele,
+  // abre a própria transação.
+  criar(
+    cabecalho: NovoPedidoSemId,
+    itens: NovoItemSemPedido[],
+    tx?: Tx,
+  ): Promise<PedidoComItens>;
 
   buscarPorId(id: string): Promise<PedidoComItens | null>;
 

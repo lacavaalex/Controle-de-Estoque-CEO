@@ -187,6 +187,29 @@ router.post(
 const authServico = autenticarServico();
 router.post("/rascunhos", authServico, (req, res) => rascunhoController.receber(req, res));
 
+// Triagem (CEO-276) — human-in-the-loop. Auth de USUÁRIO (JWT) + RBAC: só quem
+// processa pedidos (almoxarife/gestor HO — RN11) vê e decide a fila.
+router.get(
+  "/rascunhos",
+  auth,
+  exigir((id) => podeProcessarPedidos(id)),
+  (req, res) => rascunhoController.listar(req, res),
+);
+// Promove o rascunho a pedido oficial (em transação; status derivado — RN10).
+router.post(
+  "/rascunhos/:id/aprovar",
+  auth,
+  exigir((id) => podeProcessarPedidos(id)),
+  (req, res) => rascunhoController.aprovar(req, res),
+);
+// Descarta o rascunho (spam/duplicado/não-pedido) — não cria pedido.
+router.post(
+  "/rascunhos/:id/descartar",
+  auth,
+  exigir((id) => podeProcessarPedidos(id)),
+  (req, res) => rascunhoController.descartar(req, res),
+);
+
 // ─── Itens (legado v1) — mantidas até a migração para Produto/Lote ──────────
 router.post("/items", async (req, res) => await itemController.createItem(req, res));
 router.patch("/items/:id/stock", async (req, res) => await itemController.addStock(req, res));

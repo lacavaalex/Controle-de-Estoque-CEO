@@ -16,3 +16,8 @@ export const pool = new pg.Pool({ connectionString });
 export const db = drizzle(pool, { schema });
 
 export type DB = typeof db;
+
+// Executor transacional (o argumento do callback de db.transaction). Compartilha
+// a API de consulta com DB, mas não é o NodePgDatabase completo. Exportado para
+// que repositórios componham uma transação única (ex.: promoção rascunho→pedido).
+export type Tx = Parameters<Parameters<DB["transaction"]>[0]>[0];
