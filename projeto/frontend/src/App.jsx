@@ -10,6 +10,8 @@ import Estoque from "./pages/Estoque.jsx";
 import NovoPedido from "./pages/NovoPedido.jsx";
 import Pedidos from "./pages/Pedidos.jsx";
 import PedidoDetalhe from "./pages/PedidoDetalhe.jsx";
+import TrocarSenha from "./pages/TrocarSenha.jsx";
+import Usuarios from "./pages/Usuarios.jsx";
 
 export default function App() {
   return (
@@ -18,6 +20,13 @@ export default function App() {
         <Routes>
           {/* Pública */}
           <Route path="/login" element={<Login />} />
+          
+          {/* Nova rota protegida, mas sem AppShell */}
+          <Route path="/trocar-senha" element={
+            <RequireAuth>
+              <TrocarSenha />
+            </RequireAuth>
+          } />
 
           {/* Protegidas — dentro da casca da aplicação */}
           <Route
@@ -32,6 +41,7 @@ export default function App() {
             <Route path="/pedidos" element={<Pedidos />} />
             <Route path="/pedidos/novo" element={<NovoPedido />} />
             <Route path="/pedidos/:id" element={<PedidoDetalhe />} />
+            <Route path="/usuarios" element={<Usuarios />} />
           </Route>
 
           {/* Raiz e fallback */}
