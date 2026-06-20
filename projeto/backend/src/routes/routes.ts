@@ -7,8 +7,9 @@ import {
   produtoController,
   loteController,
   pedidoController,
+  rascunhoController,
 } from "../di/container.js";
-import { autenticar, exigir } from "../auth/middleware.js";
+import { autenticar, exigir, autenticarServico } from "../auth/middleware.js";
 import {
   podeVerSetor,
   podeEditarEstoque,
@@ -178,6 +179,13 @@ router.post(
   exigir((id) => podeProcessarPedidos(id)),
   (req, res) => pedidoController.expedir(req, res),
 );
+
+// ─── Agente de Email da Dispensação (EP08 / ADR-0004) ───────────────────────
+// POST /rascunhos — admissão de solicitações por email. Auth de SERVIÇO
+// (Bearer AGENTE_TOKEN), não JWT: o agente é um worker, não um usuário logado.
+// Idempotente (ON CONFLICT por messageId). NÃO aplica RN10 (rascunho ≠ pedido).
+const authServico = autenticarServico();
+router.post("/rascunhos", authServico, (req, res) => rascunhoController.receber(req, res));
 
 // ─── Itens (legado v1) — mantidas até a migração para Produto/Lote ──────────
 router.post("/items", async (req, res) => await itemController.createItem(req, res));

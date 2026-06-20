@@ -17,6 +17,9 @@ import { LoteController } from "../controller/LoteController.js";
 import { PgPedidoRepo } from "../repositories/PgPedidoRepo.js";
 import { PedidoService } from "../services/PedidoService.js";
 import { PedidoController } from "../controller/PedidoController.js";
+import { PgRascunhoRepo } from "../repositories/PgRascunhoRepo.js";
+import { RascunhoService } from "../services/RascunhoService.js";
+import { RascunhoController } from "../controller/RascunhoController.js";
 
 // --- Legado v1 (Item/User em JSON) — mantido até a migração das rotas ---
 const itemRepo = new JsonItemRepo();
@@ -44,6 +47,11 @@ const pedidoRepo = new PgPedidoRepo();
 const pedidoService = new PedidoService(pedidoRepo);
 const pedidoController = new PedidoController(pedidoService);
 
+// Agente de Email da Dispensação (EP08) — antecâmara de rascunhos.
+const rascunhoRepo = new PgRascunhoRepo();
+const rascunhoService = new RascunhoService(rascunhoRepo);
+const rascunhoController = new RascunhoController(rascunhoService);
+
 export {
   itemController,
   authController,
@@ -52,4 +60,5 @@ export {
   produtoController,
   loteController,
   pedidoController,
+  rascunhoController,
 };

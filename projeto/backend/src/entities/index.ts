@@ -15,6 +15,7 @@ import type {
   pedido,
   itemDoPedido,
   movimentacao,
+  pedidoRascunho,
 } from "../db/schema.js";
 
 // Linhas como vêm do banco (SELECT).
@@ -25,6 +26,7 @@ export type Lote = typeof lote.$inferSelect;
 export type Pedido = typeof pedido.$inferSelect;
 export type ItemDoPedido = typeof itemDoPedido.$inferSelect;
 export type Movimentacao = typeof movimentacao.$inferSelect;
+export type PedidoRascunho = typeof pedidoRascunho.$inferSelect;
 
 // Payloads de inserção (INSERT) — colunas com default/serial ficam opcionais.
 export type NovoSetor = typeof setor.$inferInsert;
@@ -34,6 +36,7 @@ export type NovoLote = typeof lote.$inferInsert;
 export type NovoPedido = typeof pedido.$inferInsert;
 export type NovoItemDoPedido = typeof itemDoPedido.$inferInsert;
 export type NovaMovimentacao = typeof movimentacao.$inferInsert;
+export type NovoPedidoRascunho = typeof pedidoRascunho.$inferInsert;
 
 // Enums de domínio como tipos (derivados das colunas).
 export type TipoSetor = Setor["tipo"];
@@ -45,3 +48,5 @@ export type StatusItem = ItemDoPedido["statusItem"];
 export type StatusPedido = Pedido["status"];
 export type MotivoDivergencia = NonNullable<ItemDoPedido["motivoDivergencia"]>;
 export type TipoMovimentacao = Movimentacao["tipo"];
+export type OrigemCanal = Pedido["origemCanal"];
+export type StatusTriagem = PedidoRascunho["statusTriagem"];
