@@ -10,6 +10,8 @@ export const NAV_ITEMS = [
   { to: "/estoque",   label: "Estoque",   icon: "📦", perfis: [GESTOR, ALMOXARIFE, SOLICITANTE] },
   { to: "/pedidos/novo", label: "Novo pedido", icon: "➕", perfis: [GESTOR, SOLICITANTE] },
   { to: "/pedidos",   label: "Processar pedidos", icon: "🗂️", perfis: [GESTOR, ALMOXARIFE] },
+  // Triagem do Agente de Email (EP08): mesmo escopo de quem processa pedidos.
+  { to: "/triagem",   label: "Triagem", icon: "📨", perfis: [GESTOR, ALMOXARIFE] },
 ];
 
 export function navParaPerfil(perfil) {
