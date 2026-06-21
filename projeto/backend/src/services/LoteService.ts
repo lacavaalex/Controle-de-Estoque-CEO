@@ -1,11 +1,11 @@
 // =============================================================================
-// LoteService — entrada e ajuste de estoque (US-EP02-05 / EP02-06).
+// LoteService — entrada, ajuste, consumo e segregação de lotes.
 //
-// registrarEntrada (RN: entrada de fornecedor) e ajustarQuantidade são
-// ATÔMICOS: criam/atualizam o lote E geram a Movimentação na MESMA transação
-// (db.transaction), para que estoque e auditoria nunca divirjam (RN11/INV01).
+// Todos os métodos são ATÔMICOS: atualizam o lote E geram a Movimentação na
+// MESMA transação (db.transaction), para que estoque e auditoria nunca
+// divirjam (RN11 / INV01).
 //
-// O estado inicial do lote é derivado da validade (RN05/RN17): validade no
+// Estado inicial do lote é derivado da validade (RN05/RN17): validade no
 // passado entra como `vencido` (com aviso ao chamador via flag de retorno).
 // =============================================================================
 import { eq, sql } from "drizzle-orm";
@@ -16,7 +16,7 @@ import { db as defaultDb } from "../db/client.js";
 // a API de consulta com DB, mas não é o NodePgDatabase completo (sem $client).
 type Tx = Parameters<Parameters<DB["transaction"]>[0]>[0];
 import { lote as loteTable, movimentacao as movTable, produto as produtoTable } from "../db/schema.js";
-import type { Lote, Unidade } from "../entities/index.js";
+import type { Lote } from "../entities/index.js";
 import { estadoValidadeLote } from "../domain/estoque.js";
 
 export interface DadosEntradaLote {
@@ -62,7 +62,6 @@ export class LoteService {
     }
 
     return this.db.transaction(async (tx) => {
-      // Produto precisa existir (FK garante, mas damos erro amigável).
       const [prod] = await tx
         .select({ id: produtoTable.id })
         .from(produtoTable)
@@ -70,12 +69,8 @@ export class LoteService {
         .limit(1);
       if (!prod) throw new Error(`Produto ${produtoId} não encontrado`);
 
-      // Estado inicial pela validade (RN05/RN17).
       const estadoValidade = estadoValidadeLote(
-        {
-          // só os campos que estadoValidadeLote usa
-          validade: dados.validade,
-        } as Lote,
+        { validade: dados.validade } as Lote,
         hoje,
       );
       const estado = estadoValidade === "vencido" ? "vencido" : "ativo";
@@ -115,14 +110,18 @@ export class LoteService {
   }
 
   /**
-   * US-EP03-04 (CEO-239) — Ajuste absoluto de inventário (Recontagem física)
-   * Altera a quantidade para o valor absoluto e registra o delta na movimentação.
+   * US-EP03-04 (CEO-239) — Recontagem física: ajusta a quantidade do lote para
+   * o valor absoluto informado e gera Movimentação `ajuste` com o delta
+   * (positivo = sobra encontrada, negativo = falta encontrada).
+   *
+   * fix: tipo era "saida", o que tornava auditorias impossíveis de distinguir
+   * expedição de correção de inventário, e quebrava semântica quando delta > 0.
    */
   async ajustarQuantidade(
     loteId: number,
     novaQuantidade: number,
     responsavelId: number,
-    observacao: string
+    observacao: string,
   ): Promise<Lote> {
     if (novaQuantidade < 0) {
       throw new Error("A quantidade de um lote não pode ser negativa");
@@ -140,10 +139,7 @@ export class LoteService {
 
       if (!atual) throw new Error(`Lote ${loteId} não encontrado`);
 
-      // Calcula a diferença (delta) para o log de auditoria
       const delta = novaQuantidade - atual.quantidade;
-
-      // Se não houve mudança física real, não precisa registrar movimentação
       if (delta === 0) return atual;
 
       const [atualizado] = await tx
@@ -154,17 +150,16 @@ export class LoteService {
 
       if (!atualizado) throw new Error("Falha ao atualizar quantidade do lote");
 
-      // Registra a movimentação de ajuste usando o ENUM correto do schema
       const movId = await this.proximoIdMov(tx);
       await tx.insert(movTable).values({
         id: movId,
-        tipo: "saida", // Usamos "saida" pois o delta registra a variação física de estoque
+        tipo: "ajuste", // CEO-239: tipo correto para recontagem — distingue de expedição
         loteId,
         produtoId: atual.produtoId,
-        quantidade: delta, // Grava a diferença (pode ser positiva ou negativa)
+        quantidade: delta, // positivo = sobra encontrada; negativo = falta encontrada
         setorOrigemId: atual.setorId,
         responsavelId,
-        observacao: observacao,
+        observacao,
       });
 
       return atualizado;
@@ -172,14 +167,17 @@ export class LoteService {
   }
 
   /**
-   * US-EP03-03 (CEO-238) — Registro de consumo clínico
-   * Diminui a quantidade informada e gera uma movimentação do tipo 'saida'.
+   * US-EP03-03 (CEO-238) — Consumo clínico: abate a quantidade consumida do
+   * saldo do lote e gera Movimentação `consumo`.
+   *
+   * fix: tipo era "saida", misturando consumo clínico com expedição por pedido —
+   * dois eventos distintos que o almoxarife precisa distinguir nos relatórios.
    */
   async registrarConsumo(
     loteId: number,
     quantidadeAAbater: number,
     responsavelId: number,
-    observacao?: string
+    observacao?: string,
   ): Promise<Lote> {
     if (quantidadeAAbater <= 0) {
       throw new Error("A quantidade de consumo deve ser maior que zero");
@@ -193,7 +191,7 @@ export class LoteService {
         .limit(1);
 
       if (!atual) throw new Error(`Lote ${loteId} não encontrado`);
-      
+
       if (atual.quantidade < quantidadeAAbater) {
         throw new Error(`Estoque insuficiente. Saldo atual: ${atual.quantidade}`);
       }
@@ -211,38 +209,55 @@ export class LoteService {
       const movId = await this.proximoIdMov(tx);
       await tx.insert(movTable).values({
         id: movId,
-        tipo: "saida", // CORRIGIDO: "saida" respeita o ENUM do seu schema.ts!
+        tipo: "consumo", // CEO-238: tipo correto para consumo clínico — distingue de expedição por pedido
         loteId,
         produtoId: atual.produtoId,
-        quantidade: -quantidadeAAbater, // Grava como valor negativo indicando a retirada
+        quantidade: -quantidadeAAbater,
         setorOrigemId: atual.setorId,
         responsavelId,
-        observacao: observacao || "Consumo clínico registrado",
+        observacao: observacao ?? "Consumo clínico registrado.",
       });
 
       return atualizado;
     });
   }
 
+  /**
+   * US-EP07-02 (CEO-213) — Segregação atômica: muda o estado do lote para
+   * `segregado`, registra data e observação, e gera Movimentação `segregacao`
+   * com o saldo completo negativo para que a auditoria reflita a retirada de
+   * circulação.
+   *
+   * fix: movimentação gravava quantidade 0, deixando gap no log de auditoria —
+   * o saldo sumia do sistema sem registro da causa.
+   */
   async segregar(
     loteId: number,
     responsavelId: number,
     observacao: string,
-    hoje: Date = new Date()
+    hoje: Date = new Date(),
   ): Promise<Lote> {
     if (!observacao || observacao.trim() === "") {
       throw new Error("Uma observação é obrigatória para a segregação do lote");
     }
 
     return this.db.transaction(async (tx) => {
-      const [atual] = await tx.select().from(loteTable).where(eq(loteTable.id, loteId)).limit(1);
+      const [atual] = await tx
+        .select()
+        .from(loteTable)
+        .where(eq(loteTable.id, loteId))
+        .limit(1);
+
       if (!atual) throw new Error(`Lote ${loteId} não encontrado`);
+
+      const saldoAnterior = atual.quantidade;
 
       const [atualizado] = await tx
         .update(loteTable)
         .set({
-          estado: "segregado", // RN17 / CEO-213
-          dataSegregacao: hoje.toISOString().slice(0, 10), // CHECK lote_segregado_tem_data
+          estado: "segregado",
+          quantidade: 0, // zera o saldo — produto segregado sai de circulação (RN17)
+          dataSegregacao: hoje.toISOString().slice(0, 10),
           observacaoSegregacao: observacao,
         })
         .where(eq(loteTable.id, loteId))
@@ -253,10 +268,10 @@ export class LoteService {
       const movId = await this.proximoIdMov(tx);
       await tx.insert(movTable).values({
         id: movId,
-        tipo: "segregacao", // Enum tipo_movimentacao
+        tipo: "segregacao",
         loteId,
         produtoId: atual.produtoId,
-        quantidade: 0, // Segregação não altera quantidade fisicamente, muda o estado de disponibilidade
+        quantidade: -saldoAnterior, // CEO-213: registra a retirada real do saldo de circulação
         setorOrigemId: atual.setorId,
         responsavelId,
         observacao,
