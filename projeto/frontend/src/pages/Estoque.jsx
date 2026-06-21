@@ -8,7 +8,8 @@ import {
   lotesDoProduto, 
   registrarConsumoLote, 
   ajustarSaldoLote,
-  segregarLote
+  segregarLote,
+  segregadosDoSetor
 } from "../api/estoque.js";
 import { CATEGORIAS, STATUS_ESTOQUE, PERFIL } from "../api/constants.js";
 import { PageHead, StatusEstoque, TableSkeleton, ErrorState, EmptyState } from "../app/ui.jsx";
@@ -18,6 +19,7 @@ export default function Estoque() {
   const ehSolicitante = user?.perfil === PERFIL.SOLICITANTE;
 
   const [setorId, setSetorId] = useState(user?.setorId ?? null);
+  const [visaoAtual, setVisaoAtual] = useState("estoque");
   const [texto, setTexto] = useState("");
   const [categoria, setCategoria] = useState("");
   const [status, setStatus] = useState("");
@@ -35,6 +37,13 @@ export default function Estoque() {
   }, [setorId, ehSolicitante, JSON.stringify(filtrosAplicados)]);
 
   const itens = itensReq.data ?? [];
+
+  const segregadosReq = useFetch(() => {
+    if (!setorId || visaoAtual !== 'segregados') return Promise.resolve([]);
+    return segregadosDoSetor(setorId);
+  }, [setorId, visaoAtual]);
+
+  const lotesSegregados = segregadosReq.data ?? [];
 
   const [produtoExpandidoId, setProdutoExpandidoId] = useState(null);
 
@@ -98,7 +107,7 @@ export default function Estoque() {
       [produtoId, setorId]
     );
 
-    const lotes = lotesReq.data ?? [];
+    const lotes = (lotesReq.data ?? []).filter(l => l.estado !== 'segregado');
 
     if (lotesReq.loading) {
       return (
@@ -194,106 +203,170 @@ export default function Estoque() {
         sub={ehSolicitante ? "Catálogo disponível para solicitação." : "Saldo e situação por produto."}
       />
 
-      {/* Barra de filtros */}
-      <form className="panel" style={{ padding: "var(--sp-4)", marginBottom: "var(--sp-5)" }} onSubmit={aplicar}>
-        <div className="field-row" style={{ alignItems: "flex-end" }}>
-          <div style={{ flex: "1 1 220px" }}>
-            <label htmlFor="setor">Setor</label>
-            <select id="setor" value={setorId ?? ""} onChange={(e) => setSetorId(e.target.value)}>
-              {!setorId && <option value="">Selecione…</option>}
-              {setores.map((s) => (
-                <option key={s.id} value={s.id}>{s.nome}</option>
-              ))}
-            </select>
-          </div>
-          <div style={{ flex: "2 1 240px" }}>
-            <label htmlFor="busca">Buscar</label>
-            <input id="busca" type="text" placeholder="Nome do produto…" value={texto} onChange={(e) => setTexto(e.target.value)} />
-          </div>
-          <div style={{ flex: "1 1 180px" }}>
-            <label htmlFor="cat">Categoria</label>
-            <select id="cat" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
-              <option value="">Todas</option>
-              {CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
-          {!ehSolicitante && (
-            <div style={{ flex: "1 1 160px" }}>
-              <label htmlFor="st">Situação</label>
-              <select id="st" value={status} onChange={(e) => setStatus(e.target.value)}>
-                <option value="">Todas</option>
-                {STATUS_ESTOQUE.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-          )}
-          <div className="row">
-            <button type="submit" className="btn btn-primary">Filtrar</button>
-            <button type="button" className="btn btn-secondary" onClick={limpar}>Limpar</button>
-          </div>
-        </div>
-      </form>
-
-      {/* Resultado */}
-      {itensReq.loading ? (
-        <TableSkeleton rows={6} cols={ehSolicitante ? 4 : 5} />
-      ) : itensReq.error ? (
-        <ErrorState error={itensReq.error} onRetry={itensReq.reload} />
-      ) : itens.length === 0 ? (
-        <div className="panel">
-          <EmptyState title="Nenhum produto encontrado">
-            {setorId ? "Ajuste os filtros ou troque de setor." : "Selecione um setor para ver o estoque."}
-          </EmptyState>
-        </div>
-      ) : (
-        <div className="table-wrap">
-          <table className="data">
-            <thead>
-              <tr>
-                <th>Produto</th>
-                <th>Categoria</th>
-                <th className="num">Qtd.</th>
-                <th>Unidade</th>
-                {!ehSolicitante && <th>Situação</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {itens.map((p) => {
-                const estaExpandido = produtoExpandidoId === p.produtoId;
-                return (
-                  <tr key={p.produtoId} style={{ display: "contents" }}>
-                    {/* Linha principal do produto */}
-                    <tr 
-                      style={{ cursor: ehSolicitante ? 'default' : 'pointer' }} 
-                      onClick={() => !ehSolicitante && setProdutoExpandidoId(estaExpandido ? null : p.produtoId)}
-                      className={estaExpandido ? "selected-row" : ""}
-                    >
-                      <td>
-                        {!ehSolicitante && (estaExpandido ? "▼ " : "▶ ")}
-                        {p.nome}
-                      </td>
-                      <td className="text-2">{p.categoria}</td>
-                      <td className="num">{p.qtdTotal}</td>
-                      <td className="text-2">{p.unidade}</td>
-                      {!ehSolicitante && <td><StatusEstoque status={p.status} /></td>}
-                    </tr>
-
-                    {/* Linha expansível com os lotes (Apenas se o Gestor/Almoxarife clicar) */}
-                    {estaExpandido && !ehSolicitante && (
-                      <DetalheLotes produtoId={p.produtoId} setorId={setorId} />
-                    )}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      {/* Abas de Navegação (Escondidas do Solicitante) */}
+      {!ehSolicitante && (
+        <div style={{ marginBottom: 'var(--sp-4)', display: 'flex', gap: '10px' }}>
+          <button 
+            className={`btn ${visaoAtual === 'estoque' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setVisaoAtual('estoque')}
+          >
+            Estoque Ativo
+          </button>
+          <button 
+            className={`btn ${visaoAtual === 'segregados' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setVisaoAtual('segregados')}
+          >
+            Lotes Segregados
+          </button>
         </div>
       )}
 
-      {nomeSetor && !itensReq.loading && itens.length > 0 && (
-        <p className="muted" style={{ marginTop: "var(--sp-3)", fontSize: "var(--fs-13)" }}>
-          {itens.length} {itens.length === 1 ? "produto" : "produtos"} em {nomeSetor}.
-        </p>
+      {/* Condicional Principal: Estoque x Segregados */}
+      {visaoAtual === 'estoque' ? (
+        <>
+          {/* VISÃO ESTOQUE ATIVO */}
+          <form className="panel" style={{ padding: "var(--sp-4)", marginBottom: "var(--sp-5)" }} onSubmit={aplicar}>
+            <div className="field-row" style={{ alignItems: "flex-end" }}>
+              <div style={{ flex: "1 1 220px" }}>
+                <label htmlFor="setor">Setor</label>
+                <select id="setor" value={setorId ?? ""} onChange={(e) => setSetorId(e.target.value)}>
+                  {!setorId && <option value="">Selecione…</option>}
+                  {setores.map((s) => (
+                    <option key={s.id} value={s.id}>{s.nome}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ flex: "2 1 240px" }}>
+                <label htmlFor="busca">Buscar</label>
+                <input id="busca" type="text" placeholder="Nome do produto…" value={texto} onChange={(e) => setTexto(e.target.value)} />
+              </div>
+              <div style={{ flex: "1 1 180px" }}>
+                <label htmlFor="cat">Categoria</label>
+                <select id="cat" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
+                  <option value="">Todas</option>
+                  {CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              {!ehSolicitante && (
+                <div style={{ flex: "1 1 160px" }}>
+                  <label htmlFor="st">Situação</label>
+                  <select id="st" value={status} onChange={(e) => setStatus(e.target.value)}>
+                    <option value="">Todas</option>
+                    {STATUS_ESTOQUE.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              )}
+              <div className="row">
+                <button type="submit" className="btn btn-primary">Filtrar</button>
+                <button type="button" className="btn btn-secondary" onClick={limpar}>Limpar</button>
+              </div>
+            </div>
+          </form>
+
+          {itensReq.loading ? (
+            <TableSkeleton rows={6} cols={ehSolicitante ? 4 : 5} />
+          ) : itensReq.error ? (
+            <ErrorState error={itensReq.error} onRetry={itensReq.reload} />
+          ) : itens.length === 0 ? (
+            <div className="panel">
+              <EmptyState title="Nenhum produto encontrado">
+                {setorId ? "Ajuste os filtros ou troque de setor." : "Selecione um setor para ver o estoque."}
+              </EmptyState>
+            </div>
+          ) : (
+            <div className="table-wrap">
+              <table className="data">
+                <thead>
+                  <tr>
+                    <th>Produto</th>
+                    <th>Categoria</th>
+                    <th className="num">Qtd.</th>
+                    <th>Unidade</th>
+                    {!ehSolicitante && <th>Situação</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {itens.map((p) => {
+                    const estaExpandido = produtoExpandidoId === p.produtoId;
+                    return (
+                      <tr key={p.produtoId} style={{ display: "contents" }}>
+                        <tr 
+                          style={{ cursor: ehSolicitante ? 'default' : 'pointer' }} 
+                          onClick={() => !ehSolicitante && setProdutoExpandidoId(estaExpandido ? null : p.produtoId)}
+                          className={estaExpandido ? "selected-row" : ""}
+                        >
+                          <td>
+                            {!ehSolicitante && (estaExpandido ? "▼ " : "▶ ")}
+                            {p.nome}
+                          </td>
+                          <td className="text-2">{p.categoria}</td>
+                          <td className="num">{p.qtdTotal}</td>
+                          <td className="text-2">{p.unidade}</td>
+                          {!ehSolicitante && <td><StatusEstoque status={p.status} /></td>}
+                        </tr>
+                        {estaExpandido && !ehSolicitante && (
+                          <DetalheLotes produtoId={p.produtoId} setorId={setorId} />
+                        )}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {nomeSetor && !itensReq.loading && itens.length > 0 && (
+            <p className="muted" style={{ marginTop: "var(--sp-3)", fontSize: "var(--fs-13)" }}>
+              {itens.length} {itens.length === 1 ? "produto" : "produtos"} em {nomeSetor}.
+            </p>
+          )}
+        </>
+      ) : (
+        /* VISÃO LOTES SEGREGADOS */
+        <div className="panel" style={{ padding: 'var(--sp-4)' }}>
+           <h3 style={{ marginBottom: "var(--sp-2)", color: "#990000" }}>Sala de Biossegurança</h3>
+           <p style={{ color: '#666', marginBottom: 'var(--sp-4)' }}>
+             Lotes vencidos ou danificados aguardando descarte.
+           </p>
+
+           {segregadosReq.loading ? (
+             <TableSkeleton rows={3} cols={5} />
+           ) : segregadosReq.error ? (
+             <ErrorState error={segregadosReq.error} onRetry={segregadosReq.reload} />
+           ) : lotesSegregados.length === 0 ? (
+             <EmptyState title="Nenhum lote segregado">
+               Este setor não possui lotes na sala de biossegurança.
+             </EmptyState>
+           ) : (
+             <div className="table-wrap">
+               <table className="data">
+                 <thead>
+                   <tr>
+                     <th>Produto</th>
+                     <th>Nº Lote</th>
+                     <th>Data Segregação</th>
+                     <th className="num">Qtd.</th>
+                     <th>Motivo</th>
+                   </tr>
+                 </thead>
+                 <tbody>
+                   {lotesSegregados.map((l) => (
+                     <tr key={l.id}>
+                       <td>{l.produtoNome}</td>
+                       <td><code>{l.numeroLote}</code></td>
+                       <td>{l.dataSegregacao ? new Date(l.dataSegregacao).toLocaleDateString("pt-BR") : "-"}</td>
+                       <td className="num">{l.quantidade}</td>
+                       <td className="text-2" style={{ maxWidth: "250px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={l.observacaoSegregacao}>
+                         {l.observacaoSegregacao || "-"}
+                       </td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </table>
+             </div>
+           )}
+        </div>
       )}
     </div>
   );
-}
+  }

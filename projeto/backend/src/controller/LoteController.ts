@@ -110,4 +110,17 @@ export class LoteController {
       return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
+  
+  // US-EP07-02 — Lista os lotes na sala de biossegurança
+  async listarSegregadosPorSetor(req: Request, res: Response): Promise<Response> {
+    const setorId = Number(req.params.setorId);
+    
+    try {
+      const segregados = await this.loteRepo.listarSegregadosPorSetor(setorId);
+      return res.status(200).json({ segregados });
+    } catch (error) {
+      if (error instanceof Error) return res.status(400).json({ mensagem: error.message });
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
 }

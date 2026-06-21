@@ -54,6 +54,12 @@ router.get("/setores", auth, async (_req, res) => {
     return res.status(500).json({ error: "Erro interno do servidor" });
   }
 });
+router.get(
+  "/setores/:setorId/segregados",
+  auth,
+  exigir((id, req) => id.perfil === "gestor" || id.perfil === "almoxarife"),
+  (req, res) => loteController.listarSegregadosPorSetor(req, res)
+);
 
 // ─── Catálogo / Estoque (EP02) ───────────────────────────────────────────────
 
