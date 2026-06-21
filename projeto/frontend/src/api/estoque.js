@@ -30,3 +30,21 @@ export async function lotesDoProduto(produtoId, setorId) {
   const data = await api.get(`/produtos/${produtoId}/lotes${q}`);
   return data.lotes ?? [];
 }
+
+/**
+ * US-EP03-03 — Dispara o abatimento de consumo clínico contra o lote
+ */
+export async function registrarConsumoLote(loteId, quantidade, observacao) {
+  // Ajustado de client.post para api.post
+  const resposta = await api.post(`/lotes/${loteId}/consumo`, { quantidade, observacao });
+  return resposta.data;
+}
+
+/**
+ * US-EP03-04 — Dispara a recontagem absoluta (ajuste de saldo) do lote
+ */
+export async function ajustarSaldoLote(loteId, quantidade, observacao) {
+  // Ajustado de client.patch para api.patch
+  const resposta = await api.patch(`/lotes/${loteId}/ajuste`, { quantidade, observacao });
+  return resposta.data;
+}

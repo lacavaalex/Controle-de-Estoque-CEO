@@ -142,12 +142,20 @@ router.post(
   (req, res) => loteController.registrarEntrada(req, res),
 );
 
-// US-EP02-06 — ajuste de quantidade do lote.
+// US-EP03-04 (CEO-239) — Ajuste absoluto de inventário (Recontagem física)
 router.patch(
-  "/lotes/:loteId/quantidade",
+  "/lotes/:loteId/ajuste",
   auth,
   exigir((id) => id.perfil === "gestor" || id.perfil === "almoxarife"),
   (req, res) => loteController.ajustar(req, res),
+);
+
+// US-EP03-03 (CEO-238) — Registro de consumo clínico (Abatimento de saldo)
+router.post(
+  "/lotes/:loteId/consumo",
+  auth,
+  exigir((id) => id.perfil === "gestor" || id.perfil === "almoxarife"),
+  (req, res) => loteController.consumir(req, res),
 );
 
 // ─── Pedidos (EP03 expedição / EP04-01 criação) ─────────────────────────────
@@ -178,10 +186,5 @@ router.post(
   exigir((id) => podeProcessarPedidos(id)),
   (req, res) => pedidoController.expedir(req, res),
 );
-
-// ─── Itens (legado v1) — mantidas até a migração para Produto/Lote ──────────
-router.post("/items", async (req, res) => await itemController.createItem(req, res));
-router.patch("/items/:id/stock", async (req, res) => await itemController.addStock(req, res));
-router.patch("/items/:id/name", async (req, res) => await itemController.changeItemName(req, res));
 
 export { router };

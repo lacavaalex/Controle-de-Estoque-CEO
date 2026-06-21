@@ -226,6 +226,7 @@ async function seed() {
     { produtoId: P("Sugadores Descartáveis"), setorId: ceo.id, numeroLote: "LT-2024-032", fabricacao: emDias(-250), validade: emDias(90), quantidade: 60, estado: "ativo" },
     { produtoId: P("Clorexidina 2%"), setorId: ceo.id, numeroLote: "LT-2025-080", fabricacao: emDias(-90), validade: emDias(28), quantidade: 14, estado: "ativo" },
     { produtoId: P("Hipoclorito de Sódio"), setorId: ceo.id, numeroLote: "LT-2025-081", fabricacao: emDias(-70), validade: emDias(53), quantidade: 20, estado: "ativo" },
+    { produtoId: P("Gaze Estéril"), setorId: ceo.id, numeroLote: "TESTE-CEO-01", fabricacao: emDias(-30), validade: emDias(365), quantidade: 15, estado: "ativo" }
   ]);
 
   // ─── Pedidos (cabeçalho + itens) cobrindo status ────────────────────────────

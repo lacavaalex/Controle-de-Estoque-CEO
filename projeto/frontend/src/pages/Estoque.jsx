@@ -2,7 +2,13 @@ import { useMemo, useState } from "react";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useFetch } from "../app/useFetch.js";
 import { listarSetores } from "../api/setores.js";
-import { estoqueDoSetor, catalogoDoSetor } from "../api/estoque.js";
+import { 
+  estoqueDoSetor, 
+  catalogoDoSetor, 
+  lotesDoProduto, 
+  registrarConsumoLote, 
+  ajustarSaldoLote 
+} from "../api/estoque.js";
 import { CATEGORIAS, STATUS_ESTOQUE, PERFIL } from "../api/constants.js";
 import { PageHead, StatusEstoque, TableSkeleton, ErrorState, EmptyState } from "../app/ui.jsx";
 
@@ -18,7 +24,6 @@ export default function Estoque() {
   const setoresReq = useFetch(() => listarSetores(), []);
   const setores = useMemo(() => setoresReq.data ?? [], [setoresReq.data]);
 
-  // Filtros aplicados (texto via debounce simples no submit do form).
   const [filtrosAplicados, setFiltrosAplicados] = useState({});
 
   const itensReq = useFetch(() => {
@@ -29,6 +34,8 @@ export default function Estoque() {
   }, [setorId, ehSolicitante, JSON.stringify(filtrosAplicados)]);
 
   const itens = itensReq.data ?? [];
+
+  const [produtoExpandidoId, setProdutoExpandidoId] = useState(null);
 
   function aplicar(e) {
     e?.preventDefault();
@@ -48,6 +55,111 @@ export default function Estoque() {
     () => setores.find((s) => String(s.id) === String(setorId))?.nome,
     [setores, setorId],
   );
+
+  // US-EP03-03 (CEO-238) — Trata o clique de consumo clínico
+  async function handleConsumo(loteId) {
+    const qtd = prompt("Quantas unidades foram consumidas na clínica?");
+    if (!qtd) return;
+    const obs = prompt("Observação (Opcional):", "Uso clínico padrão");
+    
+    try {
+      await registrarConsumoLote(loteId, Number(qtd), obs);
+      alert("Consumo clínico registrado com sucesso!");
+      itensReq.reload(); 
+    } catch (err) {
+      alert(err.response?.data?.mensagem || "Erro ao registrar consumo");
+    }
+  }
+
+  // US-EP03-04 (CEO-239) — Trata o clique de recontagem física de inventário
+  async function handleAjuste(loteId) {
+    const qtd = prompt("Qual a nova contagem física absoluta deste lote?");
+    if (qtd === null || qtd.trim() === "") return;
+    const obs = prompt("Observação / Justificativa (Obrigatório):");
+    if (!obs || obs.trim() === "") {
+      alert("Justificativa é obrigatória para ajustes de recontagem!");
+      return;
+    }
+
+    try {
+      await ajustarSaldoLote(loteId, Number(qtd), obs);
+      alert("Recontagem de estoque registrada!");
+      itensReq.reload();
+    } catch (err) {
+      alert(err.response?.data?.mensagem || "Erro ao ajustar inventário");
+    }
+  }
+
+  // Componente que renderiza os lotes reais filhos sob a linha pai correspondente
+  function DetalheLotes({ produtoId, setorId }) {
+    const lotesReq = useFetch(
+      () => lotesDoProduto(produtoId, setorId),
+      [produtoId, setorId]
+    );
+
+    const lotes = lotesReq.data ?? [];
+
+    if (lotesReq.loading) {
+      return (
+        <tr>
+          <td colSpan="5" style={{ padding: "15px", color: "#666", textAlign: "center" }}>
+            Carregando lotes ativos...
+          </td>
+        </tr>
+      );
+    }
+
+    return (
+      <tr style={{ backgroundColor: '#f9f9f9' }}>
+        <td colSpan="5" style={{ padding: 'var(--sp-4)' }}>
+          <div style={{ borderLeft: '3px solid #990000', paddingLeft: 'var(--sp-3)' }}>
+            <h4 style={{ marginBottom: "var(--sp-2)", color: "#111111", fontSize: "var(--fs-14)" }}>
+              Lotes Ativos no Setor
+            </h4>
+            {lotes.length === 0 ? (
+              <p style={{ color: "#666", margin: 0 }}>Nenhum lote ativo encontrado para este setor.</p>
+            ) : (
+              <table style={{ width: "100%", fontSize: "var(--fs-13)", marginTop: "var(--sp-2)" }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid #ddd" }}>
+                    <th style={{ textAlign: "left" }}>Nº Lote</th>
+                    <th style={{ textAlign: "left" }}>Validade</th>
+                    <th className="num" style={{ textAlign: "right" }}>Qtd. Atual</th>
+                    <th className="num" style={{ textAlign: "right", paddingRight: "10px" }}>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {lotes.map((l) => (
+                    <tr key={l.id} style={{ borderBottom: "1px solid #eee" }}>
+                      <td style={{ padding: "8px 0" }}><code>{l.numeroLote}</code></td>
+                      <td>{new Date(l.validade).toLocaleDateString("pt-BR")}</td>
+                      <td className="num" style={{ textAlign: "right" }}><strong>{l.quantidade}</strong></td>
+                      <td className="num" style={{ textAlign: "right" }}>
+                        <button 
+                          className="btn btn-sm btn-secondary" 
+                          style={{ marginRight: "5px", padding: "2px 8px" }} 
+                          onClick={(e) => { e.stopPropagation(); handleConsumo(l.id); }}
+                        >
+                          Consumo
+                        </button>
+                        <button 
+                          className="btn btn-sm btn-secondary"
+                          style={{ padding: "2px 8px" }}
+                          onClick={(e) => { e.stopPropagation(); handleAjuste(l.id); }}
+                        >
+                          Recontar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </td>
+      </tr>
+    );
+  }
 
   return (
     <div>
@@ -119,15 +231,33 @@ export default function Estoque() {
               </tr>
             </thead>
             <tbody>
-              {itens.map((p) => (
-                <tr key={p.produtoId}>
-                  <td>{p.nome}</td>
-                  <td className="text-2">{p.categoria}</td>
-                  <td className="num">{p.qtdTotal}</td>
-                  <td className="text-2">{p.unidade}</td>
-                  {!ehSolicitante && <td><StatusEstoque status={p.status} /></td>}
-                </tr>
-              ))}
+              {itens.map((p) => {
+                const estaExpandido = produtoExpandidoId === p.produtoId;
+                return (
+                  <tr key={p.produtoId} style={{ display: "contents" }}>
+                    {/* Linha principal do produto */}
+                    <tr 
+                      style={{ cursor: ehSolicitante ? 'default' : 'pointer' }} 
+                      onClick={() => !ehSolicitante && setProdutoExpandidoId(estaExpandido ? null : p.produtoId)}
+                      className={estaExpandido ? "selected-row" : ""}
+                    >
+                      <td>
+                        {!ehSolicitante && (estaExpandido ? "▼ " : "▶ ")}
+                        {p.nome}
+                      </td>
+                      <td className="text-2">{p.categoria}</td>
+                      <td className="num">{p.qtdTotal}</td>
+                      <td className="text-2">{p.unidade}</td>
+                      {!ehSolicitante && <td><StatusEstoque status={p.status} /></td>}
+                    </tr>
+
+                    {/* Linha expansível com os lotes (Apenas se o Gestor/Almoxarife clicar) */}
+                    {estaExpandido && !ehSolicitante && (
+                      <DetalheLotes produtoId={p.produtoId} setorId={setorId} />
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
