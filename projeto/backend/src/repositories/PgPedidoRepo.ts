@@ -112,4 +112,19 @@ export class PgPedidoRepo implements IPedidoRepository {
   async atualizarStatus(id: string, status: StatusPedido): Promise<void> {
     await this.db.update(pedido).set({ status }).where(eq(pedido.id, id));
   }
+
+  async listarTodos(): Promise<PedidoComItens[]> {
+    // Traz todos os cabeçalhos sem a cláusula WHERE
+    const cabecalhos = await this.db.select().from(pedido);
+
+    const resultado: PedidoComItens[] = [];
+    for (const c of cabecalhos) {
+      const itens = await this.db
+        .select()
+        .from(itemDoPedido)
+        .where(eq(itemDoPedido.pedidoId, c.id));
+      resultado.push({ ...c, itens: aninharItens(itens) });
+    }
+    return resultado;
+  }
 }
