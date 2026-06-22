@@ -11,6 +11,9 @@ import {
   qtdTotal,
   statusProduto,
   ordenarFEFO,
+  exigeReposicao,
+  exigeAtencaoValidade,
+  compararSeveridade,
   type StatusProduto,
 } from "../domain/estoque.js";
 
@@ -112,5 +115,35 @@ export class EstoqueService {
   async lotesParaExpedir(produtoId: number, setorId: number, hoje: Date = new Date()): Promise<Lote[]> {
     const lotes = await this.loteRepo.listarPorProdutoSetor(produtoId, setorId);
     return ordenarFEFO(lotes, hoje);
+  }
+
+  /**
+   * CEO-250 (US-EP05) — Listas de alerta "vencendo / crítico" de um setor.
+   *
+   * Reusa o agregado de `estoqueDoSetor` (status por produto já calculado) e o
+   * particiona nos dois grupos que exigem ação do gestor, cada um ordenado por
+   * severidade (mais urgente primeiro):
+   *
+   *   - reposicao : produtos sem saldo ou abaixo do mínimo (RN03).
+   *   - vencimento: produtos com lote ativo vencido/perto de vencer (RN05).
+   *
+   * Um mesmo produto pode aparecer nos DOIS grupos (ex.: indisponível por ter
+   * só lote vencido) — são alertas independentes que pedem ações diferentes.
+   */
+  async alertas(
+    setorId: number,
+    hoje: Date = new Date(),
+  ): Promise<{ reposicao: ProdutoComEstoque[]; vencimento: ProdutoComEstoque[] }> {
+    const estoque = await this.estoqueDoSetor(setorId, {}, hoje);
+
+    const reposicao = estoque
+      .filter((p) => exigeReposicao(p.status))
+      .sort((a, b) => compararSeveridade(a.status, b.status));
+
+    const vencimento = estoque
+      .filter((p) => exigeAtencaoValidade(p.status))
+      .sort((a, b) => compararSeveridade(a.status, b.status));
+
+    return { reposicao, vencimento };
   }
 }

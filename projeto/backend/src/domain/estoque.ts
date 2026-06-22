@@ -149,3 +149,61 @@ export function rotuloStatus(status: StatusProduto): string {
   };
   return labels[status];
 }
+
+// =============================================================================
+// CEO-250 — Listas de alerta "vencendo / crítico"
+//
+// O alerta que justifica o sistema: a partir do status agregado de cada produto
+// (já calculado por statusProduto), separa o que exige AÇÃO em dois grupos:
+//
+//  - reposição : produto sem saldo ou com saldo abaixo do mínimo (indisponivel,
+//                critico, baixo) — RN03. O gestor precisa repor/pedir.
+//  - vencimento: produto com algum lote ATIVO vencido/perto de vencer
+//                (vencido, vencendo, atencao) — RN05. Exige segregar/expedir antes.
+//
+// São funções PURAS (sem I/O): recebem o agregado já pronto e classificam.
+// =============================================================================
+
+/** Status que indicam necessidade de REPOSIÇÃO (saldo insuficiente — RN03). */
+const STATUS_REPOSICAO: ReadonlySet<StatusProduto> = new Set([
+  "indisponivel",
+  "critico",
+  "baixo",
+]);
+
+/** Status que indicam alerta de VALIDADE (lote ativo vencendo/vencido — RN05). */
+const STATUS_VENCIMENTO: ReadonlySet<StatusProduto> = new Set([
+  "vencido",
+  "vencendo",
+  "atencao",
+]);
+
+/** Um produto exige reposição? (indisponível / crítico / baixo) */
+export function exigeReposicao(status: StatusProduto): boolean {
+  return STATUS_REPOSICAO.has(status);
+}
+
+/** Um produto tem alerta de validade? (vencido / vencendo / atenção) */
+export function exigeAtencaoValidade(status: StatusProduto): boolean {
+  return STATUS_VENCIMENTO.has(status);
+}
+
+/**
+ * Ordem de severidade para ordenar as listas de alerta — o mais urgente vem
+ * primeiro. Status fora das listas de alerta recebem prioridade baixa.
+ */
+const SEVERIDADE: Record<StatusProduto, number> = {
+  indisponivel: 0,
+  vencido: 1,
+  vencendo: 2,
+  critico: 3,
+  baixo: 4,
+  atencao: 5,
+  excessivo: 6,
+  normal: 7,
+};
+
+/** Compara dois status pela severidade (para sort): menor número = mais urgente. */
+export function compararSeveridade(a: StatusProduto, b: StatusProduto): number {
+  return SEVERIDADE[a] - SEVERIDADE[b];
+}
