@@ -11,6 +11,18 @@ const BASE = import.meta.env.VITE_API_BASE || "/api";
 const TOKEN_KEY = "ceo_token";
 const USER_KEY = "ceo_usuario";
 
+const unauthorizedListeners = new Set();
+
+/** Registra callback para quando a sessão é invalidada (401). Retorna unsubscribe. */
+export function onUnauthorized(cb) {
+  unauthorizedListeners.add(cb);
+  return () => unauthorizedListeners.delete(cb);
+}
+
+function notifyUnauthorized() {
+  for (const cb of unauthorizedListeners) cb();
+}
+
 // ---- Sessão (token + usuário no localStorage) ----
 export const session = {
   getToken: () => localStorage.getItem(TOKEN_KEY),
@@ -69,6 +81,7 @@ async function request(method, path, body, { auth = true } = {}) {
     // Sessão expirada/!inválida → limpa e sinaliza para a app redirecionar.
     if (res.status === 401) {
       session.clear();
+      notifyUnauthorized();
     }
     const msg =
       (data && (data.mensagem || data.error)) ||
