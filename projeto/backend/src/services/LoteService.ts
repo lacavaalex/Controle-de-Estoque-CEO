@@ -25,6 +25,8 @@ export interface DadosEntradaLote {
   quantidade: number;
   fabricacao?: string;
   responsavelId: number;
+  qtdDanificada?: number;
+  obsDanificada?: string;
 }
 
 export interface ResultadoEntrada {
@@ -61,6 +63,14 @@ export class LoteService {
       throw new Error("Número do lote é obrigatório");
     }
 
+    const qtdDanificada = dados.qtdDanificada ?? 0;
+    const obsDanificada = dados.obsDanificada ?? null;
+    
+    if (qtdDanificada < 0) throw new Error("A quantidade danificada não pode ser negativa");
+    if (qtdDanificada > dados.quantidade) throw new Error("A quantidade danificada não pode ser maior que a recebida total");
+    
+    const quantidadeAtiva = dados.quantidade - qtdDanificada;
+
     return this.db.transaction(async (tx) => {
       const [prod] = await tx
         .select({ id: produtoTable.id })
@@ -82,7 +92,9 @@ export class LoteService {
           setorId,
           numeroLote: dados.numeroLote,
           validade: dados.validade,
-          quantidade: dados.quantidade,
+          quantidade: quantidadeAtiva,
+          qtdDanificada: qtdDanificada,
+          obsDanificada: obsDanificada,
           estado,
           ...(dados.fabricacao !== undefined ? { fabricacao: dados.fabricacao } : {}),
         })
@@ -95,10 +107,10 @@ export class LoteService {
         tipo: "entrada",
         loteId: loteCriado.id,
         produtoId,
-        quantidade: dados.quantidade,
+        quantidade: quantidadeAtiva, 
         setorOrigemId: setorId,
         responsavelId: dados.responsavelId,
-        observacao: `Entrada de lote ${dados.numeroLote} (recebimento).`,
+        observacao: `Entrada de lote ${dados.numeroLote} (recebimento). Total NF: ${dados.quantidade}. Avarias: ${qtdDanificada}.`,
       });
 
       return {

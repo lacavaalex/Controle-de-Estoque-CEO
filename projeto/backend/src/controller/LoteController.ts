@@ -13,7 +13,7 @@ export class LoteController {
   async registrarEntrada(req: Request, res: Response): Promise<Response> {
     const produtoId = Number(req.params.id);
     const setorId = Number(req.body?.setorId ?? req.identidade?.setorId);
-    const { numeroLote, validade, quantidade, fabricacao } = req.body ?? {};
+    const { numeroLote, validade, quantidade, fabricacao, qtdDanificada, obsDanificada } = req.body ?? {};
     const responsavelId = req.identidade?.usuarioId;
     if (responsavelId === undefined) return res.status(401).json({ mensagem: "Não autenticado" });
 
@@ -24,6 +24,8 @@ export class LoteController {
         quantidade,
         fabricacao,
         responsavelId,
+        qtdDanificada: qtdDanificada ? Number(qtdDanificada) : 0,
+        obsDanificada
       });
       return res.status(201).json(resultado);
     } catch (error) {
