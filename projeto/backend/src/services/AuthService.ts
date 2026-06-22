@@ -55,6 +55,8 @@ export class AuthService {
     if (usuario === null || usuario.senhaHash === null) throw erroGenerico;
     const ok = await verificarSenha(senha, usuario.senhaHash);
     if (!ok) throw erroGenerico;
+    // Bloqueia usuário desativado (CEO-228)
+      if (!usuario.ativo) throw new Error("Conta desativada. Entre em contato com o gestor.");
 
     const token = assinarToken({
       sub: usuario.id,
