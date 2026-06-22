@@ -21,7 +21,7 @@ export class LoteController {
       const resultado = await this.loteService.registrarEntrada(produtoId, setorId, {
         numeroLote,
         validade,
-        quantidade,
+        quantidade: Number(quantidade),
         fabricacao,
         responsavelId,
         qtdDanificada: qtdDanificada ? Number(qtdDanificada) : 0,
@@ -66,7 +66,7 @@ export class LoteController {
     try {
       const lote = await this.loteService.ajustarQuantidade(
         loteId,
-        Number(quantidade), // Quantidade absoluta informada pelo Gestor
+        Number(quantidade), 
         responsavelId,
         observacao
       );
@@ -87,7 +87,7 @@ export class LoteController {
     try {
       const lote = await this.loteService.registrarConsumo(
         loteId,
-        Number(quantidade), // Quantidade a subtrair do estoque
+        Number(quantidade), 
         responsavelId,
         observacao
       );
