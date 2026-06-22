@@ -67,3 +67,9 @@ export async function segregadosDoSetor(setorId) {
   const data = await api.get(`/setores/${setorId}/segregados`);
   return data.segregados ?? [];
 }
+
+// US-EP02-05 + CEO-268 — Registra entrada de um novo lote (com itens avariados)
+export async function registrarEntradaLote(produtoId, payload) {
+  const resposta = await api.post(`/produtos/${produtoId}/lotes`, payload);
+  return resposta.data;
+}

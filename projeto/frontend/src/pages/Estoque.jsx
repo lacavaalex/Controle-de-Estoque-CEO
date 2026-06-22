@@ -13,6 +13,7 @@ import {
 } from "../api/estoque.js";
 import { CATEGORIAS, STATUS_ESTOQUE, PERFIL } from "../api/constants.js";
 import { PageHead, StatusEstoque, TableSkeleton, ErrorState, EmptyState } from "../app/ui.jsx";
+import NovoLote from "../components/NovoLote.jsx";
 
 export default function Estoque() {
   const { user } = useAuth();
@@ -102,6 +103,7 @@ export default function Estoque() {
 
   // Componente que renderiza os lotes reais filhos sob a linha pai correspondente
   function DetalheLotes({ produtoId, setorId }) {
+    const [exibirNovoLote, setExibirNovoLote] = useState(false);
     const lotesReq = useFetch(
       () => lotesDoProduto(produtoId, setorId, true),
       [produtoId, setorId]
@@ -123,56 +125,85 @@ export default function Estoque() {
       <tr style={{ backgroundColor: '#f9f9f9' }}>
         <td colSpan="5" style={{ padding: 'var(--sp-4)' }}>
           <div style={{ borderLeft: '3px solid #990000', paddingLeft: 'var(--sp-3)' }}>
-            <h4 style={{ marginBottom: "var(--sp-2)", color: "#111111", fontSize: "var(--fs-14)" }}>
-              Lotes Ativos no Setor
-            </h4>
-            {lotes.length === 0 ? (
-              <p style={{ color: "#666", margin: 0 }}>Nenhum lote ativo encontrado para este setor.</p>
+            
+            {/* Cabeçalho flexível com o título e o botão */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: "var(--sp-2)" }}>
+              <h4 style={{ color: "#111111", fontSize: "var(--fs-14)", margin: 0 }}>
+                Lotes Ativos no Setor
+              </h4>
+              {/* Botão para abrir o formulário */}
+              {!exibirNovoLote && (
+                <button 
+                  className="btn btn-sm btn-primary" 
+                  onClick={() => setExibirNovoLote(true)}
+                >
+                  + Novo Lote
+                </button>
+              )}
+            </div>
+
+            {/* Renderização condicional do formulário */}
+            {exibirNovoLote && (
+              <NovoLote 
+                produtoId={produtoId} 
+                onSuccess={() => {
+                  setExibirNovoLote(false);
+                  lotesReq.reload();
+                  itensReq.reload();
+                }}
+                onCancel={() => setExibirNovoLote(false)}
+              />
+            )}
+
+            {lotes.length === 0 && !exibirNovoLote ? (
+              <p style={{ color: "#666", margin: 0, marginTop: "var(--sp-2)" }}>Nenhum lote ativo encontrado para este setor.</p>
             ) : (
-              <table style={{ width: "100%", fontSize: "var(--fs-13)", marginTop: "var(--sp-2)" }}>
-                <thead>
-                  <tr style={{ borderBottom: "1px solid #ddd" }}>
-                    <th style={{ textAlign: "left" }}>Nº Lote</th>
-                    <th style={{ textAlign: "left" }}>Validade</th>
-                    <th className="num" style={{ textAlign: "right" }}>Qtd. Atual</th>
-                    <th className="num" style={{ textAlign: "right", paddingRight: "10px" }}>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lotes.map((l) => (
-                    <tr key={l.id} style={{ borderBottom: "1px solid #eee" }}>
-                      <td style={{ padding: "8px 0" }}><code>{l.numeroLote}</code></td>
-                      <td>{new Date(l.validade).toLocaleDateString("pt-BR")}</td>
-                      <td className="num" style={{ textAlign: "right" }}><strong>{l.quantidade}</strong></td>
-                      <td className="num" style={{ textAlign: "right" }}>
-                        <button 
-                          className="btn btn-sm btn-secondary" 
-                          style={{ marginRight: "5px", padding: "2px 8px" }} 
-                          onClick={(e) => { e.stopPropagation(); handleConsumo(l.id); }}
-                        >
-                          Consumo
-                        </button>
-                        <button 
-                          className="btn btn-sm btn-secondary"
-                          style={{ padding: "2px 8px" }}
-                          onClick={(e) => { e.stopPropagation(); handleAjuste(l.id); }}
-                        >
-                          Recontar
-                        </button>
-                        {l.estadoValidade === "vencido" && (
-                          <button 
-                            className="btn btn-sm btn-danger" 
-                            style={{ marginLeft: "5px", padding: "2px 8px" }}
-                            onClick={(e) => { e.stopPropagation(); handleSegregar(l.id); }}
-                          >
-                            Segregar
-                          </button>
-                        )}
-                      </td>
+              !exibirNovoLote && (
+                <table style={{ width: "100%", fontSize: "var(--fs-13)", marginTop: "var(--sp-2)" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid #ddd" }}>
+                      <th style={{ textAlign: "left" }}>Nº Lote</th>
+                      <th style={{ textAlign: "left" }}>Validade</th>
+                      <th className="num" style={{ textAlign: "right" }}>Qtd. Atual</th>
+                      <th className="num" style={{ textAlign: "right", paddingRight: "10px" }}>Ações</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {lotes.map((l) => (
+                      <tr key={l.id} style={{ borderBottom: "1px solid #eee" }}>
+                        <td style={{ padding: "8px 0" }}><code>{l.numeroLote}</code></td>
+                        <td>{new Date(l.validade).toLocaleDateString("pt-BR")}</td>
+                        <td className="num" style={{ textAlign: "right" }}><strong>{l.quantidade}</strong></td>
+                        <td className="num" style={{ textAlign: "right" }}>
+                          <button 
+                            className="btn btn-sm btn-secondary" 
+                            style={{ marginRight: "5px", padding: "2px 8px" }} 
+                            onClick={(e) => { e.stopPropagation(); handleConsumo(l.id); }}
+                          >
+                            Consumo
+                          </button>
+                          <button 
+                            className="btn btn-sm btn-secondary"
+                            style={{ padding: "2px 8px" }}
+                            onClick={(e) => { e.stopPropagation(); handleAjuste(l.id); }}
+                          >
+                            Recontar
+                          </button>
+                          {l.estadoValidade === "vencido" && (
+                            <button 
+                              className="btn btn-sm btn-danger" 
+                              style={{ marginLeft: "5px", padding: "2px 8px" }}
+                              onClick={(e) => { e.stopPropagation(); handleSegregar(l.id); }}
+                            >
+                              Segregar
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )
             )}
           </div>
         </td>
