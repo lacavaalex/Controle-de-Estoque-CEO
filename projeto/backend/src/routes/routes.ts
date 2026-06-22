@@ -7,6 +7,7 @@ import {
   produtoController,
   loteController,
   pedidoController,
+  dashboardController,
 } from "../di/container.js";
 import { autenticar, exigir } from "../auth/middleware.js";
 import {
@@ -19,6 +20,9 @@ import type { FiltrosCatalogo } from "../services/EstoqueService.js";
 import type { StatusProduto } from "../domain/estoque.js";
 
 const router = express.Router();
+
+// Healthcheck simples — usado pelo start-all.sh e para diagnóstico rápido.
+router.get("/health", (_req, res) => res.status(200).json({ ok: true }));
 
 // Middleware de autenticação (verifica o JWT em toda rota protegida — RNF03.7).
 const auth = autenticar(setorRepo);
@@ -177,6 +181,16 @@ router.post(
   auth,
   exigir((id) => podeProcessarPedidos(id)),
   (req, res) => pedidoController.expedir(req, res),
+);
+
+// ─── Dashboard (EP05) ────────────────────────────────────────────────────────
+
+// CEO-248 — KPIs do dashboard escopados por setor (RN12).
+router.get(
+  "/dashboard",
+  auth,
+  exigir((id, req) => podeVerSetor(id, Number(req.query.setorId ?? id.setorId))),
+  (req, res) => dashboardController.kpis(req, res),
 );
 
 // ─── Itens (legado v1) — mantidas até a migração para Produto/Lote ──────────
