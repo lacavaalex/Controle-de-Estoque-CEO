@@ -33,6 +33,11 @@ export interface IPedidoRepository {
   // Pedidos cujo setor de ORIGEM ou DESTINO é o informado (RN12 — escopo).
   listarPorSetor(setorId: number): Promise<PedidoComItens[]>;
 
+  // CEO-251 — fila do almoxarife: pedidos com trabalho pendente (status
+  // 'pendente' ou 'em_processamento'), de TODOS os setores, em ordem de
+  // chegada (mais antigo primeiro — FIFO).
+  listarPendentes(): Promise<PedidoComItens[]>;
+
   // Atualiza o status (derivado) do cabeçalho — chamado após (re)processar itens.
   atualizarStatus(id: string, status: StatusPedido): Promise<void>;
 }

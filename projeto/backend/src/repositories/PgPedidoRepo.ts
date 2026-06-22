@@ -1,4 +1,4 @@
-import { eq, or, sql } from "drizzle-orm";
+import { asc, eq, inArray, or, sql } from "drizzle-orm";
 import type {
   IPedidoRepository,
   ItemComDesdobramentos,
@@ -98,6 +98,28 @@ export class PgPedidoRepo implements IPedidoRepository {
       );
 
     // N+1 simples (volume de pedidos é baixo no MVP); otimizar com IN se preciso.
+    const resultado: PedidoComItens[] = [];
+    for (const c of cabecalhos) {
+      const itens = await this.db
+        .select()
+        .from(itemDoPedido)
+        .where(eq(itemDoPedido.pedidoId, c.id));
+      resultado.push({ ...c, itens: aninharItens(itens) });
+    }
+    return resultado;
+  }
+
+  // CEO-251 — fila do almoxarife: pedidos com itens ainda por processar, de
+  // todos os setores, do mais antigo para o mais novo (FIFO). idx_pedido_status
+  // e idx_pedido_criacao (migration 0003) cobrem este filtro/ordenação.
+  async listarPendentes(): Promise<PedidoComItens[]> {
+    const cabecalhos = await this.db
+      .select()
+      .from(pedido)
+      .where(inArray(pedido.status, ["pendente", "em_processamento"]))
+      .orderBy(asc(pedido.dataCriacao));
+
+    // N+1 simples (a fila do almoxarife é pequena por definição — só pendentes).
     const resultado: PedidoComItens[] = [];
     for (const c of cabecalhos) {
       const itens = await this.db

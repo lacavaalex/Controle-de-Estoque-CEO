@@ -57,6 +57,18 @@ export class PedidoController {
     }
   }
 
+  // GET /pedidos/pendentes — fila do almoxarife (CEO-251): pedidos com itens
+  // por processar, de todos os setores, FIFO. Acesso restrito na rota (RN11).
+  async filaPendentes(_req: Request, res: Response): Promise<Response> {
+    try {
+      const pedidos = await this.pedidoService.listarFilaPendentes();
+      return res.status(200).json({ pedidos });
+    } catch (error) {
+      if (error instanceof Error) return res.status(400).json({ mensagem: error.message });
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
+
   // POST /pedidos/:id/itens/:itemId/expedir — processa um item (almoxarife/gestor HO).
   async expedir(req: Request, res: Response): Promise<Response> {
     const id = req.identidade!;
