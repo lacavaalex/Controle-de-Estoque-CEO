@@ -39,6 +39,7 @@ router.post("/login", (req, res) => authController.login(req, res));
 router.post("/logout", (req, res) => authController.logout(req, res));
 router.get("/eu", auth, (req, res) => authController.eu(req, res));
 router.post("/usuarios", auth, (req, res) => authController.provisionar(req, res));
+router.patch("/eu/senha", auth, authController.mudarSenha.bind(authController));
 
 // ─── Setores ─────────────────────────────────────────────────────────────────
 

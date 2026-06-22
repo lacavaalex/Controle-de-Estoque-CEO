@@ -49,4 +49,22 @@ export class AuthController {
       return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
+
+  // Atualiza a senha do próprio usuário (PATCH /eu/senha)
+  async mudarSenha(req: Request, res: Response): Promise<Response> {
+    if (!req.identidade) return res.status(401).json({ mensagem: "Não autenticado" });
+    
+    const { novaSenha } = req.body ?? {};
+    
+    try {
+      await this.authService.atualizarSenha(req.identidade, novaSenha);
+      return res.status(200).json({ mensagem: "Senha atualizada com sucesso!" });
+    } catch (error) {
+      if (error instanceof Error) {
+        const status = error.message.includes("mínimo") ? 400 : 500;
+        return res.status(status).json({ mensagem: error.message });
+      }
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
 }
