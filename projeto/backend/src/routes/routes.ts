@@ -7,6 +7,7 @@ import {
   produtoController,
   loteController,
   pedidoController,
+  usuarioController,
   dashboardController,
 } from "../di/container.js";
 import { autenticar, exigir } from "../auth/middleware.js";
@@ -43,6 +44,26 @@ router.post("/login", (req, res) => authController.login(req, res));
 router.post("/logout", (req, res) => authController.logout(req, res));
 router.get("/eu", auth, (req, res) => authController.eu(req, res));
 router.post("/usuarios", auth, (req, res) => authController.provisionar(req, res));
+router.get(
+  "/usuarios",
+  auth,
+  exigir((id) => id.perfil === "gestor"),
+  (req, res) => usuarioController.listar(req, res),
+);
+
+router.patch(
+  "/usuarios/:id/desativar",
+  auth,
+  exigir((id) => id.perfil === "gestor"),
+  (req, res) => usuarioController.desativar(req, res),
+);
+
+router.patch(
+  "/usuarios/:id/resetar-senha",
+  auth,
+  exigir((id) => id.perfil === "gestor"),
+  (req, res) => usuarioController.resetarSenha(req, res),
+);
 router.patch("/eu/senha", auth, authController.mudarSenha.bind(authController));
 
 // ─── Setores ─────────────────────────────────────────────────────────────────

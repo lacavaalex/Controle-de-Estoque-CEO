@@ -1,6 +1,7 @@
 import { JsonItemRepo } from "../repositories/JsonItemRepo.js";
 import { ItemService } from "../services/ItemService.js";
 import { ItemController } from "../controller/ItemController.js";
+import { UsuarioController } from "../controller/UsuarioController.js";
 
 // Stack v2: persistência Postgres (Drizzle) + auth real (JWT + RBAC).
 import { PgUsuarioRepo } from "../repositories/PgUsuarioRepo.js";
@@ -31,6 +32,7 @@ const setorRepo = new PgSetorRepo();
 const produtoRepo = new PgProdutoRepo();
 const loteRepo = new PgLoteRepo();
 
+
 const authService = new AuthService(usuarioRepo, setorRepo);
 const authController = new AuthController(authService);
 
@@ -45,6 +47,8 @@ const loteController = new LoteController(loteService, loteRepo);
 const pedidoRepo = new PgPedidoRepo();
 const pedidoService = new PedidoService(pedidoRepo);
 const pedidoController = new PedidoController(pedidoService);
+const usuarioController = new UsuarioController(usuarioRepo);
+
 
 const dashboardService = new DashboardService(produtoRepo, loteRepo, pedidoRepo, estoqueService);
 const dashboardController = new DashboardController(dashboardService);
@@ -57,5 +61,6 @@ export {
   produtoController,
   loteController,
   pedidoController,
+  usuarioController,
   dashboardController,
 };

@@ -136,6 +136,7 @@ export const usuario = pgTable(
     // Auth (Etapa 3): hash de senha (bcrypt/argon2) — nunca texto puro.
     senhaHash: text("senha_hash"),
     trocarSenha: boolean("trocar_senha").notNull().default(false),
+    ativo: boolean("ativo").notNull().default(true),
     criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
