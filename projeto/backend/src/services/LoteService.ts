@@ -25,12 +25,13 @@ export interface DadosEntradaLote {
   quantidade: number;
   fabricacao?: string;
   responsavelId: number;
+  qtdDanificada?: number;
+  obsDanificada?: string;
 }
 
 export interface ResultadoEntrada {
   lote: Lote;
   movimentacaoId: string;
-  // true quando o lote entrou já vencido (front deve ter pedido confirmação).
   entrouVencido: boolean;
 }
 
@@ -56,10 +57,19 @@ export class LoteService {
     dados: DadosEntradaLote,
     hoje: Date = new Date(),
   ): Promise<ResultadoEntrada> {
-    if (dados.quantidade < 1) throw new Error("Quantidade do lote deve ser >= 1");
+    if (dados.quantidade < 1) throw new Error("Quantidade total do lote deve ser >= 1");
     if (!dados.numeroLote || dados.numeroLote.trim() === "") {
       throw new Error("Número do lote é obrigatório");
     }
+
+    // CEO-268: Lógica de abatimento de itens danificados
+    const qtdDanificada = dados.qtdDanificada ?? 0;
+    const obsDanificada = dados.obsDanificada ?? null;
+
+    if (qtdDanificada < 0) throw new Error("A quantidade danificada não pode ser negativa");
+    if (qtdDanificada > dados.quantidade) throw new Error("A quantidade danificada não pode ser maior que o total recebido");
+
+    const quantidadeAtiva = dados.quantidade - qtdDanificada;
 
     return this.db.transaction(async (tx) => {
       const [prod] = await tx
@@ -82,12 +92,19 @@ export class LoteService {
           setorId,
           numeroLote: dados.numeroLote,
           validade: dados.validade,
-          quantidade: dados.quantidade,
+          quantidade: quantidadeAtiva,
+          qtdDanificada: qtdDanificada,
+          obsDanificada: obsDanificada,
           estado,
           ...(dados.fabricacao !== undefined ? { fabricacao: dados.fabricacao } : {}),
         })
         .returning();
       if (!loteCriado) throw new Error("Falha ao criar lote");
+
+      let observacaoMovimento = `Entrada de lote ${dados.numeroLote} (recebimento).`;
+      if (qtdDanificada > 0) {
+        observacaoMovimento += ` Total NF: ${dados.quantidade}. Avarias: ${qtdDanificada}. Motivo: ${obsDanificada || "Não informado"}`;
+      }
 
       const movId = await this.proximoIdMov(tx);
       await tx.insert(movTable).values({
@@ -95,10 +112,10 @@ export class LoteService {
         tipo: "entrada",
         loteId: loteCriado.id,
         produtoId,
-        quantidade: dados.quantidade,
+        quantidade: quantidadeAtiva,
         setorOrigemId: setorId,
         responsavelId: dados.responsavelId,
-        observacao: `Entrada de lote ${dados.numeroLote} (recebimento).`,
+        observacao: observacaoMovimento,
       });
 
       return {
@@ -153,10 +170,10 @@ export class LoteService {
       const movId = await this.proximoIdMov(tx);
       await tx.insert(movTable).values({
         id: movId,
-        tipo: "ajuste", // CEO-239: tipo correto para recontagem — distingue de expedição
+        tipo: "ajuste",
         loteId,
         produtoId: atual.produtoId,
-        quantidade: delta, // positivo = sobra encontrada; negativo = falta encontrada
+        quantidade: delta, 
         setorOrigemId: atual.setorId,
         responsavelId,
         observacao,
@@ -209,7 +226,7 @@ export class LoteService {
       const movId = await this.proximoIdMov(tx);
       await tx.insert(movTable).values({
         id: movId,
-        tipo: "consumo", // CEO-238: tipo correto para consumo clínico — distingue de expedição por pedido
+        tipo: "consumo", 
         loteId,
         produtoId: atual.produtoId,
         quantidade: -quantidadeAAbater,
@@ -256,7 +273,7 @@ export class LoteService {
         .update(loteTable)
         .set({
           estado: "segregado",
-          quantidade: 0, // zera o saldo — produto segregado sai de circulação (RN17)
+          quantidade: 0, 
           dataSegregacao: hoje.toISOString().slice(0, 10),
           observacaoSegregacao: observacao,
         })
@@ -271,7 +288,7 @@ export class LoteService {
         tipo: "segregacao",
         loteId,
         produtoId: atual.produtoId,
-        quantidade: -saldoAnterior, // CEO-213: registra a retirada real do saldo de circulação
+        quantidade: -saldoAnterior, 
         setorOrigemId: atual.setorId,
         responsavelId,
         observacao,

@@ -16,5 +16,11 @@ export default function RequireAuth({ children }) {
   if (!user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
+
+  // Trava de segurança para o primeiro acesso
+  if (user.trocarSenha && location.pathname !== "/trocar-senha") {
+    return <Navigate to="/trocar-senha" replace />;
+  }
+
   return children;
 }

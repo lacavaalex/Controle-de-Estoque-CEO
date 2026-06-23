@@ -344,4 +344,7 @@ export class PedidoService {
   async listarFilaPendentes(): Promise<PedidoComItens[]> {
     return this.pedidoRepo.listarPendentes();
   }
+  async listarTodos(): Promise<PedidoComItens[]> {
+    return this.pedidoRepo.listarTodos();
+  }
 }
