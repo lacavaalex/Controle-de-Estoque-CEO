@@ -85,6 +85,24 @@ router.get(
   },
 );
 
+// CEO-250 (US-EP05) — listas de alerta "vencendo / crítico" do setor.
+// Mesmo escopo do estoque (RN12): HO global; demais só o próprio setor.
+router.get(
+  "/setores/:setorId/alertas",
+  auth,
+  exigir((id, req) => podeVerSetor(id, Number(req.params.setorId))),
+  async (req, res) => {
+    try {
+      const setorId = Number(req.params.setorId);
+      const alertas = await estoqueService.alertas(setorId);
+      return res.status(200).json({ alertas });
+    } catch (error) {
+      if (error instanceof Error) return res.status(400).json({ mensagem: error.message });
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  },
+);
+
 // US-EP02-07 — catálogo do solicitante (agregado, SEM lote — RN12).
 router.get(
   "/setores/:setorId/catalogo",
@@ -177,6 +195,16 @@ router.post(
   auth,
   exigir((id, req) => podeCriarPedido(id, Number(req.body?.setorOrigemId ?? id.setorId))),
   (req, res) => pedidoController.criar(req, res),
+);
+
+// CEO-251 — fila de pedidos pendentes do almoxarife (todos os setores, FIFO).
+// RN11: só almoxarife/gestor HO processa pedidos. Declarada ANTES de
+// "/pedidos/:id" para não ser capturada como id="pendentes".
+router.get(
+  "/pedidos/pendentes",
+  auth,
+  exigir((id) => podeProcessarPedidos(id)),
+  (req, res) => pedidoController.filaPendentes(req, res),
 );
 
 // Detalhe de um pedido (escopo de setor verificado no controller pelos dados do pedido).

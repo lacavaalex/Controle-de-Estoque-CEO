@@ -7,6 +7,9 @@ import {
   loteEhExpedivel,
   ordenarFEFO,
   statusProduto,
+  exigeReposicao,
+  exigeAtencaoValidade,
+  compararSeveridade,
 } from "./estoque.js";
 
 // Data fixa de referência para testes determinísticos.
@@ -175,5 +178,55 @@ describe("statusProduto (RN03–RN06)", () => {
     expect(statusProduto(equip, [mkLote({ estado: "vencido" })], { hoje: HOJE })).toBe("indisponivel");
     // e validade ainda vale para Equipamento.
     expect(statusProduto(equip, [mkLote({ quantidade: 1, validade: validadeEmDias(10) })], { hoje: HOJE })).toBe("vencendo");
+  });
+});
+
+// ─── CEO-250 — classificação de alertas (vencendo / crítico) ─────────────────
+describe("exigeReposicao (CEO-250)", () => {
+  it("é true para indisponível, crítico e baixo", () => {
+    expect(exigeReposicao("indisponivel")).toBe(true);
+    expect(exigeReposicao("critico")).toBe(true);
+    expect(exigeReposicao("baixo")).toBe(true);
+  });
+  it("é false para status sem problema de saldo", () => {
+    expect(exigeReposicao("normal")).toBe(false);
+    expect(exigeReposicao("excessivo")).toBe(false);
+    expect(exigeReposicao("vencendo")).toBe(false);
+    expect(exigeReposicao("vencido")).toBe(false);
+    expect(exigeReposicao("atencao")).toBe(false);
+  });
+});
+
+describe("exigeAtencaoValidade (CEO-250)", () => {
+  it("é true para vencido, vencendo e atenção", () => {
+    expect(exigeAtencaoValidade("vencido")).toBe(true);
+    expect(exigeAtencaoValidade("vencendo")).toBe(true);
+    expect(exigeAtencaoValidade("atencao")).toBe(true);
+  });
+  it("é false para status sem alerta de validade", () => {
+    expect(exigeAtencaoValidade("normal")).toBe(false);
+    expect(exigeAtencaoValidade("critico")).toBe(false);
+    expect(exigeAtencaoValidade("baixo")).toBe(false);
+    expect(exigeAtencaoValidade("indisponivel")).toBe(false);
+    expect(exigeAtencaoValidade("excessivo")).toBe(false);
+  });
+});
+
+describe("compararSeveridade (CEO-250)", () => {
+  it("ordena do mais urgente para o menos urgente", () => {
+    const desordenado = ["normal", "vencido", "baixo", "indisponivel", "vencendo", "critico"] as const;
+    const ordenado = [...desordenado].sort(compararSeveridade);
+    expect(ordenado).toEqual([
+      "indisponivel",
+      "vencido",
+      "vencendo",
+      "critico",
+      "baixo",
+      "normal",
+    ]);
+  });
+  it("indisponível é sempre o mais urgente", () => {
+    expect(compararSeveridade("indisponivel", "vencido")).toBeLessThan(0);
+    expect(compararSeveridade("indisponivel", "critico")).toBeLessThan(0);
   });
 });

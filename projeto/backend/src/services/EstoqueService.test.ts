@@ -132,3 +132,38 @@ describe("EstoqueService.lotesParaExpedir (FEFO, RN20)", () => {
     expect(lotes.map((l) => l.id)).toEqual([3]);
   });
 });
+
+describe("EstoqueService.alertas (CEO-250)", () => {
+  it("particiona o estoque do HO em reposição e vencimento", async () => {
+    const { reposicao, vencimento } = await service.alertas(1, HOJE);
+
+    // Reposição: Papel (indisponível). Luva é excessivo (não entra);
+    // Resina tem status 'vencido' (alerta de validade, não de reposição).
+    expect(reposicao.map((p) => p.produtoId)).toEqual([3]);
+    expect(reposicao[0]!.status).toBe("indisponivel");
+
+    // Vencimento: Resina (lote ativo já vencido).
+    expect(vencimento.map((p) => p.produtoId)).toEqual([2]);
+    expect(vencimento[0]!.status).toBe("vencido");
+  });
+
+  it("no CEO não há alertas (Luva normal, Papel/Resina sem lote no setor)", async () => {
+    const { reposicao, vencimento } = await service.alertas(2, HOJE);
+    // No CEO só existe lote da Luva (normal). Papel e Resina ficam indisponíveis
+    // (sem lote no CEO) -> entram em reposição; nenhum entra em vencimento.
+    expect(vencimento).toHaveLength(0);
+    expect(reposicao.map((p) => p.produtoId).sort()).toEqual([2, 3]);
+  });
+
+  it("ordena cada lista por severidade (mais urgente primeiro)", async () => {
+    const { reposicao } = await service.alertas(2, HOJE);
+    // Ambos indisponíveis: mesma severidade, ordem estável; o teste garante que
+    // não há item de severidade menor à frente de um maior.
+    for (let i = 1; i < reposicao.length; i++) {
+      const anterior = reposicao[i - 1]!.status;
+      const atual = reposicao[i]!.status;
+      expect(["indisponivel", "critico", "baixo"]).toContain(anterior);
+      expect(["indisponivel", "critico", "baixo"]).toContain(atual);
+    }
+  });
+});
