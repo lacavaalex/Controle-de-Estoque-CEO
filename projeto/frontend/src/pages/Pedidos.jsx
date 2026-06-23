@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useFetch } from "../app/useFetch.js";
 import { pedidosDoSetor } from "../api/pedidos.js";
@@ -9,7 +9,8 @@ import { PageHead, StatusPedido, TableSkeleton, ErrorState, EmptyState } from ".
 export default function Pedidos() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [status, setStatus] = useState("");
+  const location = useLocation();
+  const [status, setStatus] = useState(location.state?.statusFiltro || "");
 
   const req = useFetch(
     () => (user?.setorId ? pedidosDoSetor(user.setorId, status || undefined) : Promise.resolve([])),
