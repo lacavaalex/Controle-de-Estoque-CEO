@@ -334,4 +334,8 @@ export class PedidoService {
   async listarPorSetor(setorId: number): Promise<PedidoComItens[]> {
     return this.pedidoRepo.listarPorSetor(setorId);
   }
+
+  async listarTodos(): Promise<PedidoComItens[]> {
+    return this.pedidoRepo.listarTodos();
+  }
 }

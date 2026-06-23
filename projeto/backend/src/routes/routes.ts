@@ -206,4 +206,11 @@ router.post(
   (req, res) => loteController.segregarLote(req, res)
 );
 
+// EP04-08 (CEO-247) — Listagem geral de pedidos baseada no escopo do usuário.
+router.get(
+  "/pedidos",
+  auth,
+  (req, res) => pedidoController.listar(req, res)
+);
+
 export { router };

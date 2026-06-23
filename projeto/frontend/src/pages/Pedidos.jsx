@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useFetch } from "../app/useFetch.js";
-import { pedidosDoSetor } from "../api/pedidos.js";
+import { listarPedidosGerais } from "../api/pedidos.js"; 
 import { STATUS_PEDIDO } from "../api/constants.js";
 import { PageHead, StatusPedido, TableSkeleton, ErrorState, EmptyState } from "../app/ui.jsx";
 
@@ -12,16 +12,19 @@ export default function Pedidos() {
   const [status, setStatus] = useState("");
 
   const req = useFetch(
-    () => (user?.setorId ? pedidosDoSetor(user.setorId, status || undefined) : Promise.resolve([])),
-    [user?.setorId, status],
+    () => listarPedidosGerais(status || undefined),
+    [status],
   );
+  
   const pedidos = req.data ?? [];
 
   return (
     <div>
       <PageHead
         title="Pedidos"
-        sub="Fila de pedidos do seu setor. Abra um pedido para processar item a item."
+        sub={user?.perfil === "almoxarife" || user?.perfil === "gestor" && user?.setorTipo === "almoxarifado" 
+          ? "Fila global de pedidos. Abra um pedido para processar item a item." 
+          : "Fila de pedidos do seu setor. Acompanhe a situação de cada item."}
       />
 
       {/* Abas por status */}
@@ -41,7 +44,7 @@ export default function Pedidos() {
       ) : pedidos.length === 0 ? (
         <div className="panel">
           <EmptyState title="Nenhum pedido aqui">
-            {status ? "Nenhum pedido com esse status." : "Quando houver pedidos para o seu setor, eles aparecem nesta fila."}
+            {status ? "Nenhum pedido com esse status." : "Quando houver pedidos, eles aparecerão nesta fila."}
           </EmptyState>
         </div>
       ) : (

@@ -35,4 +35,7 @@ export interface IPedidoRepository {
 
   // Atualiza o status (derivado) do cabeçalho — chamado após (re)processar itens.
   atualizarStatus(id: string, status: StatusPedido): Promise<void>;
+
+  // Busca todos os pedidos do sistema (Visão global para Almoxarife/HO)
+  listarTodos(): Promise<PedidoComItens[]>;
 }
