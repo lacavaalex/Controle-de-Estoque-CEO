@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import type { PedidoService, DadosNovoPedido } from "../services/PedidoService.js";
-import { podeVerSetor } from "../auth/rbac.js";
+import { podeVerSetor, podeProcessarPedidos } from "../auth/rbac.js";
 
 export class PedidoController {
   constructor(private pedidoService: PedidoService) {}
@@ -57,6 +57,18 @@ export class PedidoController {
     }
   }
 
+  // GET /pedidos/pendentes — fila do almoxarife (CEO-251): pedidos com itens
+  // por processar, de todos os setores, FIFO. Acesso restrito na rota (RN11).
+  async filaPendentes(_req: Request, res: Response): Promise<Response> {
+    try {
+      const pedidos = await this.pedidoService.listarFilaPendentes();
+      return res.status(200).json({ pedidos });
+    } catch (error) {
+      if (error instanceof Error) return res.status(400).json({ mensagem: error.message });
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
+
   // POST /pedidos/:id/itens/:itemId/expedir — processa um item (almoxarife/gestor HO).
   async expedir(req: Request, res: Response): Promise<Response> {
     const id = req.identidade!;
@@ -72,6 +84,22 @@ export class PedidoController {
         const status = error.message.includes("não encontrado") ? 404 : 400;
         return res.status(status).json({ mensagem: error.message });
       }
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
+
+  async listar(req: Request, res: Response): Promise<Response> {
+    const id = req.identidade!;
+    try {
+      let pedidos;
+      if (podeProcessarPedidos(id)) {
+        pedidos = await this.pedidoService.listarTodos();
+      } else {
+        pedidos = await this.pedidoService.listarPorSetor(id.setorId);
+      }
+      return res.status(200).json({ pedidos });
+    } catch (error) {
+      if (error instanceof Error) return res.status(400).json({ mensagem: error.message });
       return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }

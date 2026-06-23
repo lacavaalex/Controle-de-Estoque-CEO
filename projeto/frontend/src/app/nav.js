@@ -10,6 +10,7 @@ export const NAV_ITEMS = [
   { to: "/estoque",   label: "Estoque",   icon: "📦", perfis: [GESTOR, ALMOXARIFE, SOLICITANTE] },
   { to: "/pedidos/novo", label: "Novo pedido", icon: "➕", perfis: [GESTOR, SOLICITANTE] },
   { to: "/pedidos",   label: "Processar pedidos", icon: "🗂️", perfis: [GESTOR, ALMOXARIFE] },
+  { to: "/usuarios",  label: "Usuários",  icon: "👥", perfis: [GESTOR] },
 ];
 
 export function navParaPerfil(perfil) {

@@ -18,6 +18,8 @@ import { LoteController } from "../controller/LoteController.js";
 import { PgPedidoRepo } from "../repositories/PgPedidoRepo.js";
 import { PedidoService } from "../services/PedidoService.js";
 import { PedidoController } from "../controller/PedidoController.js";
+import { DashboardService } from "../services/DashboardService.js";
+import { DashboardController } from "../controller/DashboardController.js";
 
 // --- Legado v1 (Item/User em JSON) — mantido até a migração das rotas ---
 const itemRepo = new JsonItemRepo();
@@ -48,6 +50,9 @@ const pedidoController = new PedidoController(pedidoService);
 const usuarioController = new UsuarioController(usuarioRepo);
 
 
+const dashboardService = new DashboardService(produtoRepo, loteRepo, pedidoRepo, estoqueService);
+const dashboardController = new DashboardController(dashboardService);
+
 export {
   itemController,
   authController,
@@ -57,4 +62,5 @@ export {
   loteController,
   pedidoController,
   usuarioController,
+  dashboardController,
 };

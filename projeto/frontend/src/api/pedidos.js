@@ -21,6 +21,13 @@ export async function pedidosDoSetor(setorId, status) {
   return data.pedidos ?? [];
 }
 
+// GET /pedidos[?status=] → { pedidos: [...] }
+export async function listarPedidosGerais(status) {
+  const q = status ? `?status=${encodeURIComponent(status)}` : "";
+  const data = await api.get(`/pedidos${q}`);
+  return data.pedidos ?? [];
+}
+
 // POST /pedidos/:id/itens/:itemId/expedir → { item, movimentacoes, statusPedido }
 // FEFO é automático no backend; corpo vazio.
 export async function expedirItem(pedidoId, itemId) {

@@ -10,4 +10,5 @@ export interface ILoteRepository {
   // Todos os lotes de um setor (para listagens de estoque).
   listarPorSetor(setorId: number): Promise<Lote[]>;
   atualizar(id: number, props: Partial<Omit<Lote, "id">>): Promise<void>;
+  listarSegregadosPorSetor(setorId: number): Promise<any[]>;
 }
