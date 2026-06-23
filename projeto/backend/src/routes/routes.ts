@@ -262,4 +262,14 @@ router.get(
   (req, res) => pedidoController.listar(req, res)
 );
 
+// ─── Dashboard (EP05) ────────────────────────────────────────────────────────
+
+// CEO-248 — KPIs do dashboard escopados por setor (RN12).
+router.get(
+  "/dashboard",
+  auth,
+  exigir((id, req) => podeVerSetor(id, Number(req.query.setorId ?? id.setorId))),
+  (req, res) => dashboardController.kpis(req, res),
+);
+
 export { router };
