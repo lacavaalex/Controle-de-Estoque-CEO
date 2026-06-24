@@ -54,20 +54,25 @@ async function seed() {
 
   // ─── Setores ──────────────────────────────────────────────────────────────
   console.log("Inserindo setores...");
-  const [ho, ceo] = await db
+  const [ho, ceo, dispensacao] = await db
     .insert(setor)
     .values([
       { nome: "HO", tipo: "almoxarifado", emailInstitucional: "almoxarifado@ufpe.br" },
       { nome: "CEO", tipo: "destinatario", emailInstitucional: "ceo@ufpe.br" },
+      // Setor do Agente de Email (EP08 / ADR-0004). Neutro de propósito: o
+      // usuário-robô mora aqui em vez de num setor solicitante real (CEO etc.),
+      // porque os solicitantes por email são dispersos. O setor de ORIGEM real
+      // do pedido é escolhido pelo almoxarife na triagem (CEO-276).
+      { nome: "Dispensação", tipo: "destinatario", emailInstitucional: "dispensacao@ufpe.br" },
     ])
     .returning();
 
-  if (!ho || !ceo) throw new Error("Falha ao inserir setores");
+  if (!ho || !ceo || !dispensacao) throw new Error("Falha ao inserir setores");
 
   // ─── Usuários (3 perfis) ────────────────────────────────────────────────
   console.log("Inserindo usuários...");
   const senhaHash = await gerarHashSenha(SENHA_DEV);
-  const [gestorHo, almoxarife, solicitanteCeo, gestorCeo] = await db
+  const [gestorHo, almoxarife, solicitanteCeo, gestorCeo, agenteRobo] = await db
     .insert(usuario)
     .values([
       {
@@ -106,10 +111,22 @@ async function seed() {
         avatar: "HL",
         senhaHash,
       },
+      // Usuário-robô do Agente de Email (EP08 / ADR-0004). É a identidade
+      // técnica em pedido.solicitanteId quando um rascunho vira pedido — o
+      // humano real fica em pedido.remetenteEmail/Nome. NÃO loga: sem senhaHash
+      // (o CHECK email LIKE '%@ufpe.br' segue valendo e este email o satisfaz).
+      {
+        nome: "Agente de Email (Dispensação)",
+        email: "dispensacao-agente@ufpe.br",
+        cargo: "Agente automático de ingestão por email",
+        perfil: "solicitante",
+        setorId: dispensacao.id,
+        avatar: "AE",
+      },
     ])
     .returning();
 
-  if (!gestorHo || !almoxarife || !solicitanteCeo || !gestorCeo) {
+  if (!gestorHo || !almoxarife || !solicitanteCeo || !gestorCeo || !agenteRobo) {
     throw new Error("Falha ao inserir usuários");
   }
 

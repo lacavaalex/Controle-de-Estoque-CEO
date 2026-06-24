@@ -38,6 +38,7 @@ import {
   planejarEntradaCeo,
   planejarExpedicaoItem,
   statusDerivadoDoPedido,
+  validarItensNovoPedido,
 } from "../domain/pedido.js";
 import type { IPedidoRepository, PedidoComItens } from "../interfaces/repository-interfaces/IPedidoRepo.js";
 
@@ -89,26 +90,8 @@ export class PedidoService {
       throw new Error("Setor de origem e destino não podem ser o mesmo");
     }
 
-    const itens = dados.itens.map((i, idx) => {
-      const temProduto = i.produtoId !== undefined && i.produtoId !== null;
-      const temDescricao =
-        i.descricaoLivre !== undefined && i.descricaoLivre.trim() !== "";
-      // INV07 — XOR entre produtoId e descricaoLivre.
-      if (temProduto === temDescricao) {
-        throw new Error(
-          `Item ${idx + 1}: informe produtoId OU descricaoLivre (exatamente um) — INV07`,
-        );
-      }
-      if (i.qtdSolicitada < 1) {
-        throw new Error(`Item ${idx + 1}: quantidade solicitada deve ser >= 1 (RN09)`);
-      }
-      return {
-        ...(temProduto ? { produtoId: i.produtoId } : { descricaoLivre: i.descricaoLivre }),
-        qtdSolicitada: i.qtdSolicitada,
-        unidade: i.unidade,
-        statusItem: "pendente" as StatusItem,
-      };
-    });
+    // RN09/INV07 — validação dos itens (compartilhada com a promoção de rascunho).
+    const itens = validarItensNovoPedido(dados.itens);
 
     return this.pedidoRepo.criar(
       {

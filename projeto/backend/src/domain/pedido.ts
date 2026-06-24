@@ -2,8 +2,70 @@
 // Função de domínio — status DERIVADO do pedido a partir dos seus itens (RN10).
 // Pura e testável. O status do pedido nunca é setado à mão: é calculado.
 // =============================================================================
-import type { Lote, MotivoDivergencia, StatusItem, StatusPedido } from "../entities/index.js";
+import type { StatusItem, StatusPedido, Unidade } from "../entities/index.js";
+import type { Lote, MotivoDivergencia } from "../entities/index.js";
 import { ordenarFEFO } from "./estoque.js";
+
+// =============================================================================
+// Validação dos itens de um pedido novo (RN09 + INV07) — PURA, sem I/O.
+// Fonte única usada tanto pela criação direta (PedidoService.criar) quanto pela
+// promoção de rascunho (RascunhoService.promover): ambas têm que gerar itens que
+// respeitam o XOR produto/descrição e qtd>=1 ANTES de chegar ao banco.
+// =============================================================================
+
+// Item como entra (do solicitante ou da triagem): XOR entre produtoId e
+// descricaoLivre; quantidade e unidade obrigatórias.
+export interface ItemEntrada {
+  produtoId?: number | null;
+  descricaoLivre?: string | null;
+  qtdSolicitada: number;
+  unidade: Unidade;
+}
+
+// Item validado e normalizado, pronto para o insert (status nasce 'pendente').
+export interface ItemValidado {
+  produtoId?: number;
+  descricaoLivre?: string;
+  qtdSolicitada: number;
+  unidade: Unidade;
+  statusItem: StatusItem;
+}
+
+/**
+ * RN09/INV07 — valida e normaliza os itens de um pedido novo. Lança erro
+ * descritivo (com o índice do item) na primeira violação. Não faz I/O.
+ */
+export function validarItensNovoPedido(itens: ItemEntrada[]): ItemValidado[] {
+  // Array.isArray protege contra body malformado (ex.: itens como string/objeto):
+  // sem isso o .map abaixo estouraria um 500 em vez de um 400 com mensagem útil.
+  if (!Array.isArray(itens) || itens.length === 0) {
+    throw new Error("Pedido deve ter ao menos um item (RN09)");
+  }
+  return itens.map((i, idx) => {
+    const temProduto = i.produtoId !== undefined && i.produtoId !== null;
+    const temDescricao =
+      i.descricaoLivre !== undefined &&
+      i.descricaoLivre !== null &&
+      i.descricaoLivre.trim() !== "";
+    // INV07 — XOR entre produtoId e descricaoLivre (exatamente um).
+    if (temProduto === temDescricao) {
+      throw new Error(
+        `Item ${idx + 1}: informe produtoId OU descricaoLivre (exatamente um) — INV07`,
+      );
+    }
+    // Number.isInteger barra NaN/strings/floats: sem ele, `NaN < 1` é false e o
+    // valor inválido passaria o guard e estouraria como erro de coluna no INSERT.
+    if (!Number.isInteger(i.qtdSolicitada) || i.qtdSolicitada < 1) {
+      throw new Error(`Item ${idx + 1}: quantidade solicitada deve ser >= 1 (RN09)`);
+    }
+    return {
+      ...(temProduto ? { produtoId: i.produtoId as number } : { descricaoLivre: i.descricaoLivre as string }),
+      qtdSolicitada: i.qtdSolicitada,
+      unidade: i.unidade,
+      statusItem: "pendente" as StatusItem,
+    };
+  });
+}
 
 /**
  * RN10 — deriva o status do pedido a partir dos status dos seus itens.

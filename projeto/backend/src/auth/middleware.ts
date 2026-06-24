@@ -4,6 +4,7 @@
 //   Identidade em req.identidade. Roda em TODA rota protegida.
 // - exigir(predicado): guarda de RBAC reutilizável sobre a Identidade.
 // =============================================================================
+import { timingSafeEqual } from "node:crypto";
 import type { Request, Response, NextFunction } from "express";
 import { verificarToken } from "./jwt.js";
 import type { Identidade } from "./rbac.js";
@@ -55,6 +56,41 @@ export function autenticar(setorRepo: ISetorRepository) {
     } catch {
       res.status(401).json({ mensagem: "Token inválido ou expirado" });
     }
+  };
+}
+
+/**
+ * Compara dois segredos em tempo constante (evita timing attack). Retorna false
+ * se os tamanhos diferem (timingSafeEqual exige buffers de igual tamanho).
+ */
+function segredosIguais(a: string, b: string): boolean {
+  const ba = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ba.length !== bb.length) return false;
+  return timingSafeEqual(ba, bb);
+}
+
+/**
+ * Auth de SERVIÇO para o Agente de Email (EP08 / ADR-0004). O agente é um worker
+ * separado, NÃO um usuário logado — por isso não passa por `autenticar()` (JWT).
+ * Confere `Authorization: Bearer <AGENTE_TOKEN>` contra o segredo de ambiente.
+ *
+ * Falha fechada: se AGENTE_TOKEN não estiver configurado, NEGA tudo (nunca
+ * autentica com segredo vazio). Comparação em tempo constante.
+ */
+export function autenticarServico() {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const esperado = process.env.AGENTE_TOKEN;
+    if (!esperado || esperado.trim() === "") {
+      res.status(503).json({ mensagem: "Auth de serviço não configurada (AGENTE_TOKEN ausente)" });
+      return;
+    }
+    const token = extrairToken(req);
+    if (!token || !segredosIguais(token, esperado)) {
+      res.status(401).json({ mensagem: "Token de serviço inválido ou ausente" });
+      return;
+    }
+    next();
   };
 }
 

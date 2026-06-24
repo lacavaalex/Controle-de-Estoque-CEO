@@ -7,10 +7,11 @@ import {
   produtoController,
   loteController,
   pedidoController,
+  rascunhoController,
   usuarioController,
   dashboardController,
 } from "../di/container.js";
-import { autenticar, exigir } from "../auth/middleware.js";
+import { autenticar, exigir, autenticarServico } from "../auth/middleware.js";
 import {
   podeVerSetor,
   podeEditarEstoque,
@@ -247,6 +248,36 @@ router.post(
   (req, res) => pedidoController.expedir(req, res),
 );
 
+// ─── Agente de Email da Dispensação (EP08 / ADR-0004) ───────────────────────
+// POST /rascunhos — admissão de solicitações por email. Auth de SERVIÇO
+// (Bearer AGENTE_TOKEN), não JWT: o agente é um worker, não um usuário logado.
+// Idempotente (ON CONFLICT por messageId). NÃO aplica RN10 (rascunho ≠ pedido).
+const authServico = autenticarServico();
+router.post("/rascunhos", authServico, (req, res) => rascunhoController.receber(req, res));
+
+// Triagem (CEO-276) — human-in-the-loop. Auth de USUÁRIO (JWT) + RBAC: só quem
+// processa pedidos (almoxarife/gestor HO — RN11) vê e decide a fila.
+router.get(
+  "/rascunhos",
+  auth,
+  exigir((id) => podeProcessarPedidos(id)),
+  (req, res) => rascunhoController.listar(req, res),
+);
+// Promove o rascunho a pedido oficial (em transação; status derivado — RN10).
+router.post(
+  "/rascunhos/:id/aprovar",
+  auth,
+  exigir((id) => podeProcessarPedidos(id)),
+  (req, res) => rascunhoController.aprovar(req, res),
+);
+// Descarta o rascunho (spam/duplicado/não-pedido) — não cria pedido.
+router.post(
+  "/rascunhos/:id/descartar",
+  auth,
+  exigir((id) => podeProcessarPedidos(id)),
+  (req, res) => rascunhoController.descartar(req, res),
+);
+
 // US-EP07-01 — Segregação de lote por vencimento ou descarte
 router.post(
   "/lotes/:loteId/segregar",
@@ -254,6 +285,11 @@ router.post(
   exigir((id) => id.perfil === "gestor" || id.perfil === "almoxarife"),
   (req, res) => loteController.segregarLote(req, res)
 );
+
+// ─── Itens (legado v1) — mantidas até a migração para Produto/Lote ──────────
+router.post("/items", async (req, res) => await itemController.createItem(req, res));
+router.patch("/items/:id/stock", async (req, res) => await itemController.addStock(req, res));
+router.patch("/items/:id/name", async (req, res) => await itemController.changeItemName(req, res));
 
 // EP04-08 (CEO-247) — Listagem geral de pedidos baseada no escopo do usuário.
 router.get(

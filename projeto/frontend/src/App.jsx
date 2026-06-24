@@ -10,6 +10,7 @@ import Estoque from "./pages/Estoque.jsx";
 import NovoPedido from "./pages/NovoPedido.jsx";
 import Pedidos from "./pages/Pedidos.jsx";
 import PedidoDetalhe from "./pages/PedidoDetalhe.jsx";
+import Triagem from "./pages/Triagem.jsx";
 import TrocarSenha from "./pages/TrocarSenha.jsx";
 import Usuarios from "./pages/Usuarios.jsx";
 
@@ -41,6 +42,7 @@ export default function App() {
             <Route path="/pedidos" element={<Pedidos />} />
             <Route path="/pedidos/novo" element={<NovoPedido />} />
             <Route path="/pedidos/:id" element={<PedidoDetalhe />} />
+            <Route path="/triagem" element={<Triagem />} />
             <Route path="/usuarios" element={<Usuarios />} />
           </Route>
 

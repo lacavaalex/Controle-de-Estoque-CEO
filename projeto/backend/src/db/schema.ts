@@ -21,6 +21,8 @@ import {
   timestamp,
   boolean,
   varchar,
+  jsonb,
+  real,
   uniqueIndex,
   check,
 } from "drizzle-orm/pg-core";
@@ -109,6 +111,21 @@ export const tipoMovimentacaoEnum = pgEnum("tipo_movimentacao", [
   "ajuste",
   "consumo",
   "segregacao",
+]);
+
+// ─── Enums do Agente de Email da Dispensação (EP08 / ADR-0004) ──────────────
+// Aditivos: não alteram nenhum enum acima nem a derivação de status (RN10).
+
+// Pedido.origemCanal — por onde o pedido entrou. 'sistema' = digitado por um
+// usuário logado (fluxo normal); 'email' = admitido pelo agente via rascunho.
+export const origemCanalEnum = pgEnum("origem_canal", ["sistema", "email"]);
+
+// PedidoRascunho.statusTriagem — ciclo de ADMISSÃO (não de processamento).
+// Distinto de statusPedidoEnum de propósito: rascunho não é pedido (ADR-0004).
+export const statusTriagemEnum = pgEnum("status_triagem", [
+  "pendente",
+  "aprovado",
+  "descartado",
 ]);
 
 // ─── Setor ───────────────────────────────────────────────────────────────────
@@ -220,6 +237,14 @@ export const pedido = pgTable(
     dataCriacao: timestamp("data_criacao", { withTimezone: true }).notNull().defaultNow(),
     justificativa: text("justificativa").notNull(),
     status: statusPedidoEnum("status").notNull().default("pendente"),
+    // ─── Origem do pedido (EP08 / ADR-0004) — colunas aditivas ──────────────
+    // Default 'sistema' preserva os pedidos existentes e o seed. Quando um
+    // rascunho é promovido na triagem, vira 'email' e guarda o humano real.
+    // O solicitanteId continua sendo o usuário-robô; quem pediu de fato mora
+    // aqui (sem FK, sem CHECK @ufpe.br — o remetente externo nunca é usuario).
+    origemCanal: origemCanalEnum("origem_canal").notNull().default("sistema"),
+    remetenteEmail: text("remetente_email"),
+    remetenteNome: text("remetente_nome"),
   },
   (t) => [
     // RN09: justificativa >= 10 caracteres.
@@ -265,6 +290,41 @@ export const itemDoPedido = pgTable(
     ),
   ],
 );
+
+// ─── PedidoRascunho (antecâmara do Agente de Email — EP08 / ADR-0004) ───────
+// Admissão ≠ processamento: o agente é um produtor de rascunhos sujos (LLM,
+// email cru, confiança). O backend continua dono único do banco. Esta tabela
+// NÃO participa de RN10/INV — o rascunho não é pedido; só na aprovação do
+// almoxarife (triagem, CEO-276) é que se cria o `pedido` + `item_do_pedido`
+// oficiais passando por todas as regras de domínio. Ver skill
+// agente-dispensacao-rascunho.
+export const pedidoRascunho = pgTable("pedido_rascunho", {
+  id: serial("id").primaryKey(),
+  // Idempotência (inbox pattern): UNIQUE → INSERT ON CONFLICT DO NOTHING no
+  // POST /rascunhos. Message-ID original (preservado pelo auto-forward Plano A)
+  // ou, em fallback, hash de conteúdo — nunca nulo. Ver skill email-ingestion-imap.
+  messageId: text("message_id").notNull(),
+  // Corpo + headers relevantes do email, para auditoria e retreino do extrator.
+  emailCru: text("email_cru").notNull(),
+  // Saída estruturada da tool `submit_solicitacao` (LLM). Revisada na triagem.
+  jsonExtraido: jsonb("json_extraido"),
+  // Humano real por trás do email (de From:/Reply-To/corpo). Sem FK, sem CHECK:
+  // o solicitante externo não é `usuario` (o login @ufpe.br segue blindado).
+  remetenteEmail: text("remetente_email"),
+  remetenteNome: text("remetente_nome"),
+  confiancaGeral: real("confianca_geral"),
+  statusTriagem: statusTriagemEnum("status_triagem").notNull().default("pendente"),
+  // Flag "revisar manual": anexo (PDF/imagem) fica fora do MVP — sem OCR ainda.
+  temAnexo: boolean("tem_anexo").notNull().default(false),
+  // Preenchido na aprovação: liga o rascunho ao pedido oficial que ele gerou.
+  pedidoId: text("pedido_id").references(() => pedido.id),
+  criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
+  processadoEm: timestamp("processado_em", { withTimezone: true }),
+}, (t) => [
+  // Idempotência por Message-ID/hash (ver acima): o mesmo email nunca vira dois
+  // rascunhos. Índice único habilita o ON CONFLICT (message_id) DO NOTHING.
+  uniqueIndex("pedido_rascunho_message_id_unico").on(t.messageId),
+]);
 
 // ─── Movimentação (auditoria — RN11 / RNF07.1) ──────────────────────────────
 // INV01: referencia um Lote existente (FK NOT NULL).

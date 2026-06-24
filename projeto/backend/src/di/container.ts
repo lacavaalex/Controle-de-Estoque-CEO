@@ -18,6 +18,9 @@ import { LoteController } from "../controller/LoteController.js";
 import { PgPedidoRepo } from "../repositories/PgPedidoRepo.js";
 import { PedidoService } from "../services/PedidoService.js";
 import { PedidoController } from "../controller/PedidoController.js";
+import { PgRascunhoRepo } from "../repositories/PgRascunhoRepo.js";
+import { RascunhoService } from "../services/RascunhoService.js";
+import { RascunhoController } from "../controller/RascunhoController.js";
 import { DashboardService } from "../services/DashboardService.js";
 import { DashboardController } from "../controller/DashboardController.js";
 
@@ -53,6 +56,11 @@ const usuarioController = new UsuarioController(usuarioRepo);
 const dashboardService = new DashboardService(produtoRepo, loteRepo, pedidoRepo, estoqueService);
 const dashboardController = new DashboardController(dashboardService);
 
+// Agente de Email da Dispensação (EP08) — antecâmara de rascunhos + triagem.
+const rascunhoRepo = new PgRascunhoRepo();
+const rascunhoService = new RascunhoService(rascunhoRepo, pedidoRepo, usuarioRepo);
+const rascunhoController = new RascunhoController(rascunhoService);
+
 export {
   itemController,
   authController,
@@ -61,6 +69,7 @@ export {
   produtoController,
   loteController,
   pedidoController,
+  rascunhoController,
   usuarioController,
   dashboardController,
 };
