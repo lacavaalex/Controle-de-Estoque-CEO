@@ -31,12 +31,16 @@ function itensDoRascunho(rascunho) {
   return lista.map((it) => {
     const produtoId = it.produtoId ?? it.produtoIdPalpite ?? "";
     const temProduto = produtoId !== "" && produtoId != null;
+    // Não forçamos `|| 1`: uma qtd 0/ausente/inválida extraída do email deve ficar
+    // vazia para o almoxarife corrigir (itensValidos barra qtd <= 0), em vez de
+    // virar 1 silenciosamente e ser aprovada com o valor errado.
+    const qtdExtraida = Number(it.qtdSolicitada ?? it.qtd);
     return {
       key: ++_uid,
       modo: temProduto ? "catalogo" : "livre",
       produtoId: temProduto ? String(produtoId) : "",
       descricaoLivre: temProduto ? "" : String(it.descricaoLivre ?? it.descricao ?? ""),
-      qtdSolicitada: Number(it.qtdSolicitada ?? it.qtd ?? 1) || 1,
+      qtdSolicitada: Number.isInteger(qtdExtraida) && qtdExtraida > 0 ? qtdExtraida : "",
       unidade: UNIDADES.includes(it.unidade) ? it.unidade : "unidade",
     };
   });
@@ -147,6 +151,9 @@ function PainelRevisao({ rascunho, onResolvido, onCancelar }) {
   }
 
   const justOk = justificativa.trim().length >= 10;
+  // destinoOk: bloqueia aprovar enquanto não há almoxarifado destino carregado —
+  // senão o payload mandaria setorDestinoId 0 (Number("")) e o backend rejeitaria.
+  const destinoOk = !!destinoId;
   const origemOk = !!origemId && origemId !== destinoId;
   const itensValidos = useMemo(
     () =>
@@ -157,7 +164,7 @@ function PainelRevisao({ rascunho, onResolvido, onCancelar }) {
       }),
     [itens],
   );
-  const podeAprovar = origemOk && justOk && itensValidos && !enviando;
+  const podeAprovar = origemOk && destinoOk && justOk && itensValidos && !enviando;
 
   async function aprovar() {
     setErro("");

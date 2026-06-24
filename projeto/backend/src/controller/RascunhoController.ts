@@ -1,6 +1,23 @@
 import type { Request, Response } from "express";
 import type { RascunhoService, DadosAprovacao } from "../services/RascunhoService.js";
 
+// Mapeia um erro para {status, mensagem} sem vazar internals do banco.
+// Erros de validação do domínio/serviço são Error "limpos" lançados de propósito:
+// a mensagem é segura e útil ao cliente. Erros do driver Postgres trazem um
+// `code` (ex.: "23503" FK) e/ou outras props — nesses a mensagem crua expõe nomes
+// de constraint/tabela, então respondemos genérico (500).
+function mapearErro(error: unknown): { status: number; corpo: object } {
+  if (error instanceof Error && !("code" in error)) {
+    const msg = error.message;
+    if (msg.includes("não encontrado")) return { status: 404, corpo: { mensagem: msg } };
+    // Conflito de concorrência (rascunho já decidido por outro operador): 409,
+    // não 400 — não é input ruim do cliente, é estado já resolvido.
+    if (msg.includes("já foi")) return { status: 409, corpo: { mensagem: msg } };
+    return { status: 400, corpo: { mensagem: msg } };
+  }
+  return { status: 500, corpo: { error: "Erro interno do servidor" } };
+}
+
 export class RascunhoController {
   constructor(private rascunhoService: RascunhoService) {}
 
@@ -22,8 +39,8 @@ export class RascunhoController {
       });
       return res.status(criado ? 201 : 200).json({ rascunho, criado });
     } catch (error) {
-      if (error instanceof Error) return res.status(400).json({ mensagem: error.message });
-      return res.status(500).json({ error: "Erro interno do servidor" });
+      const { status, corpo } = mapearErro(error);
+      return res.status(status).json(corpo);
     }
   }
 
@@ -40,14 +57,19 @@ export class RascunhoController {
       const rascunhos = await this.rascunhoService.listarPendentes();
       return res.status(200).json({ rascunhos });
     } catch (error) {
-      if (error instanceof Error) return res.status(400).json({ mensagem: error.message });
-      return res.status(500).json({ error: "Erro interno do servidor" });
+      const { status, corpo } = mapearErro(error);
+      return res.status(status).json(corpo);
     }
   }
 
   // POST /rascunhos/:id/aprovar — promove o rascunho a pedido (em transação).
   async aprovar(req: Request, res: Response): Promise<Response> {
     const id = Number(req.params.id);
+    // Sem este guard, um :id não-numérico vira NaN e chega ao Postgres como
+    // parâmetro int4 inválido (erro cru), e "1e3" viraria 1000 silenciosamente.
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ mensagem: "id do rascunho inválido" });
+    }
     const { setorOrigemId, setorDestinoId, justificativa, itens } = req.body ?? {};
     const dados: DadosAprovacao = {
       setorOrigemId: Number(setorOrigemId),
@@ -59,26 +81,23 @@ export class RascunhoController {
       const pedido = await this.rascunhoService.promover(id, dados);
       return res.status(201).json({ pedido });
     } catch (error) {
-      if (error instanceof Error) {
-        const status = error.message.includes("não encontrado") ? 404 : 400;
-        return res.status(status).json({ mensagem: error.message });
-      }
-      return res.status(500).json({ error: "Erro interno do servidor" });
+      const { status, corpo } = mapearErro(error);
+      return res.status(status).json(corpo);
     }
   }
 
   // POST /rascunhos/:id/descartar — marca descartado (spam/duplicado/não-pedido).
   async descartar(req: Request, res: Response): Promise<Response> {
     const id = Number(req.params.id);
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ mensagem: "id do rascunho inválido" });
+    }
     try {
       await this.rascunhoService.descartar(id);
       return res.status(204).send();
     } catch (error) {
-      if (error instanceof Error) {
-        const status = error.message.includes("não encontrado") ? 404 : 400;
-        return res.status(status).json({ mensagem: error.message });
-      }
-      return res.status(500).json({ error: "Erro interno do servidor" });
+      const { status, corpo } = mapearErro(error);
+      return res.status(status).json(corpo);
     }
   }
 }

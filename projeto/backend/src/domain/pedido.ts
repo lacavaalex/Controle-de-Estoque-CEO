@@ -53,7 +53,9 @@ export function validarItensNovoPedido(itens: ItemEntrada[]): ItemValidado[] {
         `Item ${idx + 1}: informe produtoId OU descricaoLivre (exatamente um) — INV07`,
       );
     }
-    if (i.qtdSolicitada < 1) {
+    // Number.isInteger barra NaN/strings/floats: sem ele, `NaN < 1` é false e o
+    // valor inválido passaria o guard e estouraria como erro de coluna no INSERT.
+    if (!Number.isInteger(i.qtdSolicitada) || i.qtdSolicitada < 1) {
       throw new Error(`Item ${idx + 1}: quantidade solicitada deve ser >= 1 (RN09)`);
     }
     return {

@@ -72,7 +72,9 @@ export class RascunhoService {
     if (
       dados.confiancaGeral !== undefined &&
       dados.confiancaGeral !== null &&
-      (typeof dados.confiancaGeral !== "number" ||
+      // !Number.isFinite barra NaN/Infinity: NaN é typeof "number" e NaN<0/NaN>1
+      // são ambos false, então sem isso um NaN passaria e viraria "NaN%" na UI.
+      (!Number.isFinite(dados.confiancaGeral) ||
         dados.confiancaGeral < 0 ||
         dados.confiancaGeral > 1)
     ) {
