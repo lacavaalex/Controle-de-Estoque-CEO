@@ -1,7 +1,7 @@
 // AuthContext.jsx — estado de autenticação da aplicação.
 // Mantém o usuário logado, expõe login/logout e revalida a sessão via GET /eu.
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { session } from "../api/client.js";
+import { session, onUnauthorized } from "../api/client.js";
 import * as authApi from "../api/auth.js";
 
 const AuthContext = createContext(null);
@@ -24,6 +24,9 @@ export function AuthProvider({ children }) {
     return () => { vivo = false; };
   }, []);
 
+  // Qualquer 401 em outra tela limpa o token; mantém o React alinhado com a sessão.
+  useEffect(() => onUnauthorized(() => setUser(null)), []);
+
   const login = useCallback(async (email, senha) => {
     const { usuario } = await authApi.login(email, senha);
     setUser(usuario);
@@ -36,7 +39,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, setUser, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

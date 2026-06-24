@@ -1,6 +1,6 @@
 {
-  "id": "3077ff21-1a52-490c-a2e1-dadf27e4b2fe",
-  "prevId": "59bfc996-2801-47eb-80df-921ebcebc60d",
+  "id": "582a7a91-74a1-4b3c-9280-72347ff7fbd2",
+  "prevId": "ce24223c-5c77-4b38-9183-ba9bf6789155",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -216,6 +216,19 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true
+        },
+        "qtd_danificada": {
+          "name": "qtd_danificada",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "obs_danificada": {
+          "name": "obs_danificada",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "estado": {
           "name": "estado",
@@ -518,6 +531,26 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'pendente'"
+        },
+        "origem_canal": {
+          "name": "origem_canal",
+          "type": "origem_canal",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'sistema'"
+        },
+        "remetente_email": {
+          "name": "remetente_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remetente_nome": {
+          "name": "remetente_nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -571,6 +604,125 @@
           "value": "char_length(\"pedido\".\"justificativa\") >= 10"
         }
       },
+      "isRLSEnabled": false
+    },
+    "public.pedido_rascunho": {
+      "name": "pedido_rascunho",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "message_id": {
+          "name": "message_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email_cru": {
+          "name": "email_cru",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "json_extraido": {
+          "name": "json_extraido",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remetente_email": {
+          "name": "remetente_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remetente_nome": {
+          "name": "remetente_nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "confianca_geral": {
+          "name": "confianca_geral",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status_triagem": {
+          "name": "status_triagem",
+          "type": "status_triagem",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pendente'"
+        },
+        "tem_anexo": {
+          "name": "tem_anexo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "pedido_id": {
+          "name": "pedido_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "processado_em": {
+          "name": "processado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "pedido_rascunho_message_id_unico": {
+          "name": "pedido_rascunho_message_id_unico",
+          "columns": [
+            {
+              "expression": "message_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "pedido_rascunho_pedido_id_pedido_id_fk": {
+          "name": "pedido_rascunho_pedido_id_pedido_id_fk",
+          "tableFrom": "pedido_rascunho",
+          "tableTo": "pedido",
+          "columnsFrom": [
+            "pedido_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.produto": {
@@ -838,6 +990,14 @@
         "outros"
       ]
     },
+    "public.origem_canal": {
+      "name": "origem_canal",
+      "schema": "public",
+      "values": [
+        "sistema",
+        "email"
+      ]
+    },
     "public.perfil": {
       "name": "perfil",
       "schema": "public",
@@ -869,6 +1029,15 @@
         "atendido_parcial",
         "nao_atendido",
         "aguardando_reposicao"
+      ]
+    },
+    "public.status_triagem": {
+      "name": "status_triagem",
+      "schema": "public",
+      "values": [
+        "pendente",
+        "aprovado",
+        "descartado"
       ]
     },
     "public.tipo_movimentacao": {

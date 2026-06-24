@@ -1,6 +1,6 @@
 {
-  "id": "3077ff21-1a52-490c-a2e1-dadf27e4b2fe",
-  "prevId": "59bfc996-2801-47eb-80df-921ebcebc60d",
+  "id": "ce24223c-5c77-4b38-9183-ba9bf6789155",
+  "prevId": "3077ff21-1a52-490c-a2e1-dadf27e4b2fe",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -216,6 +216,19 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true
+        },
+        "qtd_danificada": {
+          "name": "qtd_danificada",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "obs_danificada": {
+          "name": "obs_danificada",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "estado": {
           "name": "estado",

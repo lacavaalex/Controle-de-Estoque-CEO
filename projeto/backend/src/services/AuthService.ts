@@ -55,6 +55,8 @@ export class AuthService {
     if (usuario === null || usuario.senhaHash === null) throw erroGenerico;
     const ok = await verificarSenha(senha, usuario.senhaHash);
     if (!ok) throw erroGenerico;
+    // Bloqueia usuário desativado (CEO-228)
+      if (!usuario.ativo) throw new Error("Conta desativada. Entre em contato com o gestor.");
 
     const token = assinarToken({
       sub: usuario.id,
@@ -102,5 +104,27 @@ export class AuthService {
     });
 
     return semHash(criado);
+  }
+
+  /**
+   * Atualiza a senha do usuário autenticado e remove a flag de primeiro acesso.
+   */
+  async atualizarSenha(autor: Identidade, novaSenha: string): Promise<void> {
+    if (!novaSenha || novaSenha.length < 8) {
+      throw new Error("A nova senha deve ter no mínimo 8 caracteres");
+    }
+
+    const idUsuario = autor.usuarioId;
+
+    const usuario = await this.usuarioRepo.buscarPorId(Number(idUsuario));
+    if (!usuario) throw new Error("Usuário não encontrado");
+
+    const senhaHash = await gerarHashSenha(novaSenha);
+
+    // Atualiza a senha e libera o acesso ao sistema
+    await this.usuarioRepo.atualizar(usuario.id, {
+      senhaHash,
+      trocarSenha: false,
+    });
   }
 }

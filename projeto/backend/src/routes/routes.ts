@@ -8,6 +8,8 @@ import {
   loteController,
   pedidoController,
   rascunhoController,
+  usuarioController,
+  dashboardController,
 } from "../di/container.js";
 import { autenticar, exigir, autenticarServico } from "../auth/middleware.js";
 import {
@@ -20,6 +22,9 @@ import type { FiltrosCatalogo } from "../services/EstoqueService.js";
 import type { StatusProduto } from "../domain/estoque.js";
 
 const router = express.Router();
+
+// Healthcheck simples — usado pelo start-all.sh e para diagnóstico rápido.
+router.get("/health", (_req, res) => res.status(200).json({ ok: true }));
 
 // Middleware de autenticação (verifica o JWT em toda rota protegida — RNF03.7).
 const auth = autenticar(setorRepo);
@@ -40,6 +45,27 @@ router.post("/login", (req, res) => authController.login(req, res));
 router.post("/logout", (req, res) => authController.logout(req, res));
 router.get("/eu", auth, (req, res) => authController.eu(req, res));
 router.post("/usuarios", auth, (req, res) => authController.provisionar(req, res));
+router.get(
+  "/usuarios",
+  auth,
+  exigir((id) => id.perfil === "gestor"),
+  (req, res) => usuarioController.listar(req, res),
+);
+
+router.patch(
+  "/usuarios/:id/desativar",
+  auth,
+  exigir((id) => id.perfil === "gestor"),
+  (req, res) => usuarioController.desativar(req, res),
+);
+
+router.patch(
+  "/usuarios/:id/resetar-senha",
+  auth,
+  exigir((id) => id.perfil === "gestor"),
+  (req, res) => usuarioController.resetarSenha(req, res),
+);
+router.patch("/eu/senha", auth, authController.mudarSenha.bind(authController));
 
 // ─── Setores ─────────────────────────────────────────────────────────────────
 
@@ -55,6 +81,12 @@ router.get("/setores", auth, async (_req, res) => {
     return res.status(500).json({ error: "Erro interno do servidor" });
   }
 });
+router.get(
+  "/setores/:setorId/segregados",
+  auth,
+  exigir((id, req) => id.perfil === "gestor" || id.perfil === "almoxarife"),
+  (req, res) => loteController.listarSegregadosPorSetor(req, res)
+);
 
 // ─── Catálogo / Estoque (EP02) ───────────────────────────────────────────────
 
@@ -68,6 +100,24 @@ router.get(
       const setorId = Number(req.params.setorId);
       const estoque = await estoqueService.estoqueDoSetor(setorId, filtrosDaQuery(req.query));
       return res.status(200).json({ estoque });
+    } catch (error) {
+      if (error instanceof Error) return res.status(400).json({ mensagem: error.message });
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  },
+);
+
+// CEO-250 (US-EP05) — listas de alerta "vencendo / crítico" do setor.
+// Mesmo escopo do estoque (RN12): HO global; demais só o próprio setor.
+router.get(
+  "/setores/:setorId/alertas",
+  auth,
+  exigir((id, req) => podeVerSetor(id, Number(req.params.setorId))),
+  async (req, res) => {
+    try {
+      const setorId = Number(req.params.setorId);
+      const alertas = await estoqueService.alertas(setorId);
+      return res.status(200).json({ alertas });
     } catch (error) {
       if (error instanceof Error) return res.status(400).json({ mensagem: error.message });
       return res.status(500).json({ error: "Erro interno do servidor" });
@@ -143,12 +193,20 @@ router.post(
   (req, res) => loteController.registrarEntrada(req, res),
 );
 
-// US-EP02-06 — ajuste de quantidade do lote.
+// US-EP03-04 (CEO-239) — Ajuste absoluto de inventário (Recontagem física)
 router.patch(
-  "/lotes/:loteId/quantidade",
+  "/lotes/:loteId/ajuste",
   auth,
   exigir((id) => id.perfil === "gestor" || id.perfil === "almoxarife"),
   (req, res) => loteController.ajustar(req, res),
+);
+
+// US-EP03-03 (CEO-238) — Registro de consumo clínico (Abatimento de saldo)
+router.post(
+  "/lotes/:loteId/consumo",
+  auth,
+  exigir((id) => id.perfil === "gestor" || id.perfil === "almoxarife"),
+  (req, res) => loteController.consumir(req, res),
 );
 
 // ─── Pedidos (EP03 expedição / EP04-01 criação) ─────────────────────────────
@@ -159,6 +217,16 @@ router.post(
   auth,
   exigir((id, req) => podeCriarPedido(id, Number(req.body?.setorOrigemId ?? id.setorId))),
   (req, res) => pedidoController.criar(req, res),
+);
+
+// CEO-251 — fila de pedidos pendentes do almoxarife (todos os setores, FIFO).
+// RN11: só almoxarife/gestor HO processa pedidos. Declarada ANTES de
+// "/pedidos/:id" para não ser capturada como id="pendentes".
+router.get(
+  "/pedidos/pendentes",
+  auth,
+  exigir((id) => podeProcessarPedidos(id)),
+  (req, res) => pedidoController.filaPendentes(req, res),
 );
 
 // Detalhe de um pedido (escopo de setor verificado no controller pelos dados do pedido).
@@ -210,9 +278,34 @@ router.post(
   (req, res) => rascunhoController.descartar(req, res),
 );
 
+// US-EP07-01 — Segregação de lote por vencimento ou descarte
+router.post(
+  "/lotes/:loteId/segregar",
+  auth,
+  exigir((id) => id.perfil === "gestor" || id.perfil === "almoxarife"),
+  (req, res) => loteController.segregarLote(req, res)
+);
+
 // ─── Itens (legado v1) — mantidas até a migração para Produto/Lote ──────────
 router.post("/items", async (req, res) => await itemController.createItem(req, res));
 router.patch("/items/:id/stock", async (req, res) => await itemController.addStock(req, res));
 router.patch("/items/:id/name", async (req, res) => await itemController.changeItemName(req, res));
+
+// EP04-08 (CEO-247) — Listagem geral de pedidos baseada no escopo do usuário.
+router.get(
+  "/pedidos",
+  auth,
+  (req, res) => pedidoController.listar(req, res)
+);
+
+// ─── Dashboard (EP05) ────────────────────────────────────────────────────────
+
+// CEO-248 — KPIs do dashboard escopados por setor (RN12).
+router.get(
+  "/dashboard",
+  auth,
+  exigir((id, req) => podeVerSetor(id, Number(req.query.setorId ?? id.setorId))),
+  (req, res) => dashboardController.kpis(req, res),
+);
 
 export { router };

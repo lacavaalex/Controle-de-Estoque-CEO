@@ -317,4 +317,17 @@ export class PedidoService {
   async listarPorSetor(setorId: number): Promise<PedidoComItens[]> {
     return this.pedidoRepo.listarPorSetor(setorId);
   }
+
+  /**
+   * CEO-251 — fila de pedidos pendentes do almoxarife: todos os pedidos com
+   * trabalho por fazer ('pendente'/'em_processamento'), de todos os setores, em
+   * ordem de chegada (FIFO). O controle de acesso (só almoxarife/gestor HO —
+   * RN11) é feito na rota; aqui só repassamos a leitura.
+   */
+  async listarFilaPendentes(): Promise<PedidoComItens[]> {
+    return this.pedidoRepo.listarPendentes();
+  }
+  async listarTodos(): Promise<PedidoComItens[]> {
+    return this.pedidoRepo.listarTodos();
+  }
 }

@@ -44,12 +44,24 @@ say "Subindo a API em http://localhost:3000 (background)"
 ( cd "$BACKEND" && npm run dev ) &
 API_PID=$!
 
-# Dá um instante para a API começar a escutar antes de o front fazer proxy.
-sleep 2
-if ! kill -0 "$API_PID" 2>/dev/null; then
-  echo "A API encerrou logo no início. Verifique os logs acima." >&2
-  exit 1
-fi
+# Espera a API responder (evita o front subir antes do backend estar pronto).
+say "Aguardando a API ficar pronta"
+for i in $(seq 1 45); do
+  code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/health 2>/dev/null || echo 000)
+  if [ "$code" = "200" ]; then
+    echo "API pronta."
+    break
+  fi
+  if ! kill -0 "$API_PID" 2>/dev/null; then
+    echo "A API encerrou logo no início. Verifique os logs acima." >&2
+    exit 1
+  fi
+  printf "."; sleep 1
+  if [ "$i" -eq 45 ]; then
+    echo " timeout — a API não respondeu em :3000/health." >&2
+    exit 1
+  fi
+done
 
 # 3. Dependências do frontend (só na 1ª vez) -----------------------------------
 if [ ! -d "$FRONTEND/node_modules" ]; then

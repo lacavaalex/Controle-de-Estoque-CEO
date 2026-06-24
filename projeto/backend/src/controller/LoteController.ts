@@ -13,7 +13,7 @@ export class LoteController {
   async registrarEntrada(req: Request, res: Response): Promise<Response> {
     const produtoId = Number(req.params.id);
     const setorId = Number(req.body?.setorId ?? req.identidade?.setorId);
-    const { numeroLote, validade, quantidade, fabricacao } = req.body ?? {};
+    const { numeroLote, validade, quantidade, fabricacao, qtdDanificada, obsDanificada } = req.body ?? {};
     const responsavelId = req.identidade?.usuarioId;
     if (responsavelId === undefined) return res.status(401).json({ mensagem: "Não autenticado" });
 
@@ -21,9 +21,11 @@ export class LoteController {
       const resultado = await this.loteService.registrarEntrada(produtoId, setorId, {
         numeroLote,
         validade,
-        quantidade,
+        quantidade: Number(quantidade),
         fabricacao,
         responsavelId,
+        qtdDanificada: qtdDanificada ? Number(qtdDanificada) : 0,
+        obsDanificada
       });
       return res.status(201).json(resultado);
     } catch (error) {
@@ -54,25 +56,72 @@ export class LoteController {
     }
   }
 
-  // US-EP02-06 — ajuste de quantidade do lote.
+  // US-EP02-06 / US-EP03-04 — ajuste absoluto por recontagem de inventário
   async ajustar(req: Request, res: Response): Promise<Response> {
     const loteId = Number(req.params.loteId);
     const { quantidade, observacao } = req.body ?? {};
     const responsavelId = req.identidade?.usuarioId;
     if (responsavelId === undefined) return res.status(401).json({ mensagem: "Não autenticado" });
+    
     try {
       const lote = await this.loteService.ajustarQuantidade(
         loteId,
-        Number(quantidade),
+        Number(quantidade), 
         responsavelId,
-        observacao,
+        observacao
       );
       return res.status(200).json({ lote });
     } catch (error) {
-      if (error instanceof Error) {
-        const status = error.message.includes("não encontrado") ? 404 : 400;
-        return res.status(status).json({ mensagem: error.message });
-      }
+      if (error instanceof Error) return res.status(400).json({ mensagem: error.message });
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
+
+  // US-EP03-03 — registro de consumo clínico
+  async consumir(req: Request, res: Response): Promise<Response> {
+    const loteId = Number(req.params.loteId);
+    const { quantidade, observacao } = req.body ?? {};
+    const responsavelId = req.identidade?.usuarioId;
+    if (responsavelId === undefined) return res.status(401).json({ mensagem: "Não autenticado" });
+
+    try {
+      const lote = await this.loteService.registrarConsumo(
+        loteId,
+        Number(quantidade), 
+        responsavelId,
+        observacao
+      );
+      return res.status(200).json({ lote });
+    } catch (error) {
+      if (error instanceof Error) return res.status(400).json({ mensagem: error.message });
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
+
+  async segregarLote(req: Request, res: Response): Promise<Response> {
+    const loteId = Number(req.params.loteId);
+    const { observacao } = req.body ?? {};
+    const responsavelId = req.identidade?.usuarioId;
+    if (responsavelId === undefined) return res.status(401).json({ mensagem: "Não autenticado" });
+
+    try {
+      const lote = await this.loteService.segregar(loteId, responsavelId, observacao);
+      return res.status(200).json({ lote });
+    } catch (error) {
+      if (error instanceof Error) return res.status(400).json({ mensagem: error.message });
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
+  
+  // US-EP07-02 — Lista os lotes na sala de biossegurança
+  async listarSegregadosPorSetor(req: Request, res: Response): Promise<Response> {
+    const setorId = Number(req.params.setorId);
+    
+    try {
+      const segregados = await this.loteRepo.listarSegregadosPorSetor(setorId);
+      return res.status(200).json({ segregados });
+    } catch (error) {
+      if (error instanceof Error) return res.status(400).json({ mensagem: error.message });
       return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }

@@ -153,6 +153,7 @@ export const usuario = pgTable(
     // Auth (Etapa 3): hash de senha (bcrypt/argon2) — nunca texto puro.
     senhaHash: text("senha_hash"),
     trocarSenha: boolean("trocar_senha").notNull().default(false),
+    ativo: boolean("ativo").notNull().default(true),
     criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -188,16 +189,15 @@ export const lote = pgTable(
   "lote",
   {
     id: serial("id").primaryKey(),
-    produtoId: integer("produto_id")
-      .notNull()
-      .references(() => produto.id),
-    setorId: integer("setor_id")
-      .notNull()
-      .references(() => setor.id),
+    produtoId: integer("produto_id").notNull().references(() => produto.id),
+    setorId: integer("setor_id").notNull().references(() => setor.id),
     numeroLote: text("numero_lote").notNull(),
     fabricacao: date("fabricacao"),
     validade: date("validade").notNull(),
     quantidade: integer("quantidade").notNull(),
+    qtdDanificada: integer("qtd_danificada").notNull().default(0),
+    obsDanificada: text("obs_danificada"),
+    
     estado: estadoLoteEnum("estado").notNull().default("ativo"),
     dataSegregacao: date("data_segregacao"),
     observacaoSegregacao: text("observacao_segregacao"),

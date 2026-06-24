@@ -11,7 +11,19 @@ if (!connectionString) {
   );
 }
 
-export const pool = new pg.Pool({ connectionString });
+export const pool = new pg.Pool({
+  connectionString,
+  // Evita clientes ociosos eternos; o pool recria sob demanda.
+  idleTimeoutMillis: 30_000,
+  connectionTimeoutMillis: 5_000,
+});
+
+// Clientes ociosos que perdem o link com o Postgres disparam 'error'. Sem
+// listener isso derruba o processo Node depois de alguns minutos — sintoma:
+// o front segue no ar mas toda chamada /api vira "Erro de conexão".
+pool.on("error", (err) => {
+  console.error("[pg] Erro inesperado em cliente ocioso do pool:", err);
+});
 
 export const db = drizzle(pool, { schema });
 

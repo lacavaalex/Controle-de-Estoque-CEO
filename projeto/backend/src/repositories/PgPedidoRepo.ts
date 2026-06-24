@@ -1,4 +1,4 @@
-import { eq, or, sql } from "drizzle-orm";
+import { asc, eq, inArray, or, sql } from "drizzle-orm";
 import type {
   IPedidoRepository,
   ItemComDesdobramentos,
@@ -120,7 +120,44 @@ export class PgPedidoRepo implements IPedidoRepository {
     return resultado;
   }
 
+  // CEO-251 — fila do almoxarife: pedidos com itens ainda por processar, de
+  // todos os setores, do mais antigo para o mais novo (FIFO). idx_pedido_status
+  // e idx_pedido_criacao (migration 0003) cobrem este filtro/ordenação.
+  async listarPendentes(): Promise<PedidoComItens[]> {
+    const cabecalhos = await this.db
+      .select()
+      .from(pedido)
+      .where(inArray(pedido.status, ["pendente", "em_processamento"]))
+      .orderBy(asc(pedido.dataCriacao));
+
+    // N+1 simples (a fila do almoxarife é pequena por definição — só pendentes).
+    const resultado: PedidoComItens[] = [];
+    for (const c of cabecalhos) {
+      const itens = await this.db
+        .select()
+        .from(itemDoPedido)
+        .where(eq(itemDoPedido.pedidoId, c.id));
+      resultado.push({ ...c, itens: aninharItens(itens) });
+    }
+    return resultado;
+  }
+
   async atualizarStatus(id: string, status: StatusPedido): Promise<void> {
     await this.db.update(pedido).set({ status }).where(eq(pedido.id, id));
+  }
+
+  async listarTodos(): Promise<PedidoComItens[]> {
+    // Traz todos os cabeçalhos sem a cláusula WHERE
+    const cabecalhos = await this.db.select().from(pedido);
+
+    const resultado: PedidoComItens[] = [];
+    for (const c of cabecalhos) {
+      const itens = await this.db
+        .select()
+        .from(itemDoPedido)
+        .where(eq(itemDoPedido.pedidoId, c.id));
+      resultado.push({ ...c, itens: aninharItens(itens) });
+    }
+    return resultado;
   }
 }
