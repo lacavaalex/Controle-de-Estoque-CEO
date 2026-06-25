@@ -308,4 +308,12 @@ router.get(
   (req, res) => dashboardController.kpis(req, res),
 );
 
+// US-EP05-02 — Consumo mensal por setor para gráficos do dashboard.
+router.get(
+  "/dashboard/consumo-mensal",
+  auth,
+  exigir((id, req) => podeVerSetor(id, Number(req.query.setorId ?? id.setorId))),
+  (req, res) => dashboardController.consumoMensalSetor(req, res),
+);
+
 export { router };

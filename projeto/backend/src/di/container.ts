@@ -8,6 +8,7 @@ import { PgUsuarioRepo } from "../repositories/PgUsuarioRepo.js";
 import { PgSetorRepo } from "../repositories/PgSetorRepo.js";
 import { PgProdutoRepo } from "../repositories/PgProdutoRepo.js";
 import { PgLoteRepo } from "../repositories/PgLoteRepo.js";
+import { PgMovimentacaoRepo } from "../repositories/PgMovimentacaoRepo.js";
 import { AuthService } from "../services/AuthService.js";
 import { AuthController } from "../controller/AuthController.js";
 import { EstoqueService } from "../services/EstoqueService.js";
@@ -34,6 +35,7 @@ const usuarioRepo = new PgUsuarioRepo();
 const setorRepo = new PgSetorRepo();
 const produtoRepo = new PgProdutoRepo();
 const loteRepo = new PgLoteRepo();
+const movimentacaoRepo = new PgMovimentacaoRepo();
 
 
 const authService = new AuthService(usuarioRepo, setorRepo);
@@ -53,7 +55,14 @@ const pedidoController = new PedidoController(pedidoService);
 const usuarioController = new UsuarioController(usuarioRepo);
 
 
-const dashboardService = new DashboardService(produtoRepo, loteRepo, pedidoRepo, estoqueService);
+const dashboardService = new DashboardService(
+  produtoRepo,
+  loteRepo,
+  pedidoRepo,
+  estoqueService,
+  setorRepo,
+  movimentacaoRepo,
+);
 const dashboardController = new DashboardController(dashboardService);
 
 // Agente de Email da Dispensação (EP08) — antecâmara de rascunhos + triagem.

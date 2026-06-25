@@ -5,6 +5,7 @@ import type { IProdutoRepository } from "../interfaces/repository-interfaces/IPr
 import type { ILoteRepository } from "../interfaces/repository-interfaces/ILoteRepo.js";
 import type { IPedidoRepository, PedidoComItens } from "../interfaces/repository-interfaces/IPedidoRepo.js";
 import type { ISetorRepository } from "../interfaces/repository-interfaces/ISetorRepo.js";
+import type { IMovimentacaoRepository } from "../interfaces/repository-interfaces/IMovimentacaoRepo.js";
 import type {
   Produto,
   Lote,
@@ -13,6 +14,7 @@ import type {
   NovoLote,
   NovoSetor,
   ItemDoPedido,
+  Movimentacao,
 } from "../entities/index.js";
 
 const HOJE = new Date("2026-06-02T12:00:00Z");
@@ -68,10 +70,30 @@ class InMemLoteRepo implements ILoteRepository {
     return this.rows.filter((r) => r.setorId === setorId).map((r) => ({ ...r }));
   }
   async atualizar(): Promise<void> {}
+
+  async listarSegregadosPorSetor(setorId: number): Promise<Lote[]> {
+    return this.rows.filter((r) => r.setorId === setorId && r.estado === 'segregado').map((r) => ({ ...r }));
+  }
+}
+
+class InMemMovimentacaoRepo implements IMovimentacaoRepository {
+  constructor(private rows: any[]) {}
+  async registrar(): Promise<any> { throw new Error("não implementado"); }
+  async buscarPorId(id: string): Promise<any | null> { return this.rows.find((r) => r.id === id) ?? null; }
+  async listarPorLote(loteId: number): Promise<any[]> { return this.rows.filter((r) => r.loteId === loteId); }
+  async listarPorSetor(setorId: number): Promise<any[]> {
+    return this.rows.filter((r) => r.setorOrigemId === setorId || r.setorDestinoId === setorId);
+  }
 }
 
 class InMemPedidoRepo implements IPedidoRepository {
   constructor(private rows: PedidoComItens[]) {}
+  listarPendentes(): Promise<PedidoComItens[]> {
+    throw new Error("Method not implemented.");
+  }
+  listarTodos(): Promise<PedidoComItens[]> {
+    throw new Error("Method not implemented.");
+  }
   async criar(): Promise<PedidoComItens> { throw new Error("não usado"); }
   async buscarPorId(id: string): Promise<PedidoComItens | null> {
     return this.rows.find((p) => p.id === id) ?? null;
@@ -114,6 +136,7 @@ beforeEach(() => {
   const setores: Setor[] = [
     { id: 1, nome: "HO", tipo: "almoxarifado", emailInstitucional: null },
     { id: 2, nome: "CEO", tipo: "destinatario", emailInstitucional: null },
+    { id: 3, nome: "Dispensação", tipo: "destinatario", emailInstitucional: null },
   ];
   const produtos: Produto[] = [
     { id: 1, nome: "Luva", categoria: "EPI", unidade: "caixa", estoqueMinimo: 10, estoqueMaximo: 100, localizacao: null, fornecedor: null },
@@ -122,17 +145,41 @@ beforeEach(() => {
   ];
   const lotes: Lote[] = [
     // Crítico no HO: 3 unidades (abaixo do mínimo 10)
-    { id: 1, produtoId: 1, setorId: 1, numeroLote: "A", fabricacao: null, validade: validadeEmDias(300), quantidade: 3, estado: "ativo", dataSegregacao: null, observacaoSegregacao: null },
+    {
+      id: 1, produtoId: 1, setorId: 1, numeroLote: "A", fabricacao: null, validade: validadeEmDias(300), quantidade: 3, estado: "ativo", dataSegregacao: null, observacaoSegregacao: null,
+      qtdDanificada: 0,
+      obsDanificada: null
+    },
     // Vencendo em 20 dias (≤30)
-    { id: 2, produtoId: 2, setorId: 1, numeroLote: "B", fabricacao: null, validade: validadeEmDias(20), quantidade: 15, estado: "ativo", dataSegregacao: null, observacaoSegregacao: null },
+    {
+      id: 2, produtoId: 2, setorId: 1, numeroLote: "B", fabricacao: null, validade: validadeEmDias(20), quantidade: 15, estado: "ativo", dataSegregacao: null, observacaoSegregacao: null,
+      qtdDanificada: 0,
+      obsDanificada: null
+    },
     // Atenção em 45 dias (≤60, >30)
-    { id: 3, produtoId: 2, setorId: 1, numeroLote: "C", fabricacao: null, validade: validadeEmDias(45), quantidade: 10, estado: "ativo", dataSegregacao: null, observacaoSegregacao: null },
+    {
+      id: 3, produtoId: 2, setorId: 1, numeroLote: "C", fabricacao: null, validade: validadeEmDias(45), quantidade: 10, estado: "ativo", dataSegregacao: null, observacaoSegregacao: null,
+      qtdDanificada: 0,
+      obsDanificada: null
+    },
     // Vencido — não conta
-    { id: 4, produtoId: 2, setorId: 1, numeroLote: "D", fabricacao: null, validade: validadeEmDias(-5), quantidade: 5, estado: "ativo", dataSegregacao: null, observacaoSegregacao: null },
+    {
+      id: 4, produtoId: 2, setorId: 1, numeroLote: "D", fabricacao: null, validade: validadeEmDias(-5), quantidade: 5, estado: "ativo", dataSegregacao: null, observacaoSegregacao: null,
+      qtdDanificada: 0,
+      obsDanificada: null
+    },
     // Segregado — não conta
-    { id: 5, produtoId: 2, setorId: 1, numeroLote: "E", fabricacao: null, validade: validadeEmDias(10), quantidade: 5, estado: "segregado", dataSegregacao: null, observacaoSegregacao: null },
+    {
+      id: 5, produtoId: 2, setorId: 1, numeroLote: "E", fabricacao: null, validade: validadeEmDias(10), quantidade: 5, estado: "segregado", dataSegregacao: null, observacaoSegregacao: null,
+      qtdDanificada: 0,
+      obsDanificada: null
+    },
     // Lote no CEO (outro setor) — não entra no KPI do HO
-    { id: 6, produtoId: 1, setorId: 2, numeroLote: "F", fabricacao: null, validade: validadeEmDias(15), quantidade: 50, estado: "ativo", dataSegregacao: null, observacaoSegregacao: null },
+    {
+      id: 6, produtoId: 1, setorId: 2, numeroLote: "F", fabricacao: null, validade: validadeEmDias(15), quantidade: 50, estado: "ativo", dataSegregacao: null, observacaoSegregacao: null,
+      qtdDanificada: 0,
+      obsDanificada: null
+    },
   ];
   const pedidos: PedidoComItens[] = [
     pedido({
@@ -165,16 +212,41 @@ beforeEach(() => {
   const loteRepo = new InMemLoteRepo(lotes);
   const pedidoRepo = new InMemPedidoRepo(pedidos);
   const estoqueService = new EstoqueService(produtoRepo, loteRepo, new InMemSetorRepo(setores));
-  service = new DashboardService(produtoRepo, loteRepo, pedidoRepo, estoqueService);
+  const movimentacoes = [
+    // Saída do HO para CEO em maio
+    { id: "MOV-001", tipo: "saida", loteId: 1, produtoId: 1, quantidade: 10, setorOrigemId: 1, setorDestinoId: 2, responsavelId: 1, data: new Date("2026-05-05T12:00:00Z") },
+    // Saída do HO para Dispensação em junho
+    { id: "MOV-002", tipo: "saida", loteId: 2, produtoId: 2, quantidade: 5, setorOrigemId: 1, setorDestinoId: 3, responsavelId: 1, data: new Date("2026-06-01T12:00:00Z") },
+  ];
+
+  const movRepo = new InMemMovimentacaoRepo(movimentacoes);
+
+  service = new DashboardService(produtoRepo, loteRepo, pedidoRepo, estoqueService, new InMemSetorRepo(setores), movRepo as any);
 });
 
 describe("contarLotesVencendo", () => {
   it("conta apenas lotes ativos com 0 < dias <= limite", () => {
     const lotes: Lote[] = [
-      { id: 1, produtoId: 1, setorId: 1, numeroLote: "A", fabricacao: null, validade: validadeEmDias(20), quantidade: 1, estado: "ativo", dataSegregacao: null, observacaoSegregacao: null },
-      { id: 2, produtoId: 1, setorId: 1, numeroLote: "B", fabricacao: null, validade: validadeEmDias(45), quantidade: 1, estado: "ativo", dataSegregacao: null, observacaoSegregacao: null },
-      { id: 3, produtoId: 1, setorId: 1, numeroLote: "C", fabricacao: null, validade: validadeEmDias(-1), quantidade: 1, estado: "ativo", dataSegregacao: null, observacaoSegregacao: null },
-      { id: 4, produtoId: 1, setorId: 1, numeroLote: "D", fabricacao: null, validade: validadeEmDias(10), quantidade: 1, estado: "segregado", dataSegregacao: null, observacaoSegregacao: null },
+      {
+        id: 1, produtoId: 1, setorId: 1, numeroLote: "A", fabricacao: null, validade: validadeEmDias(20), quantidade: 1, estado: "ativo", dataSegregacao: null, observacaoSegregacao: null,
+        qtdDanificada: 0,
+        obsDanificada: null
+      },
+      {
+        id: 2, produtoId: 1, setorId: 1, numeroLote: "B", fabricacao: null, validade: validadeEmDias(45), quantidade: 1, estado: "ativo", dataSegregacao: null, observacaoSegregacao: null,
+        qtdDanificada: 0,
+        obsDanificada: null
+      },
+      {
+        id: 3, produtoId: 1, setorId: 1, numeroLote: "C", fabricacao: null, validade: validadeEmDias(-1), quantidade: 1, estado: "ativo", dataSegregacao: null, observacaoSegregacao: null,
+        qtdDanificada: 0,
+        obsDanificada: null
+      },
+      {
+        id: 4, produtoId: 1, setorId: 1, numeroLote: "D", fabricacao: null, validade: validadeEmDias(10), quantidade: 1, estado: "segregado", dataSegregacao: null, observacaoSegregacao: null,
+        qtdDanificada: 0,
+        obsDanificada: null
+      },
     ];
     expect(contarLotesVencendo(lotes, HOJE, 30)).toBe(1);
     expect(contarLotesVencendo(lotes, HOJE, 60)).toBe(2);
@@ -216,5 +288,27 @@ describe("DashboardService.kpis", () => {
     expect(kpisCeo.lotesVencendo30).toBe(1);
     expect(kpisHo.lotesVencendo60).toBe(2);
     expect(kpisCeo.lotesVencendo60).toBe(1);
+  });
+});
+
+describe("DashboardService.consumoMensalSetorFornecedor", () => {
+  it("agrega consumo mensal por setor destinatário a partir do fornecedor HO", async () => {
+    const resultado = await service.consumoMensalSetorFornecedor(1, 6, HOJE);
+    // Deve ter 6 meses
+    expect(resultado.meses).toHaveLength(6);
+    // Encontrar série do CEO
+    const serieCeo = resultado.setores.find((s) => s.nome === "CEO");
+    expect(serieCeo).toBeDefined();
+    // MOV-001 (maio) = 10 para CEO
+    const idxMai = resultado.meses.indexOf("2026-05");
+    expect(idxMai).toBeGreaterThanOrEqual(0);
+    expect(serieCeo!.valores[idxMai]).toBe(10);
+
+    // Encontrar série da Dispensação
+    const serieDisp = resultado.setores.find((s) => s.nome === "Dispensação");
+    const idxJun = resultado.meses.indexOf("2026-06");
+    expect(serieDisp).toBeDefined();
+    expect(idxJun).toBeGreaterThanOrEqual(0);
+    expect(serieDisp!.valores[idxJun]).toBe(5);
   });
 });
