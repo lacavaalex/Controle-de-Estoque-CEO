@@ -97,6 +97,12 @@
     .muted { color: var(--gray); font-size: .62em; line-height: 1.4; }
     .lead-sub { font-size: .56em; color: var(--gray); font-weight: 500; letter-spacing: .01em; }
 
+    /* Reserva a faixa do rodapé: o conteúdo nunca encosta no footer/barra de
+       marca (que são posicionados absolutos na base). Sem isso, slides com
+       muito texto sobrepõem o footer. box-sizing:border-box (padrão do reveal)
+       faz o .full { height:100% } respeitar este padding. */
+    .reveal .slides section { padding: 30px 38px 64px; }
+
     /* ── Barra de marca + rodapé (logo, número) em cada slide ─────────────── */
     .reveal .slides section::after {
       content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 6px;
@@ -299,7 +305,7 @@
     <p class="muted" style="margin-top:.5em;"><code>domain/pedido.ts → statusDerivadoDoPedido()</code> · coberto por testes unitários.</p>
   </div>
   <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
-  <aside class="notes">Melhor evidência técnica do projeto. "Estado derivado vs. armazenado" é debate clássico de eng. de software. Se perguntarem, abrir o pedido.ts ao vivo.</aside>
+  <aside class="notes">Melhor evidência técnica do projeto. "Estado derivado vs. armazenado" é debate clássico de projeto de sistemas. Se perguntarem, abrir o pedido.ts ao vivo.</aside>
 </section>
 
 <!-- ════════════════ 8 · ADRs ════════════════ -->
