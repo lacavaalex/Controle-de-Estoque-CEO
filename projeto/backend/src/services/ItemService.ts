@@ -47,8 +47,9 @@ export class ItemService implements IItemService{
         const item = items.find(item => item.id === id)
         if (item === undefined) throw new Error(`Nenhum item com o id ${id} foi encontrado`);
         
-        // Validação se já existe um item com o mesmo nome que está tentando atualizar
-        const hasName = items.some((item) => {item.name === name})
+        // Validação se já existe OUTRO item com o mesmo nome que está tentando atualizar
+        // (corpo de arrow em bloco antes nunca retornava, então o check era morto)
+        const hasName = items.some((outro) => outro.id !== id && outro.name === name)
         if (hasName === true) throw new Error('Já existe um item com o mesmo nome no estoque')
 
         // Operação no BD

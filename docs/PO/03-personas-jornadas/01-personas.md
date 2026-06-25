@@ -1,7 +1,7 @@
 # Personas
 
 **Documento:** 01-personas
-**Última atualização:** 10/05/2026
+**Última atualização:** 07/05/2026
 
 ---
 
@@ -62,29 +62,25 @@ Atua na coordenação administrativa do CEO. Faz a interface entre a operação 
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
-│  CP   Carlos Prates (turno manhã) / Colega (turno tarde)      │
+│  CP   Carlos Prates                                           │
 │       Almoxarife · 32 anos                                    │
 │       Unidade de Dispensação — UFPE                           │
 └───────────────────────────────────────────────────────────────┘
 ```
 
 ### Quem é
-Trabalha há mais de 10 anos na Dispensação, turno da manhã. O almoxarifado opera em **dois turnos com uma pessoa por turno** — Carlos (manhã) e um colega (tarde). Conhece todo material de cabeça, sabe qual lote está em qual prateleira. É responsável por receber dos fornecedores, organizar o estoque e atender as solicitações dos subdepartamentos (CEO, CME e outros) via e-mail. Recebe a lista de itens por e-mail, cria uma ficha manual, e lança em duas planilhas Excel separadas.
-
-> **Nota de entrevista (João, 10/05/2026):** o almoxarife de referência é o João, turno da manhã. O sistema foi desenhado com base nele, mas as personas de turno da manhã e tarde compartilham o mesmo perfil `almoxarife`.
+Trabalha há mais de 10 anos na Dispensação. Conhece todo material de cabeça, sabe qual lote está em qual prateleira. É responsável por receber dos fornecedores, organizar o estoque e atender as solicitações de cada subdepartamento.
 
 ### Objetivos
 - Não deixar nenhum dentista parado por falta de material.
 - Não desperdiçar item por vencimento.
 - Ter o registro do que entrou, saiu e foi ajustado — para se proteger em auditoria.
 - Atender as solicitações no menor número de cliques possível.
-- **Deixar o turno da tarde informado** do que ficou pendente — hoje isso não existe.
 
 ### Frustrações
-- Receber lista de e-mail com 10+ itens e ter que transcrever tudo em ficha manual antes de separar.
-- **Dupla digitação:** anotar em uma planilha e depois repetir em outra — "computo em duas planilhas".
+- Receber 3 pedidos verbais ao mesmo tempo e tentar lembrar de todos.
+- Dupla digitação: anotar no caderno e depois lançar no Excel.
 - Ter que justificar movimentações sem registro formal.
-- **Handoff de turno precário:** o colega da tarde não sabe o que ficou pendente de manhã; comunicação é verbal ou informal.
 
 ### Comportamento digital
 - Usa um desktop fixo na Dispensação durante o turno.
@@ -92,12 +88,12 @@ Trabalha há mais de 10 anos na Dispensação, turno da manhã. O almoxarifado o
 - Tolerância **zero** a fricção: se a tarefa demorar mais de 30 segundos, ele cai pro caderno.
 
 ### Cenário típico
-> Em uma manhã de segunda, João abre o sistema, vê 5 solicitações pendentes (incluindo uma de ontem à tarde que o colega não conseguiu resolver), separa fisicamente os itens e clica "Aprovar" em cada uma. A fila digital torna o handoff entre turnos automático — sem necessidade de anotação verbal.
+> Em uma manhã de segunda, João abre o sistema, vê 5 solicitações pendentes, separa fisicamente os itens e clica "Aprovar" em cada uma. Em 10 minutos resolveu o que antes levava o dia inteiro.
 
 ### O que esta persona precisa do produto (top 5)
-1. Fila de pendentes visível assim que entra no sistema — **serve como handoff de turno**.
+1. Fila de pendentes visível assim que entra no sistema.
 2. Botões "Aprovar" e "Negar" sem pop-ups longos.
-3. Cadastro de novo item com poucos campos obrigatórios (importação em massa para lotes grandes).
+3. Cadastro de novo item com poucos campos obrigatórios.
 4. Filtros rápidos no estoque (busca por nome ou lote).
 5. Status colorido — entender o estado de uma linha sem ler números.
 

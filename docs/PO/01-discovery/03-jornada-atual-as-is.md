@@ -1,7 +1,7 @@
 # Discovery — Jornada Atual (As-Is)
 
 **Documento:** 03-jornada-atual-as-is
-**Última atualização:** 10/05/2026
+**Última atualização:** 07/05/2026
 
 ---
 
@@ -22,21 +22,15 @@ Fornecedor entrega ─▶ Almoxarife confere fisicamente ─▶ Lança em planil
 ### 1.2 Solicitação de material por dentista do CEO
 
 ```
-Coordenação CEO envia e-mail ─▶ Almoxarife recebe lista de itens
-                              └─▶ Cria ficha manual com: nome, qtd requerida,
-                                  lote, validade, fabricação
-                              └─▶ Anota em planilha A (controle de saída)
-                              └─▶ Anota novamente em planilha B (controle geral)
-                              └─▶ Separa fisicamente e entrega ou nega parcialmente
+Dentista percebe falta ─▶ Pede verbalmente / por bilhete ao almoxarife
+                       └─▶ Em casos urgentes, vai pessoalmente à Dispensação
+                              └─▶ Almoxarife procura, entrega ou nega
 ```
 
-- Pedido via **e-mail estruturado** — não verbal, mas informal (fora de qualquer sistema).
-- Uma mensagem de e-mail equivale a uma **lista de múltiplos itens** (não item a item).
-- O almoxarife cria uma **ficha intermediária** anotando nome, quantidade requerida, lote, validade e fabricação — esse artefato físico não é preservado.
-- **Dupla digitação:** o mesmo evento é lançado em duas planilhas Excel separadas. Confirmado pelo almoxarife João: "computo em duas planilhas".
-- **Quantidade requerida ≠ quantidade enviada** na prática: o almoxarife corta quantidades por critério de prioridade clínica (racionalização — ver RN16). Essa diferença não é registrada em nenhum lugar.
-- Sem fila visível: dentistas com urgência interferem na ordem de atendimento.
-- Sem histórico: não dá para saber quanto cada dentista/setor consumiu no mês.
+- Pedido **sem registro formal** na maioria das vezes.
+- Sem fila visível: pedidos urgentes "furam" a ordem dos pedidos antigos.
+- Sem histórico: não dá para saber quanto cada dentista consome no mês.
+- Não dá pra saber onde itens relevantes estão
 
 ### 1.3 Reposição do estoque do CEO
 
@@ -55,9 +49,9 @@ Coordenação CEO envia e-mail ─▶ Almoxarife recebe lista de itens
 | Persona | Ação | Dor / Pensamento |
 |---------|------|------------------|
 | Dentista CEO | Inicia atendimento e percebe falta de anestésico | "De novo. Preciso parar a consulta para descer até a dispensação." |
-| Coordenação CEO | Envia e-mail com lista de itens | "Mandei o e-mail, mas quando vai sair? Vão enviar tudo ou só uma parte?" |
-| Almoxarife | Cria ficha manual a partir do e-mail | "São 12 itens nessa lista — vou ter que anotar tudo antes de separar." |
-| Almoxarife | Lança em duas planilhas no fim do dia | "Já anotei na ficha, agora tenho que repetir nas duas planilhas." |
+| Dentista CEO | Pede material por bilhete | "Vai esquecer? Será que entrega hoje?" |
+| Almoxarife | Recebe três pedidos verbais ao mesmo tempo | "Qual era o primeiro mesmo? Pediram 10 ou 15?" |
+| Almoxarife | Lança planilha no fim do dia | "Esqueci o que saiu de manhã, vou ter que conferir o caderno." |
 | Coordenação Dispensação | Recebe nota fiscal de fornecedor com tubo de anestésico vencendo em 30 dias | "Não sabia. Será que tem outro lote igual encalhado lá atrás?" |
 | Coordenação CEO | Atende paciente especial e faltou material | "Como assim 'acabou'? Pedi semana passada." |
 | Gestão | Reunião de orçamento — decidir compra | "Não tenho número, vou pedir um relatório que vai demorar dias." |
@@ -83,8 +77,8 @@ Coordenação CEO envia e-mail ─▶ Almoxarife recebe lista de itens
 │ Identificar  │ Sente falta no        │ —                     │ Cadernos /       │
 │ necessidade  │ atendimento           │                       │ Excel local      │
 ├──────────────┼───────────────────────┼───────────────────────┼──────────────────┤
-│ Solicitar    │ Envia e-mail com      │ Cria ficha manual;    │ Sem registro     │
-│              │ lista de itens        │ anota em 2 planilhas  │ formal integrado │
+│ Solicitar    │ Liga / WhatsApp /     │ Anota num post-it     │ Sem registro     │
+│              │ caminha até a Disp.   │                       │ formal           │
 ├──────────────┼───────────────────────┼───────────────────────┼──────────────────┤
 │ Atender      │ Espera resposta       │ Procura no estoque,   │ Atualiza caderno │
 │              │                       │ separa, entrega       │ (eventual)       │
@@ -99,8 +93,6 @@ Coordenação CEO envia e-mail ─▶ Almoxarife recebe lista de itens
 
 ## 5. Conclusão do diagnóstico
 
-A operação atual depende fortemente de **conhecimento tácito** (saber a quem pedir, quem está de plantão, onde fica cada caixa) e de **artefatos físicos** que não escalam (ficha manual, duas planilhas Excel, e-mail solto). O fluxo real é: e-mail → ficha → dupla digitação — não verbal, mas igualmente frágil e sem rastreabilidade.
-
-Dois fatores agravam a operação: (1) o almoxarifado funciona em **dois turnos com uma pessoa cada**, tornando o handoff crítico — o turno da tarde não sabe o que ficou pendente de manhã; (2) o **espaço físico reduzido** para o volume de materiais eleva a importância do campo `localização` e dos alertas de estoque excessivo (RN04). O sistema digital deve substituir esses artefatos sem aumentar a fricção operacional do almoxarife — caso contrário, ele será abandonado.
+A operação atual depende fortemente de **conhecimento tácito** (saber a quem pedir, quem está de plantão, onde fica cada caixa) e de **artefatos físicos** que não escalam (caderno, post-it, conversa). O sistema digital deve substituir esses artefatos sem aumentar a fricção operacional do almoxarife — caso contrário, ele será abandonado.
 
 Esse diagnóstico fundamenta o desenho do To-Be em [03-personas-jornadas/02-jornadas-to-be.md](../03-personas-jornadas/02-jornadas-to-be.md) e a priorização do MVP em [02-visao-escopo/02-escopo-mvp.md](../02-visao-escopo/02-escopo-mvp.md).

@@ -6,25 +6,7 @@
 ---
 
 ## 1. Linha do tempo (visão alto nível)
-
-### Sequenciamento de sprints do MVP (revisão 01/06/2026)
-
-6 sprints back-to-back de ~3 dias, **02/06 → 19/06/2026** (runway de 17 dias, "meta — provavelmente não bate exato"), no board **37 ("quadro CEO")**. O sequenciamento aplica a priorização MoSCoW (ver [05-backlog/02-user-stories.md]): **S1–S5 concentram 100% das Must (85 SP de trabalho restante)** e **S6 é um _buffer_ com todas as Should/Could (41 SP), cortável sob o prazo sem perder Must.**
-
-| Sprint | Datas | Tema | SP | Composição |
-|--------|-------|------|----|------------|
-| **S1** | 02–04/06 | Login (EP01) | 21 | Must (EP01-04 já _Done_) |
-| **S2** | 05–07/06 | Catálogo (EP02) + EP07-01 | 18 | 100% Must — EP07-01 puxada cedo (pré-req do FEFO) |
-| **S3** | 08–10/06 | Estoque CEO + base de pedido (EP03 + EP04-01) | 21 | 100% Must |
-| **S4** | 11–13/06 | Fluxo de pedidos (EP04) | 20 | 100% Must |
-| **S5** | 14–16/06 | Dashboards + Lote Must (EP05 + EP07-02 + EP06-01 + EP04-05) | 26 | 100% Must — última parede de Must |
-| **S6** | 17–19/06 | **Buffer cortável** | 41 | 100% Should/Could |
-
-**Total:** 147 SP (104 Must / 35 Should / 8 Could). **Linha de corte:** se o prazo apertar, corta-se de baixo de S6 — primeiro as Could (ajuste de inventário, responsivo tablet), depois as Should de menor valor no piloto (gráfico de consumo mensal — sem histórico para plotar em 90 dias). Nada em S6 bloqueia o piloto.
-
-**Riscos de carga:** S5 (26 SP) e S6 (41 SP) estão acima da média (~20 SP/sprint). S6 é grande de propósito — é o sprint expansível. Em S5, o candidato natural a transbordar para o topo de S6 é EP04-05 (desdobrar em lotes, 5 SP — Must avançada). O board (sprints 171–176) é a fonte operacional; este doc é o espelho.
-
-
+### TDB 
 
 ## 2. Releases
 

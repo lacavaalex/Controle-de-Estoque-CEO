@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1780449103565,
+      "tag": "0000_aberrant_susan_delgado",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1780462583277,
+      "tag": "0001_deep_stryfe",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780543658328,
+      "tag": "0002_awesome_venus",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1782135829579,
+      "tag": "0003_common_rhodey",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1782236061717,
+      "tag": "0004_supreme_silver_centurion",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1782265612583,
+      "tag": "0005_ep08_pedido_rascunho",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1782348155071,
+      "tag": "0006_indices_e_trigger_wallyson",
+      "breakpoints": true
+    }
+  ]
+}

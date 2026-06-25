@@ -1,0 +1,27 @@
+/* Pedido.css — detalhe do pedido / expedição */
+
+.pedido-resumo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5);
+  font-size: var(--fs-14);
+}
+.pedido-resumo .muted { font-size: var(--fs-12); }
+
+/* Feedback de "estoque moveu" — destaque breve na linha expedida (estado, não decoração) */
+.row-moved td {
+  background: var(--ok-bg) !important;
+  animation: moved-pulse var(--t-base) var(--ease);
+}
+@keyframes moved-pulse {
+  from { background: #d4efdc; }
+  to   { background: var(--ok-bg); }
+}
+
+.item-mov { color: var(--ok); font-size: var(--fs-12); margin-top: 4px; }
+.item-erro { color: var(--danger); font-size: var(--fs-12); margin-top: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .row-moved td { animation: none; }
+}

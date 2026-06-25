@@ -12,7 +12,7 @@
 - **Critérios de aceite:** Gherkin (`Dado / Quando / Então`).
 - **Estimativa:** Story Points em escala Fibonacci (1, 2, 3, 5, 8, 13).
 - **Status (sugerido):** Backlog · Pronta · Em desenvolvimento · Em revisão · Concluída.
-- **Prioridade:** MoSCoW. Todas as 37 stories pertencem ao R1.0 (MVP); a classificação Must/Should/Could ranqueia o que é inegociável para o piloto vs. o que desliza primeiro sob o prazo. Critério detalhado em "Resumo do backlog (MVP)" ao final.
+- **Prioridade:** MoSCoW. Stories `Must` formam o MVP.
 
 > Os IDs das stories seguem o épico (US-EP01-01, US-EP02-03 etc.). IDs descartados nesta revisão são listados ao final em "Histórico de mudanças".
 
@@ -89,7 +89,7 @@ Cenário: Gestor herda poderes do almoxarife no HO
 ### US-EP01-04 — Sessão persistente no navegador
 **Como** usuário, **eu quero** continuar logado enquanto a aba estiver aberta, **para que** não tenha que digitar a senha a cada navegação.
 
-- Prioridade: Should · Estimativa: 2 · RFs: RF01.4, RNF03.2
+- Prioridade: Must · Estimativa: 2 · RFs: RF01.4, RNF03.2
 
 ```gherkin
 Cenário: Recarregar mantém sessão
@@ -166,7 +166,7 @@ Cenário: E-mail já cadastrado
 ### US-EP01-07 — Aba de gerenciamento de usuários para o gestor
 **Como** gestor, **eu quero** listar e desativar usuários do meu escopo, **para que** o acesso fique sob controle.
 
-- Prioridade: Should · Estimativa: 3 · RFs: RF01.13 (novo)
+- Prioridade: Must · Estimativa: 3 · RFs: RF01.13 (novo)
 
 ```gherkin
 Cenário: Gestor HO lista todos os usuários
@@ -219,7 +219,7 @@ Cenário: Produto sem lote ativo
 ### US-EP02-02 — Visualizar lotes de um produto
 **Como** almoxarife/gestor HO, **eu quero** expandir o produto e ver cada lote, **para que** eu saiba a validade e fabricação de cada pilha física.
 
-- Prioridade: Should · Estimativa: 3 · RFs: RF03.1b (novo)
+- Prioridade: Must · Estimativa: 3 · RFs: RF03.1b (novo)
 
 ```gherkin
 Cenário: Expandir produto
@@ -232,7 +232,7 @@ Cenário: Expandir produto
 ### US-EP02-03 — Filtrar catálogo
 **Como** almoxarife/gestor HO, **eu quero** filtrar produtos por nome/lote, categoria, status e "só com/sem estoque", **para que** eu encontre rápido.
 
-- Prioridade: Should · Estimativa: 3 · RFs: RF03.5
+- Prioridade: Must · Estimativa: 3 · RFs: RF03.5
 
 ```gherkin
 Cenário: Filtrar por status "Indisponível"
@@ -279,7 +279,7 @@ Cenário: Validade no passado
 ### US-EP02-06 — Editar e remover produto/lote
 **Como** almoxarife/gestor HO, **eu quero** editar dados de produto ou lote, e remover (com confirmação), **para que** eu corrija registros.
 
-- Prioridade: Should · Estimativa: 3 · RFs: RF03.3, RF03.4
+- Prioridade: Must · Estimativa: 3 · RFs: RF03.3, RF03.4
 
 ```gherkin
 Cenário: Editar quantidade do lote
@@ -365,7 +365,7 @@ Cenário: Consumo maior que saldo
 ### US-EP03-04 — Gestor do CEO faz ajuste de inventário
 **Como** gestor CEO, **eu quero** fazer recontagem (saldo novo) com observação, **para que** divergências físicas sejam regularizadas.
 
-- Prioridade: Could · Estimativa: 3 · RFs: RF04.8 (novo)
+- Prioridade: Must · Estimativa: 3 · RFs: RF04.8 (novo)
 
 ```gherkin
 Cenário: Ajuste de inventário
@@ -504,7 +504,7 @@ Cenário: Contadores por aba
 ### US-EP04-07 — Notificação por e-mail ao criar pedido (ponte de migração)
 **Como** PO, **eu quero** que cada pedido criado dispare um e-mail para o almoxarifado, **para que** o hábito do e-mail seja preservado como apoio durante a migração.
 
-- Prioridade: Should · Estimativa: 5 · RFs: RF06.6b (novo)
+- Prioridade: Must · Estimativa: 5 · RFs: RF06.6b (novo)
 
 ```gherkin
 Cenário: E-mail enviado ao criar pedido
@@ -563,7 +563,7 @@ Cenário: KPI atualiza em tempo real
 ### US-EP05-02 — Gráfico de consumo mensal por setor
 **Como** gestor HO, **eu quero** ver consumo mensal por setor destinatário, **para que** eu negocie reposição com dados.
 
-- Prioridade: Should · Estimativa: 5 · RFs: RF02.2
+- Prioridade: Must · Estimativa: 5 · RFs: RF02.2
 
 ```gherkin
 Cenário: Gráfico com setores
@@ -574,7 +574,7 @@ Cenário: Gráfico com setores
 ### US-EP05-03 — Listas de vencendo e crítico
 **Como** gestor/almoxarife, **eu quero** ver listas de itens vencendo e críticos, **para que** eu atue rapidamente.
 
-- Prioridade: Should · Estimativa: 3 · RFs: RF02.2, RF02.3
+- Prioridade: Must · Estimativa: 3 · RFs: RF02.2, RF02.3
 
 ```gherkin
 Cenário: Lista de vencimento (HO)
@@ -601,7 +601,7 @@ Cenário: Fila com badge
 ### US-EP05-05 — Log de movimentações
 **Como** gestor, **eu quero** ver últimas movimentações (entrada, saída, ajuste, consumo, segregação), **para que** eu acompanhe o pulso operacional.
 
-- Prioridade: Should · Estimativa: 3 · RFs: RF06.4
+- Prioridade: Must · Estimativa: 3 · RFs: RF06.4
 
 ```gherkin
 Cenário: Log filtrável
@@ -638,7 +638,7 @@ Cenário: Cor primária
 ### US-EP06-02 — Layout responsivo
 **Como** usuário em tablet, **eu quero** o layout adaptado.
 
-- Prioridade: Could · Estimativa: 5 · RFs: RNF01.2, RNF05.3
+- Prioridade: Must · Estimativa: 5 · RFs: RNF01.2, RNF05.3
 
 ```gherkin
 Cenário: Tablet retrato (≥ 768px)
@@ -693,7 +693,7 @@ Cenário: Filtragem padrão
 ### US-EP07-03 — Alerta de reposição para demanda represada
 **Como** almoxarife, **eu quero** ser alertado quando chega um lote novo de produto com pedidos `aguardando_reposicao`, **para que** eu atenda a fila represada.
 
-- Prioridade: Should · Estimativa: 5 · RFs: RF06.9 (novo)
+- Prioridade: Must · Estimativa: 5 · RFs: RF06.9 (novo)
 
 ```gherkin
 Cenário: Lote novo de produto represado
@@ -728,32 +728,13 @@ Cenário: Pedido represado pode ser processado
 
 | Épico | Stories | Must | Should | Could |
 |-------|---------|------|--------|-------|
-| EP01 — Acesso | 7 | 5 | 2 | 0 |
-| EP02 — Catálogo + Estoque HO | 7 | 4 | 3 | 0 |
-| EP03 — Estoque CEO | 4 | 3 | 0 | 1 |
-| EP04 — Pedidos | 8 | 7 | 1 | 0 |
-| EP05 — Dashboards | 6 | 3 | 3 | 0 |
-| EP06 — UI | 2 | 1 | 0 | 1 |
-| EP07 — Ciclo de vida do lote | 3 | 2 | 1 | 0 |
-| **Total** | **37** | **25** | **10** | **2** |
+| EP01 — Acesso | 7 | 7 | 0 | 0 |
+| EP02 — Catálogo + Estoque HO | 7 | 7 | 0 | 0 |
+| EP03 — Estoque CEO | 4 | 4 | 0 | 0 |
+| EP04 — Pedidos | 8 | 8 | 0 | 0 |
+| EP05 — Dashboards | 6 | 6 | 0 | 0 |
+| EP06 — UI | 2 | 2 | 0 | 0 |
+| EP07 — Ciclo de vida do lote | 3 | 3 | 0 | 0 |
+| **Total** | **37** | **37** | **0** | **0** |
 
-> **Critério de classificação (revisão de 01/06/2026):** aplica os _princípios de priorização_ de [07-roadmap-metricas/01-roadmap.md §4] ao piloto do CEO. **Must** = o laço operacional do piloto (solicitante cria pedido → almoxarife processa item-a-item → estoque do CEO é alimentado → visibilidade por perfil) quebra sem a story, ou é restrição/meta declarada do MVP (identidade UFPE, demanda represada, segregação/perda, dashboards por perfil). **Should** = o piloto opera de forma degradada, há _workaround_ manual ou a story é coberta superficialmente por uma Must. **Could** = seguro de cortar no go-live sob o prazo de 17 dias. Antes desta revisão todas as 37 eram Must (25 Must / 10 Should / 2 Could após esta revisão), o que zerava o valor discriminante do campo de prioridade. As stories Should/Could continuam dentro de R1.0, apenas ranqueadas — são as primeiras a deslizar se o prazo apertar.
->
 > Stories adiadas para fase 2 (dentista, descarte oficial, catálogo recomendado por setor, ingestão automática de e-mail, estoque local para outros setores) estão listadas em [01-epicos.md §4].
-
-### Demotions desta revisão (Must → Should/Could)
-
-| Story | Nova prioridade | Por quê não é mais Must |
-|-------|-----------------|--------------------------|
-| US-EP01-04 — Sessão persistente | Should | Re-login é incômodo, não bloqueante. |
-| US-EP01-07 — Aba de gerenciamento de usuários | Should | Gestor já cria conta (US-EP01-06); listar/desativar pode esperar com poucos usuários no piloto. |
-| US-EP02-02 — Visualizar lotes de um produto | Should | A visão agregada (US-EP02-01) já responde "tem ou não tem"; o detalhe por lote é profundidade. |
-| US-EP02-03 — Filtrar catálogo | Should | Catálogo pequeno do piloto é navegável sem filtros. |
-| US-EP02-06 — Editar e remover produto/lote | Should | Correções via novo cadastro / ajuste no início do piloto. |
-| US-EP04-07 — Notificação por e-mail ao criar pedido | Should | É explicitamente a _ponte de migração_, não fonte de verdade — degrada com segurança. |
-| US-EP05-02 — Gráfico de consumo mensal por setor | Should | Precisa de ~6 meses de dados para ter sentido; num piloto de 90 dias não há histórico para plotar — valor real só em R1.1/R2. |
-| US-EP05-03 — Listas de vencendo e crítico | Should | Os KPIs (US-EP05-01) já expõem as contagens; as listas são o _drill-down_. |
-| US-EP05-05 — Log de movimentações | Should | Conveniência de auditoria no piloto; as movimentações são registradas de qualquer forma. |
-| US-EP07-03 — Alerta de reposição p/ demanda represada | Should | Almoxarife pode checar "demanda represada" (US-EP05-06) manualmente quando chega lote. |
-| US-EP03-04 — Ajuste de inventário | Could | Se US-EP03-03 (consumo) entra, divergências são raras num piloto de 90 dias. |
-| US-EP06-02 — Layout responsivo (tablet) | Could | Desktop-first basta para o go-live; o polimento de tablet é R1.1. |

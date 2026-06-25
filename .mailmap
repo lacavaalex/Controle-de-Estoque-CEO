@@ -1,0 +1,29 @@
+# .mailmap — unifica identidades de autor que se fragmentaram em vários
+# nomes/emails (máquinas diferentes, GitHub web, conta de grupo).
+# Formato: Nome Canônico <email canônico> <email a unificar>
+# Não altera o histórico; só corrige como ferramentas (git shortlog,
+# gráficos do GitHub) AGRUPAM e exibem os autores.
+
+# ── Luiz Taiguara de Oliveira Guimarães ──────────────────────────────
+Luiz Taiguara de Oliveira Guimarães <ltog@cin.ufpe.br> <dsgrupocinco@gmail.com>
+Luiz Taiguara de Oliveira Guimarães <ltog@cin.ufpe.br> <luiztaiguara14@gmail.com>
+Luiz Taiguara de Oliveira Guimarães <ltog@cin.ufpe.br> <ltog@WINDOWS.CIN.UFPE.BR>
+Luiz Taiguara de Oliveira Guimarães <ltog@cin.ufpe.br> <ltog@ug4c09.windows.cin.ufpe.br>
+Luiz Taiguara de Oliveira Guimarães <ltog@cin.ufpe.br> <LuizTaiguara@users.noreply.github.com>
+
+# ── Kaique Bonfim ────────────────────────────────────────────────────
+Kaique Bonfim <ksb3@cin.ufpe.br> <ksb3@g2c27.cin.ufpe.br>
+Kaique Bonfim <ksb3@cin.ufpe.br> ksb3-dt <ksb3@cin.ufpe.br>
+
+# ── Wallyson Rodrigues ───────────────────────────────────────────────
+Wallyson Rodrigues <wrswallyson@gmail.com> <110641584+ExeWall@users.noreply.github.com>
+Wallyson Rodrigues <wrswallyson@gmail.com> ExeWall <wrswallyson@gmail.com>
+
+# ── José Romildo ─────────────────────────────────────────────────────
+# (já consistente: joseromildo0 <jrdsj@cin.ufpe.br>)
+
+# ── Alex Lacava Jr ───────────────────────────────────────────────────
+# (já consistente: <alexlacavajr@gmail.com>)
+
+# ── Bruno Silva ──────────────────────────────────────────────────────
+# (já consistente: <brunoantsilvs@gmail.com>)

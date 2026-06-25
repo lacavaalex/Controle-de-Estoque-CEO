@@ -1,0 +1,69 @@
+/* ============================================================
+   theme.css — Design tokens · Controle de Estoque CEO-UFPE
+   Marca oficial UFPE: bordô #990000 (Pantone 201C) + preto.
+   Fonte oficial UFPE: Trebuchet MS (system font).
+   Ver DESIGN.md na raiz do repo.
+   ============================================================ */
+
+:root {
+  /* ---- Marca ---- */
+  --ufpe-bordo: #990000;        /* primária — Pantone 201C */
+  --ufpe-bordo-hover: #7a0000;  /* hover/active (mesma matiz, mais escura) */
+  --ufpe-bordo-weak: #f7e9ea;   /* tint p/ linha selecionada / destaque sutil */
+  --ufpe-preto: #000000;        /* segunda cor institucional */
+
+  /* ---- Tinta / texto ---- */
+  --ink:   #1a1a1a;  /* corpo (>=4.5:1 em superfície clara) */
+  --ink-2: #4d4d4d;  /* secundário */
+  --ink-3: #6b6b6b;  /* muted/caption + placeholder (só em branco puro) */
+
+  /* ---- Superfícies ---- */
+  --bg:        #fafafa;  /* fundo do app */
+  --surface:   #ffffff;  /* tabelas, forms, conteúdo */
+  --surface-2: #f6f4f4;  /* sidebar/toolbars/painéis (leve calor p/ bordô) */
+  --line:      #e2e2e2;  /* bordas/divisores */
+
+  /* ---- Estado de UI ---- */
+  --focus: #990000;
+  --danger: #b3261e;  --danger-bg: #fdecea;
+  --warn:   #b35900;  --warn-bg:   #fff4e5;
+  --ok:     #0a7d33;  --ok-bg:     #eaf6ee;
+  --info:   #0b5cad;  --info-bg:   #e8f1fb;
+
+  /* ---- Status de estoque (RN03–06 / contrato) ---- */
+  --st-critico:      #b3261e;
+  --st-baixo:        #b35900;
+  --st-vencendo:     #a15c00;
+  --st-vencido:      #8a1a14;
+  --st-ok:           #0a7d33;
+  --st-indisponivel: #6b6b6b;
+
+  /* ---- Tipografia (escala fixa em rem, product UI) ---- */
+  --font: "Trebuchet MS", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --fs-12: 0.75rem;  --fs-13: 0.8125rem; --fs-14: 0.875rem;
+  --fs-16: 1rem;     --fs-18: 1.125rem;  --fs-22: 1.375rem; --fs-28: 1.75rem;
+  --lh-tight: 1.35;  --lh-prose: 1.5;
+
+  /* ---- Espaçamento (ritmo) ---- */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 24px; --sp-6: 32px; --sp-7: 48px;
+
+  /* ---- Forma / sombra ---- */
+  --radius: 6px;
+  --radius-lg: 10px;
+  --shadow-1: 0 1px 2px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.08);
+  --shadow-2: 0 4px 12px rgba(0,0,0,.10);
+
+  /* ---- z-index (escala semântica) ---- */
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-modal-backdrop: 1200;
+  --z-modal: 1300;
+  --z-toast: 1400;
+  --z-tooltip: 1500;
+
+  /* ---- Movimento ---- */
+  --t-fast: 150ms;
+  --t-base: 200ms;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1); /* ease-out-quart */
+}
