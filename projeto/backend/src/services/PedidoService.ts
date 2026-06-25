@@ -1,23 +1,7 @@
-// =============================================================================
-// PedidoService — criação de pedido (EP04-01) e expedição (EP03 / RN19).
-//
-// criar()   — valida RN09 (justificativa>=10, >=1 item, XOR produto/descrição)
-//             e delega a persistência atômica ao PgPedidoRepo. O status do
-//             pedido nasce 'pendente' (derivado dos itens pendentes — RN10).
-//
-// expedir() — processa UM item pendente. ATENÇÃO ao duplo sentido de
-//             origem/destino: no PEDIDO, setorOrigemId = setor que SOLICITA
-//             (CEO) e setorDestinoId = almoxarifado HO. Os BENS fluem ao
-//             contrário (RN19/INV09): saem do HO e entram no CEO. Então:
-//             baixa lotes do HO (= pedido.setorDestinoId) em ordem FEFO (RN20),
-//             registra saída@HO + entrada@CEO, cria/atualiza o lote-CEO
-//             correspondente (RN19) e grava qtdExpedida/statusItem/motivo
-//             (RN16) no item. Tudo na MESMA transação (estoque + auditoria
-//             nunca divergem — INV01/INV05). Ao final, recalcula o pedido (RN10).
-//
-// A regra de alocação é PURA (domain/pedido.planejarExpedicaoItem); aqui só há
-// orquestração de I/O, espelhando LoteService.
-// =============================================================================
+// Criação de pedido (RN09) e expedição item a item (RN19).
+// A expedição baixa lotes do HO em ordem FEFO, registra saída no HO + entrada no
+// CEO e recalcula o status do pedido (RN10), tudo na mesma transação. A alocação
+// fica em domain/pedido.planejarExpedicaoItem; aqui é só orquestração de I/O.
 import { and, eq, isNull, sql } from "drizzle-orm";
 import type { DB } from "../db/client.js";
 import { db as defaultDb } from "../db/client.js";
@@ -44,7 +28,7 @@ import type { IPedidoRepository, PedidoComItens } from "../interfaces/repository
 
 type Tx = Parameters<Parameters<DB["transaction"]>[0]>[0];
 
-// ─── Payloads de entrada ─────────────────────────────────────────────────────
+// Payloads de entrada
 
 export interface ItemNovoPedido {
   // XOR (INV07): exatamente um entre produtoId e descricaoLivre.
@@ -74,7 +58,7 @@ export class PedidoService {
     private db: DB = defaultDb,
   ) {}
 
-  // ─── Criação (EP04-01 / RN09) ──────────────────────────────────────────────
+  // Criação (EP04-01 / RN09)
 
   async criar(dados: DadosNovoPedido): Promise<PedidoComItens> {
     if (!dados.justificativa || dados.justificativa.trim().length < 10) {
@@ -104,7 +88,7 @@ export class PedidoService {
     );
   }
 
-  // ─── Expedição (EP03 / RN19) ───────────────────────────────────────────────
+  // Expedição (EP03 / RN19)
 
   private async proximoIdMov(tx: Tx): Promise<string> {
     const r = await tx.execute<{ id: string }>(
@@ -308,7 +292,7 @@ export class PedidoService {
     });
   }
 
-  // ─── Leitura ────────────────────────────────────────────────────────────────
+  // Leitura
 
   async buscarPorId(id: string): Promise<PedidoComItens | null> {
     return this.pedidoRepo.buscarPorId(id);

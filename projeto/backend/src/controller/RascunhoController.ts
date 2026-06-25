@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import type { RascunhoService, DadosAprovacao } from "../services/RascunhoService.js";
 
 // Mapeia um erro para {status, mensagem} sem vazar internals do banco.
-// Erros de validação do domínio/serviço são Error "limpos" lançados de propósito:
+// Erros de validação do domínio/serviço viram resposta 4xx.
 // a mensagem é segura e útil ao cliente. Erros do driver Postgres trazem um
 // `code` (ex.: "23503" FK) e/ou outras props — nesses a mensagem crua expõe nomes
 // de constraint/tabela, então respondemos genérico (500).
@@ -44,7 +44,7 @@ export class RascunhoController {
     }
   }
 
-  // ─── Triagem (CEO-276) — almoxarife/gestor HO (RBAC na rota) ────────────────
+  // Triagem (CEO-276) — almoxarife/gestor HO (RBAC na rota)
 
   // GET /rascunhos?status=pendente — fila da triagem.
   async listar(req: Request, res: Response): Promise<Response> {

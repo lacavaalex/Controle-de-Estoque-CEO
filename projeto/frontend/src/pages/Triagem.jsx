@@ -125,7 +125,7 @@ export default function Triagem() {
   );
 }
 
-// ─── Painel de revisão de um rascunho ────────────────────────────────────────
+// Painel de revisão de um rascunho
 function PainelRevisao({ rascunho, onResolvido, onCancelar }) {
   const setoresReq = useFetch(() => listarSetores(), []);
   const setores = useMemo(() => setoresReq.data ?? [], [setoresReq.data]);

@@ -1,9 +1,7 @@
-// =============================================================================
 // Middlewares de autenticação e autorização (RNF03.7, RN01, RN12).
 // - autenticar: verifica o Bearer JWT, resolve o setor (tipo) e anexa a
 //   Identidade em req.identidade. Roda em TODA rota protegida.
 // - exigir(predicado): guarda de RBAC reutilizável sobre a Identidade.
-// =============================================================================
 import { timingSafeEqual } from "node:crypto";
 import type { Request, Response, NextFunction } from "express";
 import { verificarToken } from "./jwt.js";

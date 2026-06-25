@@ -1,4 +1,4 @@
-// RequireAuth.jsx — guarda de rota. Sem usuário → manda para o login.
+// RequireAuth.jsx — guarda de rota. Sem usuário manda para o login.
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext.jsx";
 

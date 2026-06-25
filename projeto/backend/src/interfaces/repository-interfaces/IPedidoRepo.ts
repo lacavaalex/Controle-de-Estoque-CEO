@@ -27,9 +27,8 @@ export interface PedidoComItens extends Pedido {
 
 export interface IPedidoRepository {
   // Cria o pedido (gera PED-NNN) e seus itens, atomicamente. Retorna o agregado.
-  // `tx` opcional: quando informado, opera na transação do chamador (ex.: a
-  // promoção rascunho→pedido cria o pedido e marca o rascunho juntos); sem ele,
-  // abre a própria transação.
+  // `tx` opcional: opera na transação do chamador quando informado; senão abre
+  // a própria.
   criar(
     cabecalho: NovoPedidoSemId,
     itens: NovoItemSemPedido[],

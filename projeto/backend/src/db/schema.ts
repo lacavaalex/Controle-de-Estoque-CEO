@@ -1,4 +1,3 @@
-// =============================================================================
 // Schema físico v2 (Drizzle ORM) — CEO-UFPE
 // Deriva de docs/PO/06-dominio-regras/03-modelo-conceitual.md (v2) e das
 // regras RN01–RN20 / invariantes INV01–INV09.
@@ -9,7 +8,6 @@
 // - Invariantes mapeados como CHECK/UNIQUE/FK onde fazem sentido no schema;
 //   os que dependem de estado calculado em runtime (ex.: status derivado do
 //   pedido) ficam nas funções de domínio da Etapa 2.
-// =============================================================================
 import {
   pgTable,
   pgEnum,
@@ -28,13 +26,13 @@ import {
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
-// ─── Sequências para IDs textuais legíveis (MOV-NNN, PED-NNN) ────────────────
+// Sequências para IDs textuais legíveis (MOV-NNN, PED-NNN)
 // Pedido e Movimentação usam PK textual com prefixo. A numeração vem destas
 // sequências; a formatação ('MOV-' || lpad(...)) é feita no repositório.
 export const seqMovimentacao = pgSequence("seq_movimentacao", { startWith: 1 });
 export const seqPedido = pgSequence("seq_pedido", { startWith: 1 });
 
-// ─── Enums de domínio ────────────────────────────────────────────────────────
+// Enums de domínio
 
 // Setor.tipo — almoxarifado (HO) fornece; destinatario (CEO, CME...) recebe.
 export const tipoSetorEnum = pgEnum("tipo_setor", ["almoxarifado", "destinatario"]);
@@ -74,7 +72,7 @@ export const unidadeEnum = pgEnum("unidade", [
   "par",
 ]);
 
-// Lote.estado — RN17. ativo → vencido → segregado.
+// Lote.estado — RN17. ativo vencido segregado.
 export const estadoLoteEnum = pgEnum("estado_lote", ["ativo", "vencido", "segregado"]);
 
 // ItemDoPedido.status_item — RN10.
@@ -113,7 +111,7 @@ export const tipoMovimentacaoEnum = pgEnum("tipo_movimentacao", [
   "segregacao",
 ]);
 
-// ─── Enums do Agente de Email da Dispensação (EP08 / ADR-0004) ──────────────
+// Enums do Agente de Email da Dispensação (EP08 / ADR-0004)
 // Aditivos: não alteram nenhum enum acima nem a derivação de status (RN10).
 
 // Pedido.origemCanal — por onde o pedido entrou. 'sistema' = digitado por um
@@ -121,14 +119,14 @@ export const tipoMovimentacaoEnum = pgEnum("tipo_movimentacao", [
 export const origemCanalEnum = pgEnum("origem_canal", ["sistema", "email"]);
 
 // PedidoRascunho.statusTriagem — ciclo de ADMISSÃO (não de processamento).
-// Distinto de statusPedidoEnum de propósito: rascunho não é pedido (ADR-0004).
+// Enum próprio do rascunho, separado de statusPedidoEnum (ADR-0004).
 export const statusTriagemEnum = pgEnum("status_triagem", [
   "pendente",
   "aprovado",
   "descartado",
 ]);
 
-// ─── Setor ───────────────────────────────────────────────────────────────────
+// Setor
 export const setor = pgTable("setor", {
   id: serial("id").primaryKey(),
   nome: text("nome").notNull(),
@@ -136,7 +134,7 @@ export const setor = pgTable("setor", {
   emailInstitucional: text("email_institucional"),
 });
 
-// ─── Usuário ───────────────────────────────────────────────────────────────
+// Usuário
 // INV06: exatamente um perfil e um setor (garantido por colunas NOT NULL).
 export const usuario = pgTable(
   "usuario",
@@ -163,7 +161,7 @@ export const usuario = pgTable(
   ],
 );
 
-// ─── Produto (catálogo) ──────────────────────────────────────────────────────
+// Produto (catálogo)
 export const produto = pgTable(
   "produto",
   {
@@ -182,7 +180,7 @@ export const produto = pgTable(
   ],
 );
 
-// ─── Lote ──────────────────────────────────────────────────────────────────
+// Lote
 // INV04: referencia Produto + exatamente um Setor (FKs NOT NULL).
 // INV05: quantidade sempre >= 0 (CHECK).
 export const lote = pgTable(
@@ -220,7 +218,7 @@ export const lote = pgTable(
   ],
 );
 
-// ─── Pedido (cabeçalho) ──────────────────────────────────────────────────────
+// Pedido (cabeçalho)
 export const pedido = pgTable(
   "pedido",
   {
@@ -237,7 +235,7 @@ export const pedido = pgTable(
     dataCriacao: timestamp("data_criacao", { withTimezone: true }).notNull().defaultNow(),
     justificativa: text("justificativa").notNull(),
     status: statusPedidoEnum("status").notNull().default("pendente"),
-    // ─── Origem do pedido (EP08 / ADR-0004) — colunas aditivas ──────────────
+    // Origem do pedido (EP08 / ADR-0004) — colunas aditivas
     // Default 'sistema' preserva os pedidos existentes e o seed. Quando um
     // rascunho é promovido na triagem, vira 'email' e guarda o humano real.
     // O solicitanteId continua sendo o usuário-robô; quem pediu de fato mora
@@ -252,7 +250,7 @@ export const pedido = pgTable(
   ],
 );
 
-// ─── ItemDoPedido (linhas) ─────────────────────────────────────────────────
+// ItemDoPedido (linhas)
 // INV07: exatamente um entre produto_id OU descricao_livre (XOR via CHECK).
 // INV03: qtd_expedida != qtd_solicitada (processado) => motivo_divergencia.
 export const itemDoPedido = pgTable(
@@ -291,7 +289,7 @@ export const itemDoPedido = pgTable(
   ],
 );
 
-// ─── PedidoRascunho (antecâmara do Agente de Email — EP08 / ADR-0004) ───────
+// PedidoRascunho (antecâmara do Agente de Email — EP08 / ADR-0004)
 // Admissão ≠ processamento: o agente é um produtor de rascunhos sujos (LLM,
 // email cru, confiança). O backend continua dono único do banco. Esta tabela
 // NÃO participa de RN10/INV — o rascunho não é pedido; só na aprovação do
@@ -300,7 +298,7 @@ export const itemDoPedido = pgTable(
 // agente-dispensacao-rascunho.
 export const pedidoRascunho = pgTable("pedido_rascunho", {
   id: serial("id").primaryKey(),
-  // Idempotência (inbox pattern): UNIQUE → INSERT ON CONFLICT DO NOTHING no
+  // Idempotência (inbox pattern): UNIQUE INSERT ON CONFLICT DO NOTHING no
   // POST /rascunhos. Message-ID original (preservado pelo auto-forward Plano A)
   // ou, em fallback, hash de conteúdo — nunca nulo. Ver skill email-ingestion-imap.
   messageId: text("message_id").notNull(),
@@ -326,7 +324,7 @@ export const pedidoRascunho = pgTable("pedido_rascunho", {
   uniqueIndex("pedido_rascunho_message_id_unico").on(t.messageId),
 ]);
 
-// ─── Movimentação (auditoria — RN11 / RNF07.1) ──────────────────────────────
+// Movimentação (auditoria — RN11 / RNF07.1)
 // INV01: referencia um Lote existente (FK NOT NULL).
 export const movimentacao = pgTable("movimentacao", {
   id: text("id").primaryKey(), // MOV-NNN

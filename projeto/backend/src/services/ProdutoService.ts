@@ -1,8 +1,6 @@
-// =============================================================================
 // ProdutoService — catálogo (US-EP02-04 cadastrar, EP02-06 editar/remover).
 // Categoria (RN02) e unidade são enums no banco; estoque min/max têm CHECK >= 0.
 // Aqui validamos de forma amigável antes de chegar ao banco.
-// =============================================================================
 import type { IProdutoRepository } from "../interfaces/repository-interfaces/IProdutoRepo.js";
 import type { ILoteRepository } from "../interfaces/repository-interfaces/ILoteRepo.js";
 import type { Produto, Categoria, Unidade } from "../entities/index.js";
