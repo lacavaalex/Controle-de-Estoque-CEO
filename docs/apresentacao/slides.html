@@ -306,7 +306,7 @@
     <ul style="font-size:.78em;">
       <li>Um pedido é <strong>cabeçalho + N itens</strong>; cada item tem desfecho próprio (integral, parcial, falta).</li>
       <li>O status do pedido é <strong>derivado</strong> dos itens, nunca digitado à mão (RN10, ADR-0008).</li>
-      <li>Máquina de estados de <strong>7 regras por precedência</strong>, em função pura testável.</li>
+      <li>São <strong>7 regras por precedência</strong>, em função pura testável.</li>
       <li>Consequência: o status <strong>nunca fica inconsistente</strong>, pois a verdade são os itens.</li>
     </ul>
     <p class="muted" style="margin-top:.5em;"><code>domain/pedido.ts → statusDerivadoDoPedido()</code> · coberto por testes unitários.</p>
