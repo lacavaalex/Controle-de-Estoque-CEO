@@ -1,0 +1,116 @@
+name: CI
+
+# Integração Contínua do CEO-UFPE.
+# Roda a cada push e a cada Pull Request, em dois jobs paralelos:
+#   - backend: sobe um Postgres 16 efêmero, aplica as migrations (Drizzle),
+#     popula o seed e roda os ~137 testes do Vitest contra o banco real.
+#   - frontend: roda os ~53 testes do Vitest (jsdom, sem banco).
+# Um PR só fica "verde" se ambos os jobs passarem — é a rede de segurança
+# automatizada que complementa o code review manual (ver ADR de Qualidade).
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+# Cancela execuções antigas do mesmo branch/PR quando chega um push novo,
+# para não desperdiçar runners com builds já obsoletos.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Backend — Express + Drizzle + Postgres. Testes tocam o banco de verdade
+  # (não há mock de DB), então precisamos de um Postgres real no runner.
+  # ---------------------------------------------------------------------------
+  backend:
+    name: Backend (Vitest + Postgres)
+    runs-on: ubuntu-latest
+
+    # Postgres efêmero como service container. Mesma major (16) do compose.yaml
+    # de produção, para o CI exercitar a mesma versão que roda no servidor.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ceo
+          POSTGRES_PASSWORD: ceo
+          POSTGRES_DB: ceo_estoque
+        ports:
+          - 5432:5432
+        # O job só começa quando o Postgres aceitar conexões.
+        options: >-
+          --health-cmd "pg_isready -U ceo -d ceo_estoque"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # No runner o Postgres responde em localhost:5432 (porta mapeada acima).
+      # Difere do dev local (5433), de propósito — aqui não há outro Postgres
+      # disputando a porta. As migrations e o seed leem esta mesma URL.
+      DATABASE_URL: postgresql://ceo:ceo@localhost:5432/ceo_estoque
+      # Segredos de teste — valores fixos só para o CI, nunca de produção.
+      JWT_SECRET: ci-test-secret-nao-usar-em-producao
+      JWT_EXPIRES_IN: 8h
+      AGENTE_TOKEN: ci-test-agente-token
+
+    defaults:
+      run:
+        working-directory: projeto/backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: projeto/backend/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Aplicar migrations (Drizzle)
+        run: npm run db:migrate
+
+      - name: Popular seed (idempotente)
+        run: npm run db:seed
+
+      - name: Type-check (tsc)
+        run: npx tsc --noEmit
+
+      - name: Rodar testes (Vitest)
+        run: npm test -- --run
+
+  # ---------------------------------------------------------------------------
+  # Frontend — React + Vite. Testes rodam em jsdom, sem dependência de banco.
+  # ---------------------------------------------------------------------------
+  frontend:
+    name: Frontend (Vitest)
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: projeto/frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: projeto/frontend/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Rodar testes (Vitest)
+        run: npm test
