@@ -81,9 +81,13 @@
     .stat .l { display: block; font-size: .42em; color: var(--gray); font-weight: 600; margin-top: .5em; line-height: 1.3; }
 
     /* ── Blocos de código / diagramas ASCII ───────────────────────────────── */
-    .reveal pre { width: 100%; box-shadow: none; margin: .4em 0; }
+    /* Diagramas ASCII são linhas longas; a fonte menor + overflow-x:auto evitam
+       que estourem a largura do slide (cortando à direita). white-space:pre
+       preserva o alinhamento do diagrama. */
+    .reveal pre { width: 100%; max-width: 100%; box-shadow: none; margin: .4em 0; overflow-x: auto; }
     .reveal pre code {
-      font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .42em; line-height: 1.5;
+      display: block; white-space: pre; overflow-x: auto;
+      font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .34em; line-height: 1.5;
       background: var(--ink); color: #f4eaea; border-radius: 12px; padding: 1.1em 1.3em;
     }
 
@@ -96,6 +100,12 @@
 
     .muted { color: var(--gray); font-size: .62em; line-height: 1.4; }
     .lead-sub { font-size: .56em; color: var(--gray); font-weight: 500; letter-spacing: .01em; }
+
+    /* Reserva a faixa do rodapé: o conteúdo nunca encosta no footer/barra de
+       marca (que são posicionados absolutos na base). Sem isso, slides com
+       muito texto sobrepõem o footer. box-sizing:border-box (padrão do reveal)
+       faz o .full { height:100% } respeitar este padding. */
+    .reveal .slides section { padding: 22px 38px 54px; }
 
     /* ── Barra de marca + rodapé (logo, número) em cada slide ─────────────── */
     .reveal .slides section::after {
@@ -112,6 +122,10 @@
 
     /* ── Slides de destaque (capa, demo, encerramento) ────────────────────── */
     .full { display: flex; flex-direction: column; justify-content: center; height: 100%; }
+    /* Slides de conteúdo: o item-tag (nº do roteiro) fica absoluto no topo, então
+       o conteúdo precisa começar ABAIXO dele — senão o kicker/título some atrás
+       do chip. Os slides de destaque (.center) não têm item-tag e ficam de fora. */
+    .full:not(.center) { padding-top: 38px; }
     .full.center { text-align: center; align-items: center; }
     section.dark { color: #fff; }
     section.dark h1, section.dark h2 { color: #fff; }
@@ -149,7 +163,7 @@
 
 <!-- ════════════════ 1 · PROBLEMA ════════════════ -->
 <section data-background-color="#ffffff">
-  <span class="item-tag">1 · Problema &amp; Visão</span><span class="owner">Luiz · PO</span>
+  <span class="item-tag">1 · Problema &amp; Visão</span>
   <div class="full">
     <span class="kicker">O ponto de partida</span>
     <h2>Um estoque que vive em planilhas</h2>
@@ -167,7 +181,7 @@
 
 <!-- ════════════════ 2 · INSIGHT DE ESCOPO ════════════════ -->
 <section data-background-color="#ffffff">
-  <span class="item-tag">1 · Visão</span><span class="owner">Luiz · PO</span>
+  <span class="item-tag">1 · Visão</span>
   <div class="full">
     <span class="kicker">A virada do projeto</span>
     <h2>O insight que mudou o escopo</h2>
@@ -193,7 +207,7 @@
 
 <!-- ════════════════ 3 · VISÃO DA SOLUÇÃO ════════════════ -->
 <section data-background-color="#ffffff">
-  <span class="item-tag">1 · Funcionalidades</span><span class="owner">Luiz · PO</span>
+  <span class="item-tag">1 · Funcionalidades</span>
   <div class="full">
     <span class="kicker">A solução em uma tela</span>
     <h2>O que o sistema entrega</h2>
@@ -216,7 +230,7 @@
 
 <!-- ════════════════ 4 · GESTÃO DO TRABALHO ════════════════ -->
 <section data-background-color="#ffffff">
-  <span class="item-tag">2 · Processo</span><span class="owner">Luiz · Bruno</span>
+  <span class="item-tag">2 · Processo</span>
   <div class="full">
     <span class="kicker">Como trabalhamos</span>
     <h2>Gestão e fluxo de desenvolvimento</h2>
@@ -246,7 +260,7 @@
 
 <!-- ════════════════ 5 · REQUISITOS ════════════════ -->
 <section data-background-color="#ffffff">
-  <span class="item-tag">3 · User Stories</span><span class="owner">Luiz · PO</span>
+  <span class="item-tag">3 · User Stories</span>
   <div class="full">
     <span class="kicker">Do requisito ao código</span>
     <h2>Requisitos &amp; rastreabilidade</h2>
@@ -266,15 +280,14 @@
 
 <!-- ════════════════ 6 · ARQUITETURA ════════════════ -->
 <section data-background-color="#ffffff">
-  <span class="item-tag">4 · Decisões</span><span class="owner">Kaique</span>
+  <span class="item-tag">4 · Decisões</span>
   <div class="full">
     <span class="kicker">Como o código é organizado</span>
     <h2>Arquitetura em camadas</h2>
     <ul style="font-size:.76em;">
       <li><strong>Monólito</strong> (ADR-0002), adequado ao escopo e ao prazo.</li>
-      <li><strong>Ports &amp; Adapters</strong> (ADR-0007): controller &rarr; service &rarr; <em>interface</em> &rarr; repositório.</li>
+      <li><strong>Camadas</strong>: presentation &rarr; <em>domain</em> &rarr; data (ADR-0007).</li>
       <li><strong>Domínio puro</strong>, sem I/O: regras testáveis isoladamente.</li>
-      <li>Aplicação <strong>pragmática</strong>: 2 adapters p/ a mesma porta provam a abstração; transações multi-tabela usam o ORM direto (exceção consciente).</li>
     </ul>
     <pre><code class="language-text">HTTP → Controller → Service → IRepo (porta) → PgRepo (adapter) → Postgres
                        │
@@ -286,25 +299,25 @@
 
 <!-- ════════════════ 7 · DOMÍNIO ════════════════ -->
 <section data-background-color="#ffffff">
-  <span class="item-tag">4 · Decisões</span><span class="owner">Kaique</span>
+  <span class="item-tag">4 · Decisões</span>
   <div class="full">
     <span class="kicker">O coração do sistema</span>
     <h2>Status do pedido, derivado</h2>
     <ul style="font-size:.78em;">
       <li>Um pedido é <strong>cabeçalho + N itens</strong>; cada item tem desfecho próprio (integral, parcial, falta).</li>
       <li>O status do pedido é <strong>derivado</strong> dos itens, nunca digitado à mão (RN10, ADR-0008).</li>
-      <li>Máquina de estados de <strong>7 regras por precedência</strong>, em função pura testável.</li>
+      <li>São <strong>7 regras por precedência</strong>, em função pura testável.</li>
       <li>Consequência: o status <strong>nunca fica inconsistente</strong>, pois a verdade são os itens.</li>
     </ul>
     <p class="muted" style="margin-top:.5em;"><code>domain/pedido.ts → statusDerivadoDoPedido()</code> · coberto por testes unitários.</p>
   </div>
   <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
-  <aside class="notes">Melhor evidência técnica do projeto. "Estado derivado vs. armazenado" é debate clássico de eng. de software. Se perguntarem, abrir o pedido.ts ao vivo.</aside>
+  <aside class="notes">Melhor evidência técnica do projeto. "Estado derivado vs. armazenado" é debate clássico de projeto de sistemas. Se perguntarem, abrir o pedido.ts ao vivo.</aside>
 </section>
 
 <!-- ════════════════ 8 · ADRs ════════════════ -->
 <section data-background-color="#ffffff">
-  <span class="item-tag">4 · Decisões</span><span class="owner">Kaique</span>
+  <span class="item-tag">4 · Decisões</span>
   <div class="full">
     <span class="kicker">Decisões registradas</span>
     <h2>Architecture Decision Records</h2>
@@ -325,7 +338,7 @@
 
 <!-- ════════════════ 9 · DEMO ════════════════ -->
 <section data-background-color="#DB1E2F" class="dark">
-  <span class="owner" style="background:#fff;color:var(--red-dark);">Operador da demo</span>
+  
   <div class="full center">
     <span class="kicker" style="color:#fff; justify-content:center;">Demonstração ao vivo</span>
     <h1 style="font-size:2.6em;">Vamos ao sistema</h1>
@@ -338,7 +351,7 @@
 
 <!-- ════════════════ 10 · QUALIDADE (testes) ════════════════ -->
 <section data-background-color="#ffffff">
-  <span class="item-tag">5 · Qualidade</span><span class="owner">Wallyson · Luiz</span>
+  <span class="item-tag">5 · Qualidade</span>
   <div class="full">
     <span class="kicker">A rede de segurança</span>
     <h2>Testes automatizados</h2>
@@ -359,7 +372,7 @@
 
 <!-- ════════════════ 11 · QUALIDADE (revisão) ════════════════ -->
 <section data-background-color="#ffffff">
-  <span class="item-tag">5 · Qualidade</span><span class="owner">Wallyson · Luiz</span>
+  <span class="item-tag">5 · Qualidade</span>
   <div class="full">
     <span class="kicker">Mais que testes</span>
     <h2>Revisão &amp; refatoração</h2>
@@ -389,7 +402,7 @@
 
 <!-- ════════════════ 12 · INFRAESTRUTURA ════════════════ -->
 <section data-background-color="#ffffff">
-  <span class="item-tag">6 · Infra</span><span class="owner">Luiz · PO</span>
+  <span class="item-tag">6 · Infra</span>
   <div class="full">
     <span class="kicker">Como publicamos</span>
     <h2>Infraestrutura &amp; deploy</h2>
@@ -411,7 +424,7 @@
 <!-- ════════════════ 13 · AGENTE = UX ════════════════ -->
 <section data-background-color="#231F20" class="dark">
   <span class="item-tag" style="background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.2);">Visão de futuro</span>
-  <span class="owner">Luiz · PO</span>
+  
   <div class="full">
     <span class="kicker" style="color:#ff8a93;">O diferencial</span>
     <h2 style="font-size:1.7em;">O agente de e-mail é <em style="color:#ffd2d2;">UX</em>, não tecnologia</h2>
