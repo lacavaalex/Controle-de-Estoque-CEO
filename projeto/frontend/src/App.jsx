@@ -17,7 +17,9 @@ import Usuarios from "./pages/Usuarios.jsx";
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      {/* basename vem do base do Vite (/estoque-ho/ em prod, / em dev); o
+          react-router não quer a barra final. */}
+      <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
         <Routes>
           {/* Pública */}
           <Route path="/login" element={<Login />} />
