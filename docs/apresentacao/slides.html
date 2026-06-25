@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Controle de Estoque CEO/HO · UFPE — Apresentação Final</title>
+  <title>Controle de Estoque HO · UFPE — Apresentação Final</title>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/monokai.css">
@@ -139,7 +139,7 @@
 <section data-background-color="#ffffff">
   <div class="full center">
     <span class="kicker" style="justify-content:center;">Centro de Informática · UFPE · Grupo 5</span>
-    <h1>Controle de Estoque<br><span style="color:var(--red);">CEO · Hospital Odontológico</span></h1>
+    <h1>Controle de Estoque<br><span style="color:var(--red);">Hospital Odontológico · UFPE</span></h1>
     <p class="lead-sub" style="max-width:20ch; margin:.9em auto 0;">Da planilha de Excel a um sistema com rastreabilidade, validade e pedidos digitais.</p>
     <p class="muted" style="margin-top:2.2em; letter-spacing:.04em;">Kaique &middot; Alex &middot; Wallyson &middot; Bruno &middot; Vinícius &middot; José &middot; Luiz</p>
   </div>
@@ -161,7 +161,7 @@
     </ul>
     <p class="muted" style="margin-top:.6em;">Público-alvo: gestores, almoxarifes e equipes clínicas do Hospital Odontológico.</p>
   </div>
-  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · CEO/HO UFPE</span></div>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
   <aside class="notes">NARRAR: a dificuldade de contato com o stakeholder. Acesso difícil ao almoxarife/Dispensação. Conseguimos pouca informação no começo, e parte dela estava errada, o que nos levou ao próximo slide.</aside>
 </section>
 
@@ -187,7 +187,7 @@
       </div>
     </div>
   </div>
-  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · CEO/HO UFPE</span></div>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
   <aside class="notes">Slide-chave da narrativa. Falar com calma: a virada de escopo. O valor de engenharia está em ter QUESTIONADO a premissa do cliente. Mencionar a preocupação deliberada com documentação para o futuro.</aside>
 </section>
 
@@ -210,7 +210,7 @@
       </ul>
     </div>
   </div>
-  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · CEO/HO UFPE</span></div>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
   <aside class="notes">Visão panorâmica rápida. Não detalhar agora, cada item será aprofundado. Plantar a semente do "agente é UX" que volta no fecho.</aside>
 </section>
 
@@ -240,7 +240,7 @@
     </div>
     <p class="muted" style="margin-top:.7em;">Gestão do board apoiada pelo <strong>MCP do Jira</strong> (ADR-0011): status e código sincronizados.</p>
   </div>
-  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · CEO/HO UFPE</span></div>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
   <aside class="notes">Mostrar o board do Jira (screenshot ou ao vivo). Enfatizar PR-only + code review + CI = disciplina. Citar que a IA ajudou na gestão (MCP Jira), assunto que volta no ADR-0011.</aside>
 </section>
 
@@ -260,7 +260,7 @@
       <li>Cada regra de negócio (RN09, RN10, RN16…) é <strong>citada no código</strong> que a implementa.</li>
     </ul>
   </div>
-  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · CEO/HO UFPE</span></div>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
   <aside class="notes">Mostrar uma User Story real com Gherkin no site/docs. O ponto forte: rastreabilidade. A RN10 vira código em domain/pedido.ts, gancho para o slide de arquitetura.</aside>
 </section>
 
@@ -280,7 +280,7 @@
                        │
                        ▼  domain/  (puro: status derivado, FEFO)</code></pre>
   </div>
-  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · CEO/HO UFPE</span></div>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
   <aside class="notes">Kaique apresenta (liderou camadas/DI no git). Explicar a inversão de dependência: o service depende da interface, não do Postgres. Honestidade sobre o trade-off: aplicação pragmática, não dogmática. Transação multi-tabela (expedição) acessa db.transaction direto porque abstrair daria complexidade sem ganho no escopo. Se perguntarem "é hexagonal puro?": não, é pragmático, e sabemos onde e por quê abrimos exceção.</aside>
 </section>
 
@@ -298,7 +298,7 @@
     </ul>
     <p class="muted" style="margin-top:.5em;"><code>domain/pedido.ts → statusDerivadoDoPedido()</code> · coberto por testes unitários.</p>
   </div>
-  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · CEO/HO UFPE</span></div>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
   <aside class="notes">Melhor evidência técnica do projeto. "Estado derivado vs. armazenado" é debate clássico de eng. de software. Se perguntarem, abrir o pedido.ts ao vivo.</aside>
 </section>
 
@@ -319,7 +319,7 @@
     </table>
     <p class="muted" style="margin-top:.5em;"><span class="pill">11 ADRs</span> no total, cada uma com contexto, alternativas, consequências e link para o código.</p>
   </div>
-  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · CEO/HO UFPE</span></div>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
   <aside class="notes">Decisões têm registro formal, com alternativas consideradas (não foi "saiu assim"). Mencionar que estavam subnotificadas e foram consolidadas para a entrega.</aside>
 </section>
 
@@ -353,7 +353,7 @@
       <li>Tudo roda no <strong>CI a cada PR</strong>; verde é obrigatório para o merge.</li>
     </ul>
   </div>
-  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · CEO/HO UFPE</span></div>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
   <aside class="notes">Mostrar a aba Actions do GitHub com o check verde, evidência de execução. Aqui entra a resposta pronta sobre Postman, se perguntarem. Citar um exemplo de refatoração (extrair a regra de status para domínio puro).</aside>
 </section>
 
@@ -383,7 +383,7 @@
       </div>
     </div>
   </div>
-  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · CEO/HO UFPE</span></div>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
   <aside class="notes">Qualidade é processo (camadas de revisão), não acaso. A refatoração do status para domínio puro é o exemplo concreto mais forte.</aside>
 </section>
 
@@ -404,7 +404,7 @@
     </ul>
     <p class="muted" style="margin-top:.4em;">Stack <strong>pronta e validada localmente</strong>; o deploy no servidor é essencialmente um comando.</p>
   </div>
-  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · CEO/HO UFPE</span></div>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
   <aside class="notes">Honestidade: está pronto e testado local, ainda não publicado no servidor CIn (depende de acesso TI). Não esconder isso. A modularidade (replicar p/ outra clínica) é o diferencial.</aside>
 </section>
 
@@ -423,7 +423,7 @@
     </ul>
     <p class="muted" style="margin-top:.5em;">Backend e triagem prontos; a ingestão automática aguarda a caixa institucional.</p>
   </div>
-  <div class="slide-footer"><img src="../assets/logo-cin-branco.png" alt="CIn"><span>Controle de Estoque · CEO/HO UFPE</span></div>
+  <div class="slide-footer"><img src="../assets/logo-cin-branco.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
   <aside class="notes">Fecho forte. O agente é a parte mais original: enquadrar como UX, não como "usamos IA porque é legal". Está pronto no possível; o que falta é infra (caixa de email), não código. Honesto e ambicioso ao mesmo tempo.</aside>
 </section>
 
