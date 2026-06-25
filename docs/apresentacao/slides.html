@@ -105,7 +105,7 @@
        marca (que são posicionados absolutos na base). Sem isso, slides com
        muito texto sobrepõem o footer. box-sizing:border-box (padrão do reveal)
        faz o .full { height:100% } respeitar este padding. */
-    .reveal .slides section { padding: 30px 38px 64px; }
+    .reveal .slides section { padding: 22px 38px 54px; }
 
     /* ── Barra de marca + rodapé (logo, número) em cada slide ─────────────── */
     .reveal .slides section::after {
@@ -122,6 +122,10 @@
 
     /* ── Slides de destaque (capa, demo, encerramento) ────────────────────── */
     .full { display: flex; flex-direction: column; justify-content: center; height: 100%; }
+    /* Slides de conteúdo: o item-tag (nº do roteiro) fica absoluto no topo, então
+       o conteúdo precisa começar ABAIXO dele — senão o kicker/título some atrás
+       do chip. Os slides de destaque (.center) não têm item-tag e ficam de fora. */
+    .full:not(.center) { padding-top: 38px; }
     .full.center { text-align: center; align-items: center; }
     section.dark { color: #fff; }
     section.dark h1, section.dark h2 { color: #fff; }
@@ -282,9 +286,8 @@
     <h2>Arquitetura em camadas</h2>
     <ul style="font-size:.76em;">
       <li><strong>Monólito</strong> (ADR-0002), adequado ao escopo e ao prazo.</li>
-      <li><strong>Ports &amp; Adapters</strong> (ADR-0007): controller &rarr; service &rarr; <em>interface</em> &rarr; repositório.</li>
+      <li><strong>Camadas</strong>: presentation &rarr; <em>domain</em> &rarr; data (ADR-0007).</li>
       <li><strong>Domínio puro</strong>, sem I/O: regras testáveis isoladamente.</li>
-      <li>Aplicação <strong>pragmática</strong>: 2 adapters p/ a mesma porta provam a abstração; transações multi-tabela usam o ORM direto (exceção consciente).</li>
     </ul>
     <pre><code class="language-text">HTTP → Controller → Service → IRepo (porta) → PgRepo (adapter) → Postgres
                        │
