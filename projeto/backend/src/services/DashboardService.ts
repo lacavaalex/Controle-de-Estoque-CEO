@@ -8,7 +8,7 @@ import type { IPedidoRepository } from "../interfaces/repository-interfaces/IPed
 import type { ISetorRepository } from "../interfaces/repository-interfaces/ISetorRepo.js";
 import type { IMovimentacaoRepository } from "../interfaces/repository-interfaces/IMovimentacaoRepo.js";
 import type { EstoqueService } from "./EstoqueService.js";
-import type { Lote } from "../entities/index.js";
+import type { Lote, TipoMovimentacao } from "../entities/index.js";
 import { diasParaVencer, loteEhAtivo } from "../domain/estoque.js";
 
 export interface DemandaRepresadaItem {
@@ -16,6 +16,16 @@ export interface DemandaRepresadaItem {
   nome: string;
   qtdSolicitadaTotal: number;
   numPedidos: number;
+}
+
+export interface UltimaMovimentacao {
+  id: string;
+  tipo: TipoMovimentacao;
+  produtoNome: string;
+  quantidade: number;
+  setorOrigemNome: string;
+  setorDestinoNome: string | null;
+  data: string;
 }
 
 export interface DashboardKpis {
@@ -133,6 +143,55 @@ export class DashboardService {
 
       return { meses: labels, setores };
     }
+
+  /**
+   * Retorna as últimas movimentações de um setor, opcionalmente filtradas por tipo.
+   * US-EP05 — Log filtrável: últimas movimentações (entrada, saída, ajuste, consumo, segregação).
+   */
+  async ultimasMovimentacoes(
+    setorId: number,
+    limite: number = 10,
+    tipo?: TipoMovimentacao,
+  ): Promise<UltimaMovimentacao[]> {
+    const movimentos = await this.movimentacaoRepo.listarPorSetor(setorId);
+
+    // Filtra por tipo se informado
+    let filtradas = tipo ? movimentos.filter((m) => m.tipo === tipo) : movimentos;
+
+    // Ordena por data descendente (mais recentes primeiro) e limita
+    filtradas = filtradas
+      .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
+      .slice(0, limite);
+
+    // Busca nomes de produtos e setores para enriquecer os dados
+    const produtosMap = new Map<number, string>();
+    const setoresMap = new Map<number, string>();
+
+    for (const mov of filtradas) {
+      if (!produtosMap.has(mov.produtoId)) {
+        const prod = await this.produtoRepo.buscarPorId(mov.produtoId);
+        produtosMap.set(mov.produtoId, prod?.nome ?? `Produto #${mov.produtoId}`);
+      }
+      if (!setoresMap.has(mov.setorOrigemId)) {
+        const setor = await this.setorRepo.buscarPorId(mov.setorOrigemId);
+        setoresMap.set(mov.setorOrigemId, setor?.nome ?? `Setor #${mov.setorOrigemId}`);
+      }
+      if (mov.setorDestinoId && !setoresMap.has(mov.setorDestinoId)) {
+        const setor = await this.setorRepo.buscarPorId(mov.setorDestinoId);
+        setoresMap.set(mov.setorDestinoId, setor?.nome ?? `Setor #${mov.setorDestinoId}`);
+      }
+    }
+
+    return filtradas.map((mov) => ({
+      id: mov.id,
+      tipo: mov.tipo,
+      produtoNome: produtosMap.get(mov.produtoId) ?? `Produto #${mov.produtoId}`,
+      quantidade: mov.quantidade,
+      setorOrigemNome: setoresMap.get(mov.setorOrigemId) ?? `Setor #${mov.setorOrigemId}`,
+      setorDestinoNome: mov.setorDestinoId ? setoresMap.get(mov.setorDestinoId) ?? `Setor #${mov.setorDestinoId}` : null,
+      data: mov.data.toISOString(),
+    }));
+  }
 
   private async enriquecerDemandaRepresada(
     pedidos: Awaited<ReturnType<IPedidoRepository["listarPorSetor"]>>,

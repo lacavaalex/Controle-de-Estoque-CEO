@@ -312,3 +312,32 @@ describe("DashboardService.consumoMensalSetorFornecedor", () => {
     expect(serieDisp!.valores[idxJun]).toBe(5);
   });
 });
+
+describe("DashboardService.ultimasMovimentacoes", () => {
+  it("retorna as últimas movimentações do setor", async () => {
+    const movs = await service.ultimasMovimentacoes(1, 10);
+    expect(movs).toHaveLength(2);
+    // Ordem: mais recentes primeiro (junho antes de maio)
+    expect(movs[0].id).toBe("MOV-002");
+    expect(movs[1].id).toBe("MOV-001");
+  });
+
+  it("filtra movimentações por tipo", async () => {
+    const movs = await service.ultimasMovimentacoes(1, 10, "saida");
+    expect(movs).toHaveLength(2);
+    expect(movs.every((m) => m.tipo === "saida")).toBe(true);
+  });
+
+  it("respeita o limite de resultados", async () => {
+    const movs = await service.ultimasMovimentacoes(1, 1);
+    expect(movs).toHaveLength(1);
+    expect(movs[0].id).toBe("MOV-002"); // mais recente
+  });
+
+  it("enriquece movimentações com nomes de produtos e setores", async () => {
+    const movs = await service.ultimasMovimentacoes(1, 10);
+    expect(movs[0].produtoNome).toBe("Resina");
+    expect(movs[0].setorOrigemNome).toBe("HO");
+    expect(movs[0].setorDestinoNome).toBe("Dispensação");
+  });
+});

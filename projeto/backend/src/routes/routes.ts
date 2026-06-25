@@ -316,4 +316,12 @@ router.get(
   (req, res) => dashboardController.consumoMensalSetor(req, res),
 );
 
+// US-EP05 — Últimas movimentações: log filtrável por tipo (entrada, saída, ajuste, consumo, segregação).
+router.get(
+  "/dashboard/movimentacoes",
+  auth,
+  exigir((id, req) => podeVerSetor(id, Number(req.query.setorId ?? id.setorId))),
+  (req, res) => dashboardController.ultimasMovimentacoes(req, res),
+);
+
 export { router };
