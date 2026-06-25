@@ -1,8 +1,8 @@
 # Roteiro da demonstração
 
-Guia passo a passo para quem vai **operar a aplicação ao vivo**. A demo é narrada
-pelo PO, mas conduzida por outra pessoa, então este roteiro é literal: siga na
-ordem, sem improvisar fluxos novos no palco.
+Guia passo a passo para quem vai **operar e narrar a demonstração ao vivo**
+(não é o PO — é quem conhece o sistema e vai conduzir o slide 9). Este roteiro é
+literal: siga na ordem, sem improvisar fluxos novos no palco.
 
 !!! danger "Antes de começar (checklist de 5 minutos)"
     - [ ] `bash start-all.sh --reset` rodado com sucesso (banco limpo + seed).
@@ -13,7 +13,7 @@ ordem, sem improvisar fluxos novos no palco.
           o site de **documentação**.
     - [ ] Senha à mão: **`ceoufpe2026`** (todos os usuários do seed).
 
-Tempo total alvo: **~3,5 minutos**. Não exceda — o PO controla o relógio.
+Tempo total alvo: **~3,5 minutos**. Não exceda — fique de olho no relógio.
 
 ---
 
@@ -93,6 +93,23 @@ Munição para as perguntas mais prováveis dos professores.
     dos status dos itens por uma função pura (`statusDerivadoDoPedido`, RN10). A
     fonte de verdade são os itens; o cabeçalho é sempre recalculado. Ver
     [ADR-0008](../adr/ADR-0008.md).
+
+??? question "Vocês usam mesmo Ports & Adapters? É arquitetura hexagonal pura?"
+    Aplicamos Ports & Adapters de forma **pragmática, não dogmática**. Na
+    persistência, sim: definimos **interfaces de repositório** (ports) e
+    implementações Postgres/JSON (adapters), com injeção de dependência no
+    `container.ts`. A prova de que a abstração funciona é termos **dois adapters
+    para a mesma porta** (`JsonItemRepo` e `PgItemRepo`), trocáveis sem tocar o
+    service; 6 dos 8 services dependem só da interface.
+
+    **Onde abrimos exceção, conscientemente:** operações que coordenam várias
+    tabelas atomicamente (a expedição de lote — baixa no lote + saída no HO +
+    entrada no CEO) acessam o `db.transaction` do Drizzle diretamente, e o port
+    aceita um executor de transação na assinatura. Abstrair isso atrás de portas
+    puras (um Unit of Work próprio) adicionaria complexidade significativa para um
+    ganho marginal no escopo de 45 dias; a **consistência transacional** tem
+    precedência sobre a pureza do padrão nesses casos. Conhecemos o trade-off e o
+    documentamos no [ADR-0007](../adr/ADR-0007.md).
 
 ??? question "Vocês usaram IA para fazer o projeto?"
     Sim, como **ferramenta de engenharia e gestão**, de forma transparente e

@@ -27,7 +27,7 @@ o **item do roteiro do professor** que ele cobre.
 | 6 | Arquitetura (camadas) | Kaique | 4 |
 | 7 | O coração: status derivado | Kaique | 4 |
 | 8 | Decisões documentadas (ADRs) | Kaique | 4 |
-| 9 | :material-play-circle: **Demonstração** | Operador + Luiz narra | 7 |
+| 9 | :material-play-circle: **Demonstração** | Operador (apresenta e narra) | 7 |
 | 10 | Qualidade: testes | Wallyson / Luiz | 5 |
 | 11 | Qualidade: revisão & refatoração | Wallyson / Luiz | 5 |
 | 12 | Infraestrutura & deploy | Luiz (PO) | 6 |
