@@ -1,15 +1,7 @@
-// =============================================================================
-// AuthService — login (bcrypt + JWT) e provisionamento de usuário por gestor.
-// Núcleo do EP01. Usa o modelo v2 (usuario com senha_hash).
-//
-// Decisões refletidas:
-//  - Senha sempre em hash bcrypt (RNF03.3); nunca texto puro.
-//  - Login institucional @ufpe.br (RN01) — também garantido por CHECK no banco.
-//  - register = criação por gestor (US-EP01-06), sem cadastro público; RBAC de
-//    provisionamento em auth/rbac.ts. Senha provisória + flag trocar_senha.
-//  - Logout: JWT stateless — invalidação real fica como TODO (denylist), ver
-//    ADR-0005.
-// =============================================================================
+// Login (bcrypt + JWT) e provisionamento de usuário pelo gestor (EP01).
+// Senha sempre em hash (RNF03.3); login institucional @ufpe.br (RN01). Não há
+// cadastro público: contas nascem por convite do gestor (US-EP01-06), com senha
+// provisória. JWT é stateless; revogação imediata fica como evolução (ADR-0005).
 import type { IUsuarioRepository } from "../interfaces/repository-interfaces/IUsuarioRepo.js";
 import type { ISetorRepository } from "../interfaces/repository-interfaces/ISetorRepo.js";
 import type { Usuario, Perfil } from "../entities/index.js";

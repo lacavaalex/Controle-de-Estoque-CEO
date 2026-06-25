@@ -3,330 +3,447 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Controle de Estoque CEO/HO — UFPE · Apresentação Final</title>
+  <title>Controle de Estoque HO · UFPE — Apresentação Final</title>
 
-  <!-- Reveal.js via CDN: abre direto no navegador, sem build. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/white.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/monokai.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- Montserrat: títulos (substituta da Proxima Nova, identidade CIn).
-       Source Serif 4: corpo de leitura, para hierarquia tipográfica. -->
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 
   <style>
-    /* ===== Identidade visual CIn-UFPE ===== */
+    /* ═══════════════════════════════════════════════════════════════════════
+       Identidade visual CIn-UFPE — derivada do template oficial.
+       Montserrat (substituta da Proxima Nova) nos títulos; Source Serif 4 no corpo.
+       ═══════════════════════════════════════════════════════════════════════ */
     :root {
-      --cin-red: #DB1E2F;
-      --cin-red-dark: #AF0421;
-      --cin-black: #231F20;
-      --cin-gray: #595959;
+      --red: #DB1E2F;
+      --red-dark: #AF0421;
+      --ink: #231F20;
+      --gray: #595959;
+      --gray-soft: #8a8a8a;
+      --paper: #ffffff;
+      --wash: #faf7f7;
+      --line: #ececec;
+      --r-shadow: 0 18px 50px -22px rgba(175, 4, 33, .45);
     }
-    /* Hierarquia tipográfica: títulos em Montserrat (identidade CIn),
-       corpo em Source Serif 4 (leitura) para contraste e personalidade. */
-    .reveal { font-family: 'Source Serif 4', Georgia, serif; color: var(--cin-black); }
-    .reveal h1, .reveal h2, .reveal h3 {
-      font-family: 'Montserrat', sans-serif; font-weight: 800;
-      color: var(--cin-black); text-transform: none; letter-spacing: -0.01em;
-    }
-    /* Elementos de UI (tags, KPIs, código, rótulos) seguem a sans geométrica. */
-    .owner, .item-tag, .kpi, .reveal table, .reveal pre, .muted, .reveal .slide-number {
+
+    .reveal { font-family: 'Source Serif 4', Georgia, serif; color: var(--ink); font-size: 30px; }
+    .reveal .slides { text-align: left; }
+
+    /* ── Tipografia ───────────────────────────────────────────────────────── */
+    .reveal h1, .reveal h2, .reveal h3, .reveal .kicker, .reveal .num,
+    .owner, .item-tag, .reveal table, .reveal pre, .reveal .stat, .reveal .lead-sub {
       font-family: 'Montserrat', sans-serif;
     }
-    .reveal h1 { font-size: 2.0em; }
-    .reveal h2 { font-size: 1.4em; color: var(--cin-red); }
-    .reveal h3 { font-size: 1.05em; color: var(--cin-red-dark); }
-    .reveal strong { color: var(--cin-red-dark); }
-    .reveal a { color: var(--cin-red); }
-    .reveal section img { border: none; box-shadow: none; }
+    .reveal h1 { font-size: 2.35em; font-weight: 900; letter-spacing: -0.03em; line-height: 1.02; margin: 0; text-wrap: balance; }
+    .reveal h2 { font-size: 1.5em; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); margin: 0 0 .5em; line-height: 1.08; text-wrap: balance; }
+    .reveal h3 { font-size: .92em; font-weight: 700; color: var(--red-dark); margin: 0 0 .35em; letter-spacing: -0.01em; }
+    .reveal p { line-height: 1.45; }
+    .reveal strong { color: var(--red-dark); font-weight: 600; }
+    .reveal em { color: var(--ink); font-style: italic; }
+    .reveal a { color: var(--red); text-decoration: none; }
 
-    /* Barra vermelha de marca no rodapé de cada slide */
-    .reveal .slides section { text-align: left; }
-    .reveal .slides section.center-slide { text-align: center; }
+    /* Kicker: o rótulo do tema do slide, contido (não é eyebrow em toda seção). */
+    .reveal .kicker {
+      display: inline-flex; align-items: center; gap: .5em;
+      font-size: .42em; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--red); margin-bottom: .9em;
+    }
+    .reveal .kicker::before { content: ""; width: 26px; height: 3px; background: var(--red); border-radius: 2px; }
 
-    /* Tag de "dono" do slide (quem apresenta) */
-    .owner {
-      position: absolute; top: 8px; right: 12px;
-      font-size: 0.42em; color: #fff; background: var(--cin-red);
-      padding: 3px 10px; border-radius: 12px; font-weight: 600;
+    /* ── Listas com marcador de marca ─────────────────────────────────────── */
+    .reveal ul { list-style: none; margin: 0; padding: 0; }
+    .reveal ul li {
+      position: relative; padding-left: 1.15em; margin-bottom: .58em; line-height: 1.36;
     }
-    /* Chip de item do professor */
-    .item-tag {
-      display: inline-block; font-size: 0.4em; color: #fff;
-      background: var(--cin-black); padding: 2px 10px; border-radius: 12px;
-      font-weight: 600; vertical-align: middle; margin-left: 8px;
+    .reveal ul li::before {
+      content: ""; position: absolute; left: 0; top: .52em;
+      width: .42em; height: .42em; background: var(--red); border-radius: 2px; transform: rotate(45deg);
     }
-    .reveal ul { width: 100%; }
-    .reveal li { margin-bottom: 0.35em; line-height: 1.3; }
-    .reveal .muted { color: var(--cin-gray); font-size: 0.85em; }
-    .reveal table { font-size: 0.62em; }
-    .reveal table th { background: rgba(219,30,47,0.08); color: var(--cin-black); }
-    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
-    .kpi { display: flex; gap: 1.2em; justify-content: center; margin-top: 0.4em; }
-    .kpi .n { font-size: 2.0em; font-weight: 800; color: var(--cin-red); display: block; line-height: 1; }
-    .kpi .l { font-size: 0.5em; color: var(--cin-gray); }
-    .reveal pre { width: 100%; font-size: 0.5em; box-shadow: none; border: 1px solid #eee; }
-    .reveal .slide-number { color: var(--cin-red); }
-    .demo-slide { background: linear-gradient(135deg, var(--cin-red), var(--cin-red-dark)); }
-    .demo-slide h1, .demo-slide h2, .demo-slide p, .demo-slide strong { color: #fff !important; }
+    .reveal ul.plain li::before { background: var(--gray-soft); }
+
+    /* ── Grid de duas colunas ─────────────────────────────────────────────── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6em; align-items: start; }
+    .col-card { background: var(--wash); border-radius: 14px; padding: 1.05em 1.2em; }
+
+    /* ── Chips: dono (quem apresenta) e item do roteiro ───────────────────── */
+    .owner, .item-tag {
+      position: absolute; top: 26px; font-size: .38em; font-weight: 600;
+      padding: .35em .85em; border-radius: 100px; letter-spacing: .02em;
+    }
+    .owner { right: 34px; background: var(--red); color: #fff; }
+    .item-tag { left: 34px; background: #fff; color: var(--gray); border: 1.5px solid var(--line); }
+
+    /* ── Métricas (KPI) ───────────────────────────────────────────────────── */
+    .stats { display: flex; gap: 2.2em; margin: .7em 0 .5em; }
+    .stat .n { display: block; font-size: 2.6em; font-weight: 900; color: var(--red); line-height: .92; letter-spacing: -0.03em; }
+    .stat .l { display: block; font-size: .42em; color: var(--gray); font-weight: 600; margin-top: .5em; line-height: 1.3; }
+
+    /* ── Blocos de código / diagramas ASCII ───────────────────────────────── */
+    .reveal pre { width: 100%; box-shadow: none; margin: .4em 0; }
+    .reveal pre code {
+      font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .42em; line-height: 1.5;
+      background: var(--ink); color: #f4eaea; border-radius: 12px; padding: 1.1em 1.3em;
+    }
+
+    /* ── Tabelas ──────────────────────────────────────────────────────────── */
+    .reveal table { font-size: .52em; border-collapse: collapse; width: 100%; margin-top: .3em; }
+    .reveal table th { background: var(--ink); color: #fff; font-weight: 700; text-align: left; padding: .6em .8em; }
+    .reveal table td { padding: .55em .8em; border-bottom: 1px solid var(--line); }
+    .reveal table tr:nth-child(even) td { background: var(--wash); }
+    .reveal table code { color: var(--red-dark); font-weight: 600; }
+
+    .muted { color: var(--gray); font-size: .62em; line-height: 1.4; }
+    .lead-sub { font-size: .56em; color: var(--gray); font-weight: 500; letter-spacing: .01em; }
+
+    /* Reserva a faixa do rodapé: o conteúdo nunca encosta no footer/barra de
+       marca (que são posicionados absolutos na base). Sem isso, slides com
+       muito texto sobrepõem o footer. box-sizing:border-box (padrão do reveal)
+       faz o .full { height:100% } respeitar este padding. */
+    .reveal .slides section { padding: 30px 38px 64px; }
+
+    /* ── Barra de marca + rodapé (logo, número) em cada slide ─────────────── */
+    .reveal .slides section::after {
+      content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 6px;
+      background: linear-gradient(90deg, var(--red) 0%, var(--red) 70%, var(--red-dark) 100%);
+      border-radius: 0 0 2px 2px;
+    }
+    .reveal .slide-footer {
+      position: absolute; bottom: 22px; left: 34px; right: 34px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: 'Montserrat', sans-serif; font-size: .34em; color: var(--gray-soft);
+    }
+    .reveal .slide-footer img { height: 20px; opacity: .9; }
+
+    /* ── Slides de destaque (capa, demo, encerramento) ────────────────────── */
+    .full { display: flex; flex-direction: column; justify-content: center; height: 100%; }
+    .full.center { text-align: center; align-items: center; }
+    section.dark { color: #fff; }
+    section.dark h1, section.dark h2 { color: #fff; }
+    section.dark strong { color: #ffd2d2; }
+    section.dark .lead-sub, section.dark .muted { color: rgba(255,255,255,.82); }
+    section.dark::after { background: rgba(255,255,255,.25); }
+    section.dark .slide-footer { color: rgba(255,255,255,.6); }
+
+    .reveal .progress { color: var(--red); height: 4px; }
+    .reveal .slide-number { background: transparent; color: var(--gray-soft); font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 600; }
+
+    /* Realce inline (números/labels dentro do texto) */
+    .pill { display: inline-block; background: rgba(219,30,47,.1); color: var(--red-dark);
+            font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: .8em;
+            padding: .05em .5em; border-radius: 6px; }
+
+    @media (prefers-reduced-motion: reduce) { .reveal .slides section { transition: none !important; } }
   </style>
 </head>
 <body>
 <div class="reveal">
 <div class="slides">
 
-<!-- ===================== 0. CAPA ===================== -->
-<section class="center-slide" data-background-color="#ffffff">
-  <span class="owner">Luiz (PO)</span>
-  <p style="font-size:0.7em; color:var(--cin-gray); margin-bottom:0;">Centro de Informática · UFPE — Engenharia de Software · Grupo 5</p>
-  <h1 style="margin-top:0.3em;">Controle de Estoque<br><span style="color:var(--cin-red);">CEO / Hospital Odontológico</span></h1>
-  <p class="muted">Gestão de materiais entre a Unidade de Dispensação (HO) e o<br>Centro de Especialidades Odontológicas (CEO), substituindo o controle por planilhas.</p>
-  <p style="font-size:0.5em; color:var(--cin-gray); margin-top:1.2em;">Kaique · Alex · Wallyson · Bruno · Vinícius · José · Luiz &nbsp;|&nbsp; 25/06/2026</p>
+<!-- ════════════════ 0 · CAPA ════════════════ -->
+<section data-background-color="#ffffff">
+  <div class="full center">
+    <span class="kicker" style="justify-content:center;">Centro de Informática · UFPE · Grupo 5</span>
+    <h1>Controle de Estoque<br><span style="color:var(--red);">Hospital Odontológico · UFPE</span></h1>
+    <p class="lead-sub" style="max-width:20ch; margin:.9em auto 0;">Da planilha de Excel a um sistema com rastreabilidade, validade e pedidos digitais.</p>
+    <p class="muted" style="margin-top:2.2em; letter-spacing:.04em;">Kaique &middot; Alex &middot; Wallyson &middot; Bruno &middot; Vinícius &middot; José &middot; Luiz</p>
+  </div>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn UFPE"><span>Apresentação Final · 25/06/2026</span></div>
   <aside class="notes">Abertura pelo PO. Apresentar a equipe e o contexto: hospital odontológico da UFPE, problema de estoque. Setar o tom: vamos contar uma história de descoberta, não só mostrar um CRUD.</aside>
 </section>
 
-<!-- ===================== 1. PROBLEMA ===================== -->
-<section>
-  <span class="owner">Luiz (PO)</span>
-  <h2>O problema <span class="item-tag">1 · Problema & Visão</span></h2>
-  <ul>
-    <li>O hospital controla o estoque por <strong>planilhas de Excel</strong>.</li>
-    <li>Resultado: divergência entre estoque <strong>registrado e físico</strong>, sem rastreabilidade de pedidos.</li>
-    <li><strong>Perda de materiais por vencimento</strong>, sem alerta de validade.</li>
-    <li>Pedidos chegam por <strong>e-mail e papel</strong>, em caixas dispersas.</li>
-  </ul>
-  <p class="muted">Público-alvo: gestores, almoxarifes e equipes clínicas do Hospital Odontológico.</p>
-  <aside class="notes">NARRAR: a dificuldade de contato com o stakeholder. Acesso difícil ao almoxarife/Dispensação. Conseguimos pouca informação no começo, e parte dela estava errada — o que nos levou ao próximo slide.</aside>
-</section>
-
-<!-- ===================== 2. O INSIGHT DE ESCOPO ===================== -->
-<section>
-  <span class="owner">Luiz (PO)</span>
-  <h2>O insight que mudou o projeto <span class="item-tag">1 · Visão</span></h2>
-  <ul>
-    <li>Diziam: <em>"o CEO não tem controle de estoque"</em>.</li>
-    <li>Descobrimos: o CEO <strong>não tem estoque próprio</strong>. Tudo depende do <strong>HO</strong> (a Dispensação que abastece os setores).</li>
-  </ul>
-  <div class="two-col" style="margin-top:0.5em;">
-    <div>
-      <h3>Reposicionamento</h3>
-      <ul style="font-size:0.9em;">
-        <li><strong>HO = fonte de verdade</strong> do estoque.</li>
-        <li><strong>CEO = célula-piloto</strong> de organização.</li>
-        <li>Arquitetura <strong>modular</strong>: outras células acopláveis depois.</li>
-      </ul>
-    </div>
-    <div>
-      <h3>Por quê importa</h3>
-      <p class="muted">Recebemos a problemática com falta de informação e lógica equivocada. Recolocá-la corretamente tornou a solução viável e escalável, e nos fez documentar tudo para quem vier depois.</p>
-    </div>
-  </div>
-  <aside class="notes">Este é o slide-chave da narrativa. Falar com calma: a virada de escopo. O valor de engenharia está em ter QUESTIONADO a premissa do cliente. Mencionar a preocupação deliberada com documentação para o futuro.</aside>
-</section>
-
-<!-- ===================== 3. VISÃO GERAL DA SOLUÇÃO ===================== -->
-<section>
-  <span class="owner">Luiz (PO)</span>
-  <h2>Visão geral da solução <span class="item-tag">1 · Funcionalidades</span></h2>
-  <div class="two-col">
-    <ul style="font-size:0.92em;">
-      <li><strong>Catálogo × Lotes</strong> (1:N) com validade e segregação.</li>
-      <li><strong>Pedidos multi-item</strong>, status derivado, aprovação parcial (FEFO).</li>
-      <li><strong>Estoque do CEO</strong> alimentado automaticamente pelas expedições.</li>
+<!-- ════════════════ 1 · PROBLEMA ════════════════ -->
+<section data-background-color="#ffffff">
+  <span class="item-tag">1 · Problema &amp; Visão</span><span class="owner">Luiz · PO</span>
+  <div class="full">
+    <span class="kicker">O ponto de partida</span>
+    <h2>Um estoque que vive em planilhas</h2>
+    <ul>
+      <li>O hospital controla materiais por <strong>planilhas de Excel</strong>.</li>
+      <li>Resultado: divergência entre o estoque <strong>registrado e o físico</strong>, sem rastreabilidade de pedidos.</li>
+      <li><strong>Perda de material por vencimento</strong>, sem nenhum alerta de validade.</li>
+      <li>Pedidos chegam por <strong>e-mail e papel</strong>, em caixas dispersas.</li>
     </ul>
-    <ul style="font-size:0.92em;">
-      <li><strong>Dashboards por perfil</strong>: crítico, vencendo, demanda represada.</li>
-      <li>4 perfis: Gestor HO, Almoxarife, Gestor CEO, Solicitante.</li>
-      <li><strong>Agente de e-mail</strong> (EP08): uma decisão de UX.</li>
+    <p class="muted" style="margin-top:.6em;">Público-alvo: gestores, almoxarifes e equipes clínicas do Hospital Odontológico.</p>
+  </div>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
+  <aside class="notes">NARRAR: a dificuldade de contato com o stakeholder. Acesso difícil ao almoxarife/Dispensação. Conseguimos pouca informação no começo, e parte dela estava errada, o que nos levou ao próximo slide.</aside>
+</section>
+
+<!-- ════════════════ 2 · INSIGHT DE ESCOPO ════════════════ -->
+<section data-background-color="#ffffff">
+  <span class="item-tag">1 · Visão</span><span class="owner">Luiz · PO</span>
+  <div class="full">
+    <span class="kicker">A virada do projeto</span>
+    <h2>O insight que mudou o escopo</h2>
+    <p style="font-size:.8em; margin:0 0 .8em;">Diziam: <em>"o CEO não tem controle de estoque"</em>. Investigando o fluxo real, vimos que o CEO <strong>não tem estoque próprio</strong> &mdash; tudo depende do <strong>HO</strong>, a Dispensação que abastece os setores.</p>
+    <div class="two-col">
+      <div class="col-card">
+        <h3>Reposicionamento</h3>
+        <ul style="font-size:.82em;">
+          <li><strong>HO</strong> = fonte de verdade do estoque.</li>
+          <li><strong>CEO</strong> = célula-piloto de organização.</li>
+          <li>Arquitetura <strong>modular</strong>: novas células acopláveis depois.</li>
+        </ul>
+      </div>
+      <div class="col-card">
+        <h3>Por que importa</h3>
+        <p style="font-size:.66em; color:var(--gray); line-height:1.45; margin:0;">Recebemos a problemática com informação incompleta e lógica equivocada. Recolocá-la corretamente tornou a solução viável e escalável, e nos levou a documentar tudo para quem vier depois.</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
+  <aside class="notes">Slide-chave da narrativa. Falar com calma: a virada de escopo. O valor de engenharia está em ter QUESTIONADO a premissa do cliente. Mencionar a preocupação deliberada com documentação para o futuro.</aside>
+</section>
+
+<!-- ════════════════ 3 · VISÃO DA SOLUÇÃO ════════════════ -->
+<section data-background-color="#ffffff">
+  <span class="item-tag">1 · Funcionalidades</span><span class="owner">Luiz · PO</span>
+  <div class="full">
+    <span class="kicker">A solução em uma tela</span>
+    <h2>O que o sistema entrega</h2>
+    <div class="two-col">
+      <ul style="font-size:.84em;">
+        <li><strong>Catálogo &times; Lotes</strong> (1:N) com validade e segregação.</li>
+        <li><strong>Pedidos multi-item</strong>, status derivado, aprovação parcial via FEFO.</li>
+        <li><strong>Estoque do CEO</strong> alimentado automaticamente pelas expedições.</li>
+      </ul>
+      <ul style="font-size:.84em;">
+        <li><strong>Dashboards por perfil</strong>: crítico, vencendo, demanda represada.</li>
+        <li>Quatro perfis: Gestor HO, Almoxarife, Gestor CEO, Solicitante.</li>
+        <li><strong>Agente de e-mail</strong> (EP08): uma decisão de UX.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
+  <aside class="notes">Visão panorâmica rápida. Não detalhar agora, cada item será aprofundado. Plantar a semente do "agente é UX" que volta no fecho.</aside>
+</section>
+
+<!-- ════════════════ 4 · GESTÃO DO TRABALHO ════════════════ -->
+<section data-background-color="#ffffff">
+  <span class="item-tag">2 · Processo</span><span class="owner">Luiz · Bruno</span>
+  <div class="full">
+    <span class="kicker">Como trabalhamos</span>
+    <h2>Gestão e fluxo de desenvolvimento</h2>
+    <div class="two-col">
+      <div class="col-card">
+        <h3>Método</h3>
+        <ul style="font-size:.78em;">
+          <li><strong>Scrum/Kanban</strong> com board no Jira.</li>
+          <li>Backlog: épicos &rarr; User Stories (Gherkin, MoSCoW).</li>
+          <li>Divisão por pacotes entre os sete membros.</li>
+        </ul>
+      </div>
+      <div class="col-card">
+        <h3>Fluxo</h3>
+        <ul style="font-size:.78em;">
+          <li>Branches por feature &rarr; <strong>Pull Request</strong>.</li>
+          <li><strong>Code review</strong> obrigatório no PR.</li>
+          <li><strong>CI</strong> roda 190 testes a cada PR.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:.7em;">Gestão do board apoiada pelo <strong>MCP do Jira</strong> (ADR-0011): status e código sincronizados.</p>
+  </div>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
+  <aside class="notes">Mostrar o board do Jira (screenshot ou ao vivo). Enfatizar PR-only + code review + CI = disciplina. Citar que a IA ajudou na gestão (MCP Jira), assunto que volta no ADR-0011.</aside>
+</section>
+
+<!-- ════════════════ 5 · REQUISITOS ════════════════ -->
+<section data-background-color="#ffffff">
+  <span class="item-tag">3 · User Stories</span><span class="owner">Luiz · PO</span>
+  <div class="full">
+    <span class="kicker">Do requisito ao código</span>
+    <h2>Requisitos &amp; rastreabilidade</h2>
+    <div class="stats">
+      <div class="stat"><span class="n">8</span><span class="l">épicos<br>EP00 – EP08</span></div>
+      <div class="stat"><span class="n">37</span><span class="l">User Stories<br>MVP, todas Must</span></div>
+      <div class="stat"><span class="n">100%</span><span class="l">rastreadas<br>RF · US · código</span></div>
+    </div>
+    <ul style="font-size:.78em; margin-top:.5em;">
+      <li>Stories em <strong>Gherkin</strong> (Dado / Quando / Então), priorizadas por <strong>MoSCoW</strong>.</li>
+      <li>Cada regra de negócio (RN09, RN10, RN16…) é <strong>citada no código</strong> que a implementa.</li>
     </ul>
   </div>
-  <aside class="notes">Visão panorâmica rápida. Não detalhar agora — cada item será aprofundado. Plantar a semente do "agente é UX" que volta no fecho.</aside>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
+  <aside class="notes">Mostrar uma User Story real com Gherkin no site/docs. O ponto forte: rastreabilidade. A RN10 vira código em domain/pedido.ts, gancho para o slide de arquitetura.</aside>
 </section>
 
-<!-- ===================== 4. GESTÃO DO TRABALHO ===================== -->
-<section>
-  <span class="owner">Luiz / Bruno</span>
-  <h2>Gestão do trabalho <span class="item-tag">2 · Processo</span></h2>
-  <div class="two-col">
-    <div>
-      <h3>Método</h3>
-      <ul style="font-size:0.9em;">
-        <li><strong>Scrum/Kanban</strong> com board no Jira.</li>
-        <li>Backlog: épicos → User Stories (Gherkin, MoSCoW).</li>
-        <li>Divisão por pacotes entre os 7 membros.</li>
-      </ul>
-    </div>
-    <div>
-      <h3>Fluxo de desenvolvimento</h3>
-      <ul style="font-size:0.9em;">
-        <li>Branches por feature → <strong>Pull Request</strong>.</li>
-        <li><strong>Code review</strong> obrigatório no PR.</li>
-        <li><strong>CI</strong> (GitHub Actions) roda 190 testes por PR.</li>
-      </ul>
-    </div>
+<!-- ════════════════ 6 · ARQUITETURA ════════════════ -->
+<section data-background-color="#ffffff">
+  <span class="item-tag">4 · Decisões</span><span class="owner">Kaique</span>
+  <div class="full">
+    <span class="kicker">Como o código é organizado</span>
+    <h2>Arquitetura em camadas</h2>
+    <ul style="font-size:.76em;">
+      <li><strong>Monólito</strong> (ADR-0002), adequado ao escopo e ao prazo.</li>
+      <li><strong>Ports &amp; Adapters</strong> (ADR-0007): controller &rarr; service &rarr; <em>interface</em> &rarr; repositório.</li>
+      <li><strong>Domínio puro</strong>, sem I/O: regras testáveis isoladamente.</li>
+      <li>Aplicação <strong>pragmática</strong>: 2 adapters p/ a mesma porta provam a abstração; transações multi-tabela usam o ORM direto (exceção consciente).</li>
+    </ul>
+    <pre><code class="language-text">HTTP → Controller → Service → IRepo (porta) → PgRepo (adapter) → Postgres
+                       │
+                       ▼  domain/  (puro: status derivado, FEFO)</code></pre>
   </div>
-  <p class="muted">Gestão do board apoiada pelo <strong>MCP do Jira</strong> (ver ADR-0011): status × código sincronizados.</p>
-  <aside class="notes">Mostrar o board do Jira aqui (screenshot ou ao vivo). Enfatizar PR-only + code review + CI = disciplina. Citar que a IA ajudou na gestão (MCP Jira), assunto que volta no ADR-0011.</aside>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
+  <aside class="notes">Kaique apresenta (liderou camadas/DI no git). Explicar a inversão de dependência: o service depende da interface, não do Postgres. Honestidade sobre o trade-off: aplicação pragmática, não dogmática. Transação multi-tabela (expedição) acessa db.transaction direto porque abstrair daria complexidade sem ganho no escopo. Se perguntarem "é hexagonal puro?": não, é pragmático, e sabemos onde e por quê abrimos exceção.</aside>
 </section>
 
-<!-- ===================== 5. REQUISITOS & BACKLOG ===================== -->
-<section>
-  <span class="owner">Luiz (PO)</span>
-  <h2>Requisitos & rastreabilidade <span class="item-tag">3 · User Stories</span></h2>
-  <div class="kpi">
-    <div><span class="n">8</span><span class="l">épicos<br>(EP00–EP08)</span></div>
-    <div><span class="n">37</span><span class="l">User Stories<br>(MVP, todas Must)</span></div>
-    <div><span class="n">RF↔US<br>↔código</span><span class="l">rastreabilidade<br>explícita</span></div>
+<!-- ════════════════ 7 · DOMÍNIO ════════════════ -->
+<section data-background-color="#ffffff">
+  <span class="item-tag">4 · Decisões</span><span class="owner">Kaique</span>
+  <div class="full">
+    <span class="kicker">O coração do sistema</span>
+    <h2>Status do pedido, derivado</h2>
+    <ul style="font-size:.78em;">
+      <li>Um pedido é <strong>cabeçalho + N itens</strong>; cada item tem desfecho próprio (integral, parcial, falta).</li>
+      <li>O status do pedido é <strong>derivado</strong> dos itens, nunca digitado à mão (RN10, ADR-0008).</li>
+      <li>Máquina de estados de <strong>7 regras por precedência</strong>, em função pura testável.</li>
+      <li>Consequência: o status <strong>nunca fica inconsistente</strong>, pois a verdade são os itens.</li>
+    </ul>
+    <p class="muted" style="margin-top:.5em;"><code>domain/pedido.ts → statusDerivadoDoPedido()</code> · coberto por testes unitários.</p>
   </div>
-  <ul style="font-size:0.85em; margin-top:0.5em;">
-    <li>Stories em formato <strong>Gherkin</strong> (Dado/Quando/Então), priorizadas por <strong>MoSCoW</strong>.</li>
-    <li>Cada regra de negócio (RN09, RN10, RN16…) é <strong>citada no código</strong> que a implementa.</li>
-  </ul>
-  <aside class="notes">Mostrar uma User Story real com Gherkin no site/docs. O ponto forte: rastreabilidade. A RN10 vira código em domain/pedido.ts — gancho para o slide de arquitetura.</aside>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
+  <aside class="notes">Melhor evidência técnica do projeto. "Estado derivado vs. armazenado" é debate clássico de projeto de sistemas. Se perguntarem, abrir o pedido.ts ao vivo.</aside>
 </section>
 
-<!-- ===================== 6. ARQUITETURA (visão) ===================== -->
-<section>
-  <span class="owner">Kaique</span>
-  <h2>Arquitetura <span class="item-tag">4 · Decisões</span></h2>
-  <ul style="font-size:0.88em;">
-    <li><strong>Monólito</strong> (ADR-0002): adequado ao escopo e prazo.</li>
-    <li><strong>Camadas + Ports &amp; Adapters</strong> (ADR-0007): controller → service → <em>interface</em> → repositório.</li>
-    <li><strong>Domínio puro</strong>, sem I/O: regras testáveis isoladamente.</li>
-    <li><strong>Injeção de dependência</strong> (container.ts): o service depende da abstração, não do Postgres.</li>
-  </ul>
-  <pre><code class="language-text">HTTP ─▶ Controller ─▶ Service ─▶ IRepo (porta) ─▶ PgRepo (adapter) ─▶ Postgres
-                          │
-                          ▼
-                    domain/ (funções puras: status derivado, FEFO)</code></pre>
-  <aside class="notes">Kaique apresenta (foi quem liderou camadas/DI no git). Explicar a inversão de dependência. Por que isso importa: testabilidade + trabalho paralelo de 7 pessoas sem colisão.</aside>
-</section>
-
-<!-- ===================== 7. ARQUITETURA (domínio) ===================== -->
-<section>
-  <span class="owner">Kaique</span>
-  <h2>O coração: status derivado <span class="item-tag">4 · Decisões</span></h2>
-  <ul style="font-size:0.85em;">
-    <li>Um pedido é <strong>cabeçalho + N itens</strong>; cada item tem desfecho (integral/parcial/falta).</li>
-    <li>O status do pedido é <strong>DERIVADO</strong> dos itens, nunca setado à mão (RN10, ADR-0008).</li>
-    <li>Máquina de estados de <strong>7 regras por precedência</strong>, em função pura testável.</li>
-    <li>Consequência: o status <strong>nunca fica inconsistente</strong>, pois a verdade são os itens.</li>
-  </ul>
-  <p class="muted"><code>domain/pedido.ts</code> → <code>statusDerivadoDoPedido()</code> · coberto por testes unitários.</p>
-  <aside class="notes">Esta é a melhor evidência técnica do projeto. "Estado derivado vs. armazenado" é um debate clássico de eng. de software — o professor vai gostar. Se perguntarem, abrir o pedido.ts ao vivo.</aside>
-</section>
-
-<!-- ===================== 8. ADRs ===================== -->
-<section>
-  <span class="owner">Kaique</span>
-  <h2>Decisões documentadas (ADRs) <span class="item-tag">4 · Decisões</span></h2>
-  <table>
-    <tr><th>ADR</th><th>Decisão</th><th>Alternativas rejeitadas</th></tr>
-    <tr><td>0005</td><td>Auth JWT + RBAC</td><td>sessão server-side; OAuth</td></tr>
-    <tr><td>0006</td><td>Drizzle ORM</td><td>Prisma; SQL cru; TypeORM</td></tr>
-    <tr><td>0007</td><td>Camadas / Ports&amp;Adapters</td><td>controllers gordos; Active Record</td></tr>
-    <tr><td>0008</td><td>Pedido + status derivado</td><td>status manual; 1 pedido=1 item</td></tr>
-    <tr><td>0010</td><td>Docker 4 containers</td><td>VM direta; subdomínio; PaaS</td></tr>
-    <tr><td>0011</td><td>IA no fluxo de trabalho</td><td>uso ad-hoc; gestão manual</td></tr>
-  </table>
-  <p class="muted">11 ADRs no total, cada um com contexto, alternativas, consequências e <strong>link para o código</strong>.</p>
-  <aside class="notes">Mostrar que decisões têm registro formal, com alternativas consideradas (não foi "saiu assim"). Mencionar que estavam subnotificadas e foram consolidadas para a entrega.</aside>
-</section>
-
-<!-- ===================== 9. DEMO (separador) ===================== -->
-<section class="center-slide demo-slide" data-background-color="#DB1E2F">
-  <span class="owner">Operador + Luiz narra</span>
-  <h1 style="color:#fff;">🎬 Demonstração</h1>
-  <p style="color:#fff; font-size:0.9em;">Fluxo A — Pedido ponta a ponta · Fluxo B — Lotes & validade</p>
-  <p style="color:#fff; opacity:0.85; font-size:0.6em; margin-top:1.5em;">Aplicação rodando localmente (stack Docker pronta para deploy)</p>
-  <aside class="notes">ATENÇÃO AO TEMPO — ~3,5 min. A demo é rodada pelo operador designado (não o PO). Seguir o roteiro-demo.md passo a passo. Se algo falhar: Plano B = mostrar a triagem via POST /rascunhos. NÃO improvisar fluxo novo no palco.</aside>
-</section>
-
-<!-- ===================== 10. QUALIDADE ===================== -->
-<section>
-  <span class="owner">Wallyson / Luiz</span>
-  <h2>Qualidade: testes <span class="item-tag">5 · Qualidade</span></h2>
-  <div class="kpi">
-    <div><span class="n">190</span><span class="l">testes<br>automatizados</span></div>
-    <div><span class="n">137</span><span class="l">backend<br>(Vitest + Postgres)</span></div>
-    <div><span class="n">53</span><span class="l">frontend<br>(Vitest + RTL)</span></div>
+<!-- ════════════════ 8 · ADRs ════════════════ -->
+<section data-background-color="#ffffff">
+  <span class="item-tag">4 · Decisões</span><span class="owner">Kaique</span>
+  <div class="full">
+    <span class="kicker">Decisões registradas</span>
+    <h2>Architecture Decision Records</h2>
+    <table>
+      <tr><th>ADR</th><th>Decisão</th><th>Alternativas rejeitadas</th></tr>
+      <tr><td><code>0005</code></td><td>Auth JWT + RBAC</td><td>sessão server-side; OAuth</td></tr>
+      <tr><td><code>0006</code></td><td>Drizzle ORM</td><td>Prisma; SQL cru; TypeORM</td></tr>
+      <tr><td><code>0007</code></td><td>Camadas / Ports &amp; Adapters</td><td>controllers gordos; Active Record</td></tr>
+      <tr><td><code>0008</code></td><td>Pedido + status derivado</td><td>status manual; 1 pedido = 1 item</td></tr>
+      <tr><td><code>0010</code></td><td>Docker (4 containers)</td><td>VM direta; subdomínio; PaaS</td></tr>
+      <tr><td><code>0011</code></td><td>IA no fluxo de trabalho</td><td>uso ad-hoc; gestão manual</td></tr>
+    </table>
+    <p class="muted" style="margin-top:.5em;"><span class="pill">11 ADRs</span> no total, cada uma com contexto, alternativas, consequências e link para o código.</p>
   </div>
-  <ul style="font-size:0.82em; margin-top:0.5em;">
-    <li>Backend testa contra <strong>banco real</strong> (não só mocks) — cobre persistência.</li>
-    <li>Domínio puro → regras críticas testadas em <strong>milissegundos</strong>.</li>
-    <li>Tudo roda no <strong>CI a cada PR</strong> — verde obrigatório para merge.</li>
-  </ul>
-  <p class="muted">Optamos por testes automatizados em vez de testes manuais (Postman): mais fortes e repetíveis.</p>
-  <aside class="notes">Mostrar a aba Actions do GitHub com o check verde — evidência de execução. Aqui entra a resposta pronta sobre Postman, se perguntarem. Citar um exemplo de refatoração (ex.: extrair a regra de status para domínio puro).</aside>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
+  <aside class="notes">Decisões têm registro formal, com alternativas consideradas (não foi "saiu assim"). Mencionar que estavam subnotificadas e foram consolidadas para a entrega.</aside>
 </section>
 
-<!-- ===================== 11. QUALIDADE — refatoração & revisão ===================== -->
-<section>
-  <span class="owner">Wallyson / Luiz</span>
-  <h2>Qualidade: revisão & refatoração <span class="item-tag">5 · Qualidade</span></h2>
-  <div class="two-col">
-    <div>
-      <h3>Dupla rede de revisão</h3>
-      <ul style="font-size:0.85em;">
-        <li><strong>Code review humano</strong> no PR (autoridade final).</li>
-        <li><strong>/code-review</strong> assistido — lógica/diff.</li>
-        <li><strong>Impeccable</strong> (hook) — design da UI.</li>
-        <li><strong>CI</strong> — testes + type-check.</li>
-      </ul>
+<!-- ════════════════ 9 · DEMO ════════════════ -->
+<section data-background-color="#DB1E2F" class="dark">
+  <span class="owner" style="background:#fff;color:var(--red-dark);">Operador da demo</span>
+  <div class="full center">
+    <span class="kicker" style="color:#fff; justify-content:center;">Demonstração ao vivo</span>
+    <h1 style="font-size:2.6em;">Vamos ao sistema</h1>
+    <p class="lead-sub" style="margin-top:1em; max-width:28ch;">Fluxo A — pedido ponta a ponta &nbsp;·&nbsp; Fluxo B — lotes &amp; validade</p>
+    <p class="muted" style="margin-top:2em; font-size:.5em;">Aplicação rodando localmente · stack Docker pronta para deploy</p>
+  </div>
+  <div class="slide-footer"><img src="../assets/logo-cin-branco.png" alt="CIn"><span>Atenção ao tempo · ~3,5 min</span></div>
+  <aside class="notes">ATENÇÃO AO TEMPO, ~3,5 min. A demo é apresentada E narrada pelo operador designado (NÃO o PO). Seguir o roteiro-demo.md passo a passo. Se algo falhar: Plano B = mostrar a triagem via POST /rascunhos. NÃO improvisar fluxo novo no palco.</aside>
+</section>
+
+<!-- ════════════════ 10 · QUALIDADE (testes) ════════════════ -->
+<section data-background-color="#ffffff">
+  <span class="item-tag">5 · Qualidade</span><span class="owner">Wallyson · Luiz</span>
+  <div class="full">
+    <span class="kicker">A rede de segurança</span>
+    <h2>Testes automatizados</h2>
+    <div class="stats">
+      <div class="stat"><span class="n">190</span><span class="l">testes<br>automatizados</span></div>
+      <div class="stat"><span class="n">137</span><span class="l">backend<br>Vitest + Postgres</span></div>
+      <div class="stat"><span class="n">53</span><span class="l">frontend<br>Vitest + RTL</span></div>
     </div>
-    <div>
-      <h3>Exemplos de refatoração</h3>
-      <ul style="font-size:0.85em;">
-        <li>Regra de status extraída para <strong>domínio puro</strong> (reuso criação + agente).</li>
-        <li>Migration do EP08 <strong>regenerada</strong> via drizzle-kit (não editada à mão).</li>
-        <li>Hardening da triagem (guards de entrada).</li>
-      </ul>
+    <ul style="font-size:.74em; margin-top:.4em;">
+      <li>Backend testa contra <strong>banco real</strong> (não só mocks): cobre persistência.</li>
+      <li>Domínio puro &rarr; regras críticas testadas em <strong>milissegundos</strong>.</li>
+      <li>Tudo roda no <strong>CI a cada PR</strong>; verde é obrigatório para o merge.</li>
+    </ul>
+  </div>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
+  <aside class="notes">Mostrar a aba Actions do GitHub com o check verde, evidência de execução. Aqui entra a resposta pronta sobre Postman, se perguntarem. Citar um exemplo de refatoração (extrair a regra de status para domínio puro).</aside>
+</section>
+
+<!-- ════════════════ 11 · QUALIDADE (revisão) ════════════════ -->
+<section data-background-color="#ffffff">
+  <span class="item-tag">5 · Qualidade</span><span class="owner">Wallyson · Luiz</span>
+  <div class="full">
+    <span class="kicker">Mais que testes</span>
+    <h2>Revisão &amp; refatoração</h2>
+    <div class="two-col">
+      <div class="col-card">
+        <h3>Dupla rede de revisão</h3>
+        <ul style="font-size:.74em;">
+          <li><strong>Code review humano</strong> no PR (autoridade final).</li>
+          <li><strong>/code-review</strong> assistido: lógica e diff.</li>
+          <li><strong>Impeccable</strong> (hook): design da UI.</li>
+          <li><strong>CI</strong>: testes + type-check.</li>
+        </ul>
+      </div>
+      <div class="col-card">
+        <h3>Exemplos de refatoração</h3>
+        <ul style="font-size:.74em;">
+          <li>Regra de status extraída para o <strong>domínio puro</strong> (reuso: criação + agente).</li>
+          <li>Migration do EP08 <strong>regenerada</strong> via drizzle-kit, não editada à mão.</li>
+          <li>Hardening da triagem com guards de entrada.</li>
+        </ul>
+      </div>
     </div>
   </div>
-  <aside class="notes">Mostrar que qualidade é processo (camadas de revisão), não acaso. A refatoração do status para domínio puro é o exemplo concreto mais forte.</aside>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
+  <aside class="notes">Qualidade é processo (camadas de revisão), não acaso. A refatoração do status para domínio puro é o exemplo concreto mais forte.</aside>
 </section>
 
-<!-- ===================== 12. INFRAESTRUTURA ===================== -->
-<section>
-  <span class="owner">Luiz (PO)</span>
-  <h2>Infraestrutura & deploy <span class="item-tag">6 · Infra</span></h2>
-  <pre><code class="language-text">navegador ─▶ nginx (:80, /estoque-ho)
-                ├─▶ frontend (SPA React)
-                └─▶ backend (Express :3000) ─▶ Postgres 16
+<!-- ════════════════ 12 · INFRAESTRUTURA ════════════════ -->
+<section data-background-color="#ffffff">
+  <span class="item-tag">6 · Infra</span><span class="owner">Luiz · PO</span>
+  <div class="full">
+    <span class="kicker">Como publicamos</span>
+    <h2>Infraestrutura &amp; deploy</h2>
+    <pre><code class="language-text">navegador → nginx (:80, /estoque-ho)
+                ├── frontend (SPA React)
+                └── backend (Express :3000) → Postgres 16
             [ rede interna do compose — só o nginx é exposto ]</code></pre>
-  <ul style="font-size:0.82em;">
-    <li><strong>4 containers</strong> orquestrados por Docker Compose.</li>
-    <li>Banco e backend <strong>sem porta exposta</strong> — superfície mínima.</li>
-    <li>Subcaminho <strong>/estoque-ho</strong> no domínio compartilhado do CIn — modular p/ outras clínicas.</li>
-  </ul>
-  <p class="muted">Stack <strong>pronta e validada localmente</strong>; deploy no servidor é essencialmente um comando.</p>
-  <aside class="notes">Honestidade: está pronto e testado local, ainda não publicado no servidor CIn (depende de acesso TI). Não esconder isso — o professor valoriza saber o estado real. A modularidade (replicar p/ outra clínica) é o diferencial.</aside>
+    <ul style="font-size:.74em;">
+      <li><strong>Quatro containers</strong> orquestrados por Docker Compose.</li>
+      <li>Banco e backend <strong>sem porta exposta</strong>: superfície mínima de ataque.</li>
+      <li>Subcaminho <strong>/estoque-ho</strong> no domínio do CIn: modular para outras clínicas.</li>
+    </ul>
+    <p class="muted" style="margin-top:.4em;">Stack <strong>pronta e validada localmente</strong>; o deploy no servidor é essencialmente um comando.</p>
+  </div>
+  <div class="slide-footer"><img src="../assets/logo-cin.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
+  <aside class="notes">Honestidade: está pronto e testado local, ainda não publicado no servidor CIn (depende de acesso TI). Não esconder isso. A modularidade (replicar p/ outra clínica) é o diferencial.</aside>
 </section>
 
-<!-- ===================== 13. FECHO — AGENTE COMO UX ===================== -->
-<section>
-  <span class="owner">Luiz (PO)</span>
-  <h2>O diferencial: agente é <em>UX</em> <span class="item-tag">Visão de futuro</span></h2>
-  <ul style="font-size:0.88em;">
-    <li>Solicitantes pedem <strong>~1 vez por mês</strong> — obrigá-los a aprender um sistema é fricção alta.</li>
-    <li><strong>Inversão do ônus:</strong> o agente lê o e-mail que eles <strong>já enviam</strong> e cria o pedido como rascunho.</li>
-    <li>O almoxarife <strong>revisa</strong> (triagem), em vez de digitar. Human-in-the-loop.</li>
-    <li>Decisão de <strong>experiência</strong>, não de tecnologia (ADR-0004).</li>
-  </ul>
-  <p class="muted">Backend + triagem prontos; ingestão automática aguarda provisionamento da caixa institucional.</p>
-  <aside class="notes">Fecho forte. O agente é a parte mais original — enquadrar como UX, não como "usamos IA porque é legal". Está pronto no possível; o que falta é infra (caixa de email), não código. Honesto e ambicioso ao mesmo tempo.</aside>
+<!-- ════════════════ 13 · AGENTE = UX ════════════════ -->
+<section data-background-color="#231F20" class="dark">
+  <span class="item-tag" style="background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.2);">Visão de futuro</span>
+  <span class="owner">Luiz · PO</span>
+  <div class="full">
+    <span class="kicker" style="color:#ff8a93;">O diferencial</span>
+    <h2 style="font-size:1.7em;">O agente de e-mail é <em style="color:#ffd2d2;">UX</em>, não tecnologia</h2>
+    <ul style="font-size:.78em;">
+      <li>Solicitantes pedem <strong>~uma vez por mês</strong>: obrigá-los a aprender um sistema é fricção alta.</li>
+      <li><strong>Inversão do ônus</strong>: o agente lê o e-mail que eles <strong>já enviam</strong> e cria o pedido como rascunho.</li>
+      <li>O almoxarife <strong>revisa</strong> (triagem) em vez de digitar. Human-in-the-loop.</li>
+      <li>Decisão de <strong>experiência</strong>, fundamentada no ADR-0004.</li>
+    </ul>
+    <p class="muted" style="margin-top:.5em;">Backend e triagem prontos; a ingestão automática aguarda a caixa institucional.</p>
+  </div>
+  <div class="slide-footer"><img src="../assets/logo-cin-branco.png" alt="CIn"><span>Controle de Estoque · HO · UFPE</span></div>
+  <aside class="notes">Fecho forte. O agente é a parte mais original: enquadrar como UX, não como "usamos IA porque é legal". Está pronto no possível; o que falta é infra (caixa de email), não código. Honesto e ambicioso ao mesmo tempo.</aside>
 </section>
 
-<!-- ===================== 14. ENCERRAMENTO ===================== -->
-<section class="center-slide" data-background-color="#231F20">
-  <h1 style="color:#fff;">Obrigado!</h1>
-  <p style="color:#fff; opacity:0.9;">Perguntas?</p>
-  <p style="color:#fff; opacity:0.6; font-size:0.55em; margin-top:1.5em;">
-    Documentação completa: <strong>lacavaalex.github.io/Controle-de-Estoque-CEO</strong><br>
-    Grupo 5 · Engenharia de Software · CIn-UFPE · 2026
-  </p>
-  <aside class="notes">Abrir para perguntas. Ter à mão: o site de docs, o board do Jira, a aba Actions (CI verde), e o pedido.ts (caso perguntem de arquitetura/domínio). Ver perguntas antecipadas no roteiro-demo.md.</aside>
+<!-- ════════════════ 14 · ENCERRAMENTO ════════════════ -->
+<section data-background-color="#DB1E2F" class="dark">
+  <div class="full center">
+    <img src="../assets/logo-cin-branco.png" alt="CIn UFPE" style="height:54px; margin-bottom:1.4em; opacity:.95;">
+    <h1 style="font-size:3em;">Obrigado!</h1>
+    <p class="lead-sub" style="margin-top:.6em;">Perguntas?</p>
+    <p class="muted" style="margin-top:2em; font-size:.5em; line-height:1.7;">
+      Documentação completa &middot; <strong style="color:#fff;">lacavaalex.github.io/Controle-de-Estoque-CEO</strong><br>
+      Grupo 5 &middot; Desenvolvimento de Software &middot; CIn-UFPE &middot; 2026</p>
+  </div>
+  <aside class="notes">Abrir para perguntas. Ter à mão: o site de docs, o board do Jira, a aba Actions (CI verde), e o pedido.ts (caso perguntem de arquitetura/domínio). Ver perguntas antecipadas no roteiro-demo.md, incluindo a de Ports & Adapters.</aside>
 </section>
 
 </div>
@@ -337,9 +454,8 @@
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/notes/notes.js"></script>
 <script>
   Reveal.initialize({
-    hash: true,
-    slideNumber: 'c/t',
-    transition: 'slide',
+    hash: true, slideNumber: 'c/t', transition: 'fade', transitionSpeed: 'fast',
+    width: 1280, height: 720, margin: 0.04,
     plugins: [ RevealHighlight, RevealNotes ],
   });
 </script>

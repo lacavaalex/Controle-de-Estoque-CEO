@@ -4,6 +4,7 @@ A apresentação final foi construída em **Reveal.js** (HTML), seguindo a ident
 visual oficial do CIn-UFPE.
 
 [:material-presentation-play: Abrir os slides em tela cheia](slides.html){ .md-button .md-button--primary target=_blank }
+[:material-script-text-play: Guia de falas (ensaio)](estudo-falas.html){ .md-button target=_blank }
 
 !!! tip "Como apresentar"
     - Abra `slides.html` no navegador e pressione **F** para tela cheia.
@@ -27,7 +28,7 @@ o **item do roteiro do professor** que ele cobre.
 | 6 | Arquitetura (camadas) | Kaique | 4 |
 | 7 | O coração: status derivado | Kaique | 4 |
 | 8 | Decisões documentadas (ADRs) | Kaique | 4 |
-| 9 | :material-play-circle: **Demonstração** | Operador + Luiz narra | 7 |
+| 9 | :material-play-circle: **Demonstração** | Operador (apresenta e narra) | 7 |
 | 10 | Qualidade: testes | Wallyson / Luiz | 5 |
 | 11 | Qualidade: revisão & refatoração | Wallyson / Luiz | 5 |
 | 12 | Infraestrutura & deploy | Luiz (PO) | 6 |

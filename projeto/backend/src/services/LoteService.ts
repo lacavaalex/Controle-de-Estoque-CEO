@@ -1,13 +1,6 @@
-// =============================================================================
-// LoteService — entrada, ajuste, consumo e segregação de lotes.
-//
-// Todos os métodos são ATÔMICOS: atualizam o lote E geram a Movimentação na
-// MESMA transação (db.transaction), para que estoque e auditoria nunca
-// divirjam (RN11 / INV01).
-//
-// Estado inicial do lote é derivado da validade (RN05/RN17): validade no
-// passado entra como `vencido` (com aviso ao chamador via flag de retorno).
-// =============================================================================
+// Entrada, ajuste, consumo e segregação de lotes. Cada método atualiza o lote e
+// grava a Movimentação na mesma transação, para estoque e auditoria não
+// divergirem (RN11/INV01). O estado inicial vem da validade (RN05/RN17).
 import { eq, sql, and } from "drizzle-orm";
 import type { DB } from "../db/client.js";
 import { db as defaultDb } from "../db/client.js";

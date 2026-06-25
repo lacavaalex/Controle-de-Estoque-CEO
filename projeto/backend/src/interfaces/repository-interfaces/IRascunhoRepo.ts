@@ -18,7 +18,7 @@ export interface IRascunhoRepository {
   upsert(rascunho: NovoPedidoRascunho): Promise<ResultadoUpsertRascunho>;
   buscarPorMessageId(messageId: string): Promise<PedidoRascunho | null>;
 
-  // ─── Triagem (EP08 / CEO-276) ─────────────────────────────────────────────
+  // Triagem (EP08 / CEO-276)
   /**
    * Busca por id. Com `tx`, lê na transação do chamador e trava a linha
    * (FOR UPDATE) — usado na promoção para impedir aprovação dupla concorrente.

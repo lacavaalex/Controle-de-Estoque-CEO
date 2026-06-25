@@ -1,10 +1,5 @@
-// ============================================================
-// client.js — núcleo do cliente HTTP da API
-// Contrato: docs/PO/07-roadmap-metricas/05-contrato-api.md
-//  - Base: /api (proxy do Vite → :3000), ou VITE_API_BASE
-//  - Auth: Authorization: Bearer <token> em tudo, exceto /login
-//  - Erros: 4xx { mensagem } (negócio/permissão) ou { error } (interno)
-// ============================================================
+// Cliente HTTP da API. Base em /api (proxy do Vite) ou VITE_API_BASE; envia
+// Authorization: Bearer em todas as rotas exceto /login.
 
 const BASE = import.meta.env.VITE_API_BASE || "/api";
 
@@ -78,7 +73,7 @@ async function request(method, path, body, { auth = true } = {}) {
   const data = text ? safeJson(text) : null;
 
   if (!res.ok) {
-    // Sessão expirada/!inválida → limpa e sinaliza para a app redirecionar.
+    // Sessão expirada/!inválida limpa e sinaliza para a app redirecionar.
     if (res.status === 401) {
       session.clear();
       notifyUnauthorized();

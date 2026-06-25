@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meu roteiro — Luiz (PO) · Apresentação Final</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+  :root{ --red:#DB1E2F; --red-dark:#AF0421; --bordo:#990000; --ink:#231F20; --gray:#595959; --soft:#8a8a8a; --wash:#faf7f7; --line:#eee; }
+  *{ box-sizing:border-box; }
+  body{ font-family:'Source Serif 4',Georgia,serif; color:var(--ink); line-height:1.5; margin:0; background:#f4f1f1; }
+  .wrap{ max-width:880px; margin:0 auto; padding:48px 28px 80px; }
+  h1,h2,h3,.k,.tag,.t,.meta,.chip{ font-family:'Montserrat',sans-serif; }
+
+  /* Cabeçalho */
+  .head{ background:var(--bordo); color:#fff; border-radius:18px; padding:34px 36px; margin-bottom:34px; position:relative; overflow:hidden; }
+  .head::after{ content:""; position:absolute; right:-40px; bottom:-40px; width:200px; height:200px; background:rgba(255,255,255,.06); border-radius:50%; }
+  .head h1{ font-size:2em; font-weight:900; letter-spacing:-.02em; margin:.1em 0 .25em; }
+  .head p{ margin:0; opacity:.92; font-size:1.02em; max-width:60ch; }
+  .head .meta{ font-size:.72em; letter-spacing:.14em; text-transform:uppercase; opacity:.8; font-weight:700; }
+
+  /* Barra de tempo / resumo */
+  .summary{ display:flex; gap:14px; flex-wrap:wrap; margin:-18px 0 34px; }
+  .summary .chip{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px 16px; flex:1; min-width:150px; box-shadow:0 6px 20px -16px rgba(0,0,0,.4); }
+  .summary .chip b{ display:block; font-size:1.5em; color:var(--red); font-weight:900; line-height:1; }
+  .summary .chip span{ font-size:.74em; color:var(--gray); font-weight:600; }
+
+  /* Bloco de slide */
+  .slide{ background:#fff; border-radius:16px; padding:26px 30px; margin-bottom:22px; border:1px solid var(--line); box-shadow:0 10px 30px -24px rgba(0,0,0,.5); }
+  .slide-top{ display:flex; align-items:baseline; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
+  .slide-top .n{ font-family:'Montserrat',sans-serif; font-weight:900; font-size:1.5em; color:var(--red); line-height:1; }
+  .slide-top h2{ font-size:1.18em; font-weight:800; margin:0; flex:1; letter-spacing:-.01em; }
+  .slide-top .t{ font-size:.66em; font-weight:700; color:#fff; background:var(--ink); padding:.3em .7em; border-radius:100px; white-space:nowrap; }
+  .slide-top .t.solo{ background:var(--red); }
+
+  .k{ font-size:.68em; font-weight:800; letter-spacing:.13em; text-transform:uppercase; color:var(--red); margin:18px 0 7px; display:flex; align-items:center; gap:.5em; }
+  .k::before{ content:""; width:20px; height:3px; background:var(--red); border-radius:2px; }
+
+  .say{ background:var(--wash); border-radius:12px; padding:16px 20px; font-size:1.04em; }
+  .say em{ color:var(--red-dark); font-style:italic; }
+  .slide ul{ margin:.4em 0 0; padding-left:1.2em; }
+  .slide ul li{ margin-bottom:.35em; }
+  .slide strong{ color:var(--red-dark); font-weight:600; }
+  .mini{ font-size:.82em; color:var(--gray); }
+
+  .danger-note{ border:1.5px solid #f3c9cd; background:#fdf2f3; border-radius:12px; padding:14px 18px; font-size:.92em; }
+  .danger-note b{ color:var(--red-dark); }
+
+  /* Q&A */
+  .qa{ background:var(--ink); color:#fff; border-radius:16px; padding:28px 32px; margin-top:34px; }
+  .qa h2{ color:#fff; font-size:1.3em; margin:0 0 6px; font-weight:800; }
+  .qa>p{ opacity:.8; margin:0 0 18px; font-size:.92em; }
+  .qa details{ border-bottom:1px solid rgba(255,255,255,.14); padding:14px 0; }
+  .qa details:last-child{ border-bottom:none; }
+  .qa summary{ font-family:'Montserrat',sans-serif; font-weight:700; cursor:pointer; font-size:1.02em; color:#ffd2d2; list-style:none; }
+  .qa summary::before{ content:"▸ "; }
+  .qa details[open] summary::before{ content:"▾ "; }
+  .qa .ans{ margin-top:10px; opacity:.92; font-size:.95em; line-height:1.55; }
+
+  .foot{ text-align:center; margin-top:40px; color:var(--soft); font-size:.82em; }
+  @media print{ body{ background:#fff; } .slide,.head,.qa,.summary .chip{ box-shadow:none; } .wrap{ padding:0; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <div class="meta">Apresentação Final · CIn-UFPE · 25/06</div>
+    <h1>Meu roteiro — Luiz (PO)</h1>
+    <p>Só os slides que <strong style="color:#fff;">eu</strong> apresento, com o que falar em cada um. O foco é a narrativa: a história de descoberta do problema, não a lista de funcionalidades.</p>
+  </div>
+
+  <div class="summary">
+    <div class="chip"><b>10</b><span>slides meus (de 15)</span></div>
+    <div class="chip"><b>~11</b><span>min de fala (de 20)</span></div>
+    <div class="chip"><b>3</b><span>slides do Kaique (6,7,8 arquitetura)</span></div>
+    <div class="chip"><b>0</b><span>demo — não é minha (outra pessoa)</span></div>
+  </div>
+
+  <!-- 0 -->
+  <div class="slide">
+    <div class="slide-top"><span class="n">0</span><h2>Capa &amp; abertura</h2><span class="t solo">~1 min</span></div>
+    <div class="k">O que dizer</div>
+    <div class="say">"Boa tarde. Somos o Grupo 5. Nosso projeto é um <strong>sistema de controle de estoque para o Hospital Odontológico da UFPE</strong>. Mas antes de mostrar o sistema, quero contar a <em>história de como entendemos o problema</em> — porque foi aí que estava o maior valor do nosso trabalho."</div>
+    <div class="k">Lembrar</div>
+    <ul><li>Apresentar a equipe rapidamente (7 pessoas).</li><li>Setar o tom: <strong>história de descoberta</strong>, não um CRUD.</li></ul>
+  </div>
+
+  <!-- 1 -->
+  <div class="slide">
+    <div class="slide-top"><span class="n">1</span><h2>O problema</h2><span class="t">Item 1 · Problema</span></div>
+    <div class="k">O que dizer</div>
+    <div class="say">"O hospital controla o estoque <strong>por planilhas de Excel</strong>. Isso gera três dores: o estoque do sistema <em>não bate com o físico</em>, não há rastreabilidade de quem pediu o quê, e — talvez a pior — <strong>material vence sem ninguém ser avisado</strong>. Os pedidos chegam por e-mail e papel, espalhados."</div>
+    <div class="k">Narrar (importante)</div>
+    <ul>
+      <li>A <strong>dificuldade de contato com o stakeholder</strong>: acesso difícil ao almoxarife da Dispensação.</li>
+      <li>No começo tivemos <strong>pouca informação, e parte dela estava errada</strong> — gancho direto pro próximo slide.</li>
+    </ul>
+  </div>
+
+  <!-- 2 -->
+  <div class="slide">
+    <div class="slide-top"><span class="n">2</span><h2>O insight que mudou o escopo</h2><span class="t">Item 1 · Visão</span></div>
+    <div class="k">O que dizer (o slide mais importante seu)</div>
+    <div class="say">"Nos disseram: <em>'o CEO não tem controle de estoque'</em>. Mas quando investigamos o fluxo real, percebemos uma coisa: <strong>o CEO não tem estoque próprio para controlar</strong>. Tudo depende do HO — o Hospital Odontológico, que é a Dispensação que abastece os setores. A premissa do cliente estava equivocada. Então <strong>reposicionamos o escopo</strong>: o HO virou a fonte de verdade, e o CEO virou a <strong>célula-piloto</strong> — o primeiro setor a validar o fluxo. E desenhamos tudo de forma <strong>modular</strong>, pra que outras células sejam acopladas depois."</div>
+    <div class="k">Por que isso importa (diga em voz alta)</div>
+    <ul>
+      <li>O valor de engenharia foi ter <strong>questionado a premissa</strong> do cliente, não só executado o pedido.</li>
+      <li>Mencionar: a equipe teve a <strong>preocupação deliberada de documentar tudo</strong> para quem vier depois.</li>
+    </ul>
+    <p class="mini">⏱ Fale este slide com calma. É o coração da sua narrativa.</p>
+  </div>
+
+  <!-- 3 -->
+  <div class="slide">
+    <div class="slide-top"><span class="n">3</span><h2>Visão geral da solução</h2><span class="t">Item 1 · Funcionalidades</span></div>
+    <div class="k">O que dizer</div>
+    <div class="say">"Resolvendo isso, o sistema entrega: <strong>catálogo com lotes e validade</strong>, <strong>pedidos com vários itens</strong> e aprovação parcial por validade (FEFO), o <strong>estoque do CEO alimentado automaticamente</strong> quando o HO expede, e <strong>dashboards por perfil</strong>. E um diferencial que eu deixo pro final: um <strong>agente de e-mail</strong>, que é uma decisão de experiência."</div>
+    <div class="k">Lembrar</div>
+    <ul><li>Não detalhar agora, é panorama. Plantar a semente do "agente é UX" (volta no slide 13).</li></ul>
+  </div>
+
+  <!-- 4 -->
+  <div class="slide">
+    <div class="slide-top"><span class="n">4</span><h2>Gestão do trabalho</h2><span class="t">Item 2 · Processo</span></div>
+    <div class="k">O que dizer (você ou o Bruno)</div>
+    <div class="say">"Trabalhamos com <strong>Scrum/Kanban</strong>, board no Jira, backlog em épicos e User Stories. No fluxo de código: cada feature numa branch, tudo entra por <strong>Pull Request com code review obrigatório</strong>, e temos <strong>CI</strong> que roda 190 testes a cada PR. Inclusive, usamos o <strong>MCP do Jira</strong> para manter o board sincronizado com o código."</div>
+    <div class="k">Mostrar</div>
+    <ul><li>Se der, abrir o board do Jira ao vivo (ou print).</li></ul>
+  </div>
+
+  <!-- 5 -->
+  <div class="slide">
+    <div class="slide-top"><span class="n">5</span><h2>Requisitos &amp; rastreabilidade</h2><span class="t">Item 3 · User Stories</span></div>
+    <div class="k">O que dizer</div>
+    <div class="say">"São <strong>8 épicos e 37 User Stories</strong>, todas Must para o MVP, escritas em <strong>Gherkin</strong> e priorizadas por MoSCoW. E o ponto que eu quero destacar é a <strong>rastreabilidade</strong>: cada regra de negócio — RN09, RN10 — é <em>citada no próprio código</em> que a implementa. Inclusive na função que o Kaique vai mostrar a seguir."</div>
+    <div class="k">Passar a palavra</div>
+    <ul><li>Gancho para o <strong>Kaique</strong> (slides 6, 7, 8 — arquitetura). "Passo pro Kaique falar de arquitetura."</li></ul>
+  </div>
+
+  <!-- DEMO (não é sua) -->
+  <div class="slide" style="background:#fbfafa; border-style:dashed;">
+    <div class="slide-top"><span class="n">9</span><h2 style="color:var(--soft);">Demonstração — não é você</h2><span class="t" style="background:var(--soft);">outra pessoa</span></div>
+    <p class="mini" style="margin:0;">A demo (slide 9) é apresentada e narrada por <strong>outra pessoa</strong> (quem opera o sistema). Você não fala nada aqui — apenas aguarde sua vez no slide 12 (infraestrutura). Se quiser acompanhar o que será mostrado, está no <code>roteiro-demo.md</code>.</p>
+  </div>
+
+  <!-- 12 -->
+  <div class="slide">
+    <div class="slide-top"><span class="n">12</span><h2>Infraestrutura &amp; deploy</h2><span class="t">Item 6 · Infra</span></div>
+    <div class="k">O que dizer</div>
+    <div class="say">"A aplicação roda em <strong>quatro containers</strong> Docker: nginx, frontend, backend e Postgres. Só o nginx fica exposto — <strong>banco e backend não têm porta aberta</strong>, o que minimiza a superfície de ataque. Tudo num subcaminho <code>/estoque-ho</code> no domínio do CIn, então é <strong>modular</strong> para outras clínicas reusarem."</div>
+    <div class="k">Ser honesto (não esconda)</div>
+    <ul><li>"A stack está <strong>pronta e validada localmente</strong>; o deploy no servidor depende de acesso da TI. A demo de hoje roda local."</li></ul>
+  </div>
+
+  <!-- 13 -->
+  <div class="slide">
+    <div class="slide-top"><span class="n">13</span><h2>O diferencial: o agente é UX</h2><span class="t solo">Fecho</span></div>
+    <div class="k">O que dizer (fecho forte)</div>
+    <div class="say">"Para fechar, o nosso diferencial. Os solicitantes pedem material <strong>cerca de uma vez por mês</strong>. Obrigá-los a aprender um sistema novo é uma barreira enorme. Então <strong>invertemos o ônus</strong>: em vez de forçar o usuário, um <strong>agente lê o e-mail que ele já manda</strong> e cria o pedido como rascunho. O almoxarife só <em>revisa</em>, em vez de digitar. Isso não é uma decisão de tecnologia — é uma decisão de <strong>experiência do usuário</strong>. O backend e a triagem estão prontos; a ingestão automática só espera a caixa institucional ser liberada."</div>
+  </div>
+
+  <!-- 14 -->
+  <div class="slide">
+    <div class="slide-top"><span class="n">14</span><h2>Encerramento</h2><span class="t solo">~30s</span></div>
+    <div class="say">"É isso. A documentação completa está no site que está no slide. Obrigado, e estamos abertos a perguntas."</div>
+    <div class="k">Deixar à mão para o Q&amp;A</div>
+    <ul><li>O <strong>site de docs</strong>, o <strong>board do Jira</strong>, a aba <strong>Actions</strong> (CI verde), e o arquivo <code>domain/pedido.ts</code> (se perguntarem de arquitetura).</li></ul>
+  </div>
+
+  <!-- Q&A -->
+  <div class="qa">
+    <h2>Perguntas que podem cair pra você</h2>
+    <p>Respostas curtas. As de arquitetura pura, passe pro Kaique; as de visão/processo/produto são suas.</p>
+
+    <details><summary>Por que o escopo é só o CEO se o problema é do hospital todo?</summary>
+    <div class="ans">O CEO é a <strong>célula-piloto</strong>: validamos o fluxo num setor real antes de escalar. A arquitetura é modular — o HO é a fonte de verdade e outras células (CME, laboratórios) se acoplam com o mesmo modelo. Reduz risco e entrega valor já.</div></details>
+
+    <details><summary>A aplicação está em produção / no ar?</summary>
+    <div class="ans">A stack de 4 containers está <strong>construída e validada localmente</strong>. O deploy no servidor do CIn depende de acesso da TI; o procedimento está documentado e é essencialmente um comando. A demo de hoje roda local. Não escondemos isso — é o estado real.</div></details>
+
+    <details><summary>Vocês testaram a API com Postman?</summary>
+    <div class="ans">Não usamos Postman. Temos <strong>137 testes automatizados no backend</strong> (Vitest) rodando contra banco real, mais 53 no front — garantia mais forte e repetível que cliques manuais, e roda no CI a cada PR. O que falta validar ponta a ponta é a ingestão de e-mail do agente, que depende da caixa institucional.</div></details>
+
+    <details><summary>Vocês usaram IA pra fazer o projeto? Não é "cola"?</summary>
+    <div class="ans">Usamos IA como <strong>ferramenta de engenharia e gestão</strong>, de forma transparente e supervisionada — está documentado no ADR-0011. Todo código passou por <strong>Pull Request com revisão humana e CI</strong>. Nenhuma decisão arquitetural foi delegada: a autoria é humana e rastreável no histórico do Git.</div></details>
+
+    <details><summary>O agente de e-mail funciona mesmo? Por que não demonstrou?</summary>
+    <div class="ans">O backend (a tabela de rascunho, a rota, a triagem) está pronto e testado. A ingestão automática depende de <strong>provisionar uma caixa de e-mail institucional</strong>, que é um passo de infraestrutura fora do nosso alcance no prazo (documentado no ADR-0004). Conseguimos demonstrar a triagem criando um rascunho pela API.</div></details>
+
+    <details><summary>(Se perguntarem) Vocês usam mesmo Ports &amp; Adapters?</summary>
+    <div class="ans"><em>Pode passar pro Kaique, mas a resposta curta é:</em> sim, de forma <strong>pragmática</strong>. Na persistência usamos interfaces (ports) e implementações (adapters) — a prova é termos dois adapters para a mesma porta. Nas transações multi-tabela, acessamos o ORM direto, uma exceção consciente: a consistência tem precedência sobre a pureza do padrão. Está no ADR-0007.</div></details>
+  </div>
+
+  <div class="foot">Grupo 5 · Desenvolvimento de Software · CIn-UFPE · 2026 — bom proveito, Luiz! 🎓</div>
+</div>
+</body>
+</html>

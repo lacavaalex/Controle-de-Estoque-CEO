@@ -22,7 +22,7 @@ export const STATUS_PEDIDO = [
   "atendido_parcial", "nao_atendido", "aguardando_reposicao",
 ];
 
-// Mapa de status de estoque → classe CSS do badge (ver index.css)
+// Mapa de status de estoque classe CSS do badge (ver index.css)
 export const STATUS_CLASS = {
   "Crítico": "st-critico",
   "Baixo": "st-baixo",
@@ -42,7 +42,7 @@ export const ROTULO_STATUS = {
   aguardando_reposicao: "Aguardando reposição",
 };
 
-// Mapa status pedido/item → classe de badge
+// Mapa status pedido/item classe de badge
 export const STATUS_PEDIDO_CLASS = {
   pendente: "st-indisponivel",
   em_processamento: "st-vencendo",

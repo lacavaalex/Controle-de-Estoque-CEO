@@ -1,9 +1,7 @@
-// =============================================================================
 // PgRascunhoRepo — antecâmara do Agente de Email (EP08 / ADR-0004).
 // Gravação idempotente em pedido_rascunho via INSERT ... ON CONFLICT DO NOTHING
 // sobre o índice único de message_id (inbox pattern). O backend continua dono
 // único do banco; o agente só escreve por aqui (POST /rascunhos).
-// =============================================================================
 import { and, desc, eq } from "drizzle-orm";
 import type {
   IRascunhoRepository,
@@ -45,7 +43,7 @@ export class PgRascunhoRepo implements IRascunhoRepository {
     return linha ?? null;
   }
 
-  // ─── Triagem (CEO-276) ──────────────────────────────────────────────────────
+  // Triagem (CEO-276)
 
   async buscarPorId(id: number, tx?: Tx): Promise<PedidoRascunho | null> {
     const executor = tx ?? this.db;

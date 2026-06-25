@@ -40,7 +40,7 @@ function filtrosDaQuery(q: express.Request["query"]): FiltrosCatalogo {
   return f;
 }
 
-// ─── Autenticação (EP01) ─────────────────────────────────────────────────────
+// Autenticação (EP01)
 router.post("/login", (req, res) => authController.login(req, res));
 router.post("/logout", (req, res) => authController.logout(req, res));
 router.get("/eu", auth, (req, res) => authController.eu(req, res));
@@ -67,7 +67,7 @@ router.patch(
 );
 router.patch("/eu/senha", auth, authController.mudarSenha.bind(authController));
 
-// ─── Setores ─────────────────────────────────────────────────────────────────
+// Setores
 
 // Lista os setores (HO/CEO...). Autenticada: qualquer usuário logado pode listar
 // — o front precisa para escolher origem/destino ao criar pedido (EP04). Não
@@ -88,7 +88,7 @@ router.get(
   (req, res) => loteController.listarSegregadosPorSetor(req, res)
 );
 
-// ─── Catálogo / Estoque (EP02) ───────────────────────────────────────────────
+// Catálogo / Estoque (EP02)
 
 // US-EP02-01 + EP02-03 — catálogo agregado (almoxarife/gestor HO veem detalhe).
 router.get(
@@ -209,7 +209,7 @@ router.post(
   (req, res) => loteController.consumir(req, res),
 );
 
-// ─── Pedidos (EP03 expedição / EP04-01 criação) ─────────────────────────────
+// Pedidos (EP03 expedição / EP04-01 criação)
 
 // EP04-01 — criar pedido (solicitante/gestor do setor de origem — RN12).
 router.post(
@@ -248,7 +248,7 @@ router.post(
   (req, res) => pedidoController.expedir(req, res),
 );
 
-// ─── Agente de Email da Dispensação (EP08 / ADR-0004) ───────────────────────
+// Agente de Email da Dispensação (EP08 / ADR-0004)
 // POST /rascunhos — admissão de solicitações por email. Auth de SERVIÇO
 // (Bearer AGENTE_TOKEN), não JWT: o agente é um worker, não um usuário logado.
 // Idempotente (ON CONFLICT por messageId). NÃO aplica RN10 (rascunho ≠ pedido).
@@ -286,7 +286,7 @@ router.post(
   (req, res) => loteController.segregarLote(req, res)
 );
 
-// ─── Itens (legado v1) — mantidas até a migração para Produto/Lote ──────────
+// Itens (legado v1) — mantidas até a migração para Produto/Lote
 router.post("/items", async (req, res) => await itemController.createItem(req, res));
 router.patch("/items/:id/stock", async (req, res) => await itemController.addStock(req, res));
 router.patch("/items/:id/name", async (req, res) => await itemController.changeItemName(req, res));
@@ -298,7 +298,7 @@ router.get(
   (req, res) => pedidoController.listar(req, res)
 );
 
-// ─── Dashboard (EP05) ────────────────────────────────────────────────────────
+// Dashboard (EP05)
 
 // CEO-248 — KPIs do dashboard escopados por setor (RN12).
 router.get(

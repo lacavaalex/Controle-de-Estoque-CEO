@@ -1,12 +1,5 @@
-// =============================================================================
-// Entidades de domínio v2 — CEO-UFPE
-// Os tipos são inferidos do schema Drizzle (src/db/schema.ts) para manter
-// entidades e banco como uma fonte única da verdade (ver ADR-0004). Os Json*/
-// in-memory de teste e os Pg* implementam interfaces sobre estes tipos.
-//
-// Substitui o stub v1 `Item` (mantido em entities/Item.ts apenas enquanto o
-// ItemService/rotas legados não forem migrados).
-// =============================================================================
+// Entidades de domínio. Os tipos são inferidos do schema Drizzle
+// (src/db/schema.ts), mantendo entidades e banco em sincronia.
 import type {
   setor,
   usuario,

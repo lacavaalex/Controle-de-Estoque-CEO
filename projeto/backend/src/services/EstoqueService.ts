@@ -1,8 +1,6 @@
-// =============================================================================
 // EstoqueService — orquestra repositórios + funções de domínio para entregar
 // a visão de estoque (qtd_total + status agregado por produto, num setor).
 // As regras vivem em domain/estoque.ts; o service só junta dados e aplica.
-// =============================================================================
 import type { IProdutoRepository } from "../interfaces/repository-interfaces/IProdutoRepo.js";
 import type { ILoteRepository } from "../interfaces/repository-interfaces/ILoteRepo.js";
 import type { ISetorRepository } from "../interfaces/repository-interfaces/ISetorRepo.js";

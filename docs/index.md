@@ -4,7 +4,7 @@
 > Dispensação (almoxarifado HO)** e o **Centro de Especialidades Odontológicas
 > (CEO)** do Hospital Odontológico da UFPE.
 >
-> Projeto da disciplina de Engenharia de Software — **Grupo 5, CIn-UFPE**.
+> Projeto da disciplina de Desenvolvimento de Software — **Grupo 5, CIn-UFPE**.
 
 ---
 

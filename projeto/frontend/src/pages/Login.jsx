@@ -33,10 +33,14 @@ function Login() {
   return (
     <div className="login-page">
       <section className="login-brand">
-        <div className="brand-mark">CEO <span>· UFPE</span></div>
+        <img
+          src="/brasao-ufpe.png" alt="Brasão da UFPE" className="brand-crest"
+          onError={(e) => { e.currentTarget.style.display = "none"; }}
+        />
+        <div className="brand-mark">Estoque HO <span>· UFPE</span></div>
         <p className="brand-tagline">
-          Controle de estoque do Centro de Especialidades Odontológicas — pedidos,
-          expedição por validade (FEFO) e visão de estoque em um só lugar.
+          Controle de estoque do Hospital Odontológico — pedidos, expedição por
+          validade (FEFO) e visão de estoque em um só lugar.
         </p>
         <div className="brand-foot">Universidade Federal de Pernambuco</div>
       </section>
@@ -75,11 +79,6 @@ function Login() {
               {enviando ? "Entrando…" : "Entrar no sistema"}
             </button>
           </form>
-
-          <div className="login-hint">
-            <strong>Ambiente de demonstração</strong> — senha de todos: <code>ceoufpe2026</code><br />
-            gestor HO <code>ana.costa@ufpe.br</code> · almoxarife <code>joao.silva@ufpe.br</code> · solicitante CEO <code>rafael.moura@ufpe.br</code>
-          </div>
         </div>
       </section>
     </div>

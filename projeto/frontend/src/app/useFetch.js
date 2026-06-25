@@ -1,9 +1,5 @@
-// useFetch.js — hook simples de carregamento de dados.
-// Retorna { data, loading, error, reload, setData }. Refaz quando `deps` muda.
-//
-// Hook genérico de I/O: a lista de dependências vem do chamador (spread) e o
-// setState dispara a sincronização com a API. Essas regras do plugin são
-// desativadas só neste arquivo utilitário; o resto do código mantém-nas ativas.
+// Hook de carregamento de dados. Retorna { data, loading, error, reload,
+// setData } e refaz a requisição quando `deps` muda.
 /* eslint-disable react-hooks/use-memo */
 import { useCallback, useEffect, useRef, useState } from "react";
 

@@ -30,7 +30,7 @@ export default function AppShell() {
         <div className="shell-brand">
           {!collapsed && (
             <span className="shell-brand-mark">
-              CEO<span>·UFPE</span>
+              HO<span>·UFPE</span>
             </span>
           )}
           <button

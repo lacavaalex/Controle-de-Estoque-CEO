@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estudo de falas — Apresentação Controle de Estoque HO/UFPE</title>
+<style>
+  :root {
+    --bordo: #7A0014;
+    --red: #DB1E2F;
+    --ink: #1c1a1a;
+    --ink-2: #4a4646;
+    --muted: #6b6b6b;
+    --line: #e6e1e1;
+    --surface: #fff;
+    --bg: #f6f3f2;
+    --ok: #1f7a3d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  header {
+    background: var(--bordo); color: #fff; padding: 28px 20px;
+  }
+  header .wrap { max-width: 820px; margin: 0 auto; }
+  header h1 { margin: 0 0 6px; font-size: 1.5rem; }
+  header p { margin: 0; opacity: 0.9; font-size: 0.95rem; }
+  main { max-width: 820px; margin: 0 auto; padding: 20px 20px 80px; }
+
+  .toolbar {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    background: var(--bg); padding: 14px 0; border-bottom: 1px solid var(--line);
+    margin-bottom: 18px;
+  }
+  .toolbar button {
+    font: inherit; cursor: pointer; border: 1px solid var(--line);
+    background: var(--surface); color: var(--ink-2); padding: 7px 12px;
+    border-radius: 8px;
+  }
+  .toolbar button:hover { border-color: #cfc8c8; }
+  .toolbar .spacer { flex: 1; }
+  .toolbar .progress { font-size: 0.85rem; color: var(--muted); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 12px; padding: 18px 20px; margin-bottom: 16px;
+    scroll-margin-top: 80px;
+  }
+  .card .tag {
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    color: #fff; background: var(--red); padding: 2px 9px; border-radius: 20px;
+    vertical-align: middle;
+  }
+  .card .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%; background: var(--bordo);
+    color: #fff; font-weight: 700; font-size: 0.85rem; margin-right: 10px;
+  }
+  .card h2 { font-size: 1.12rem; margin: 0 0 4px; display: flex; align-items: center; }
+  .card h2 .title-txt { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .card .onscreen {
+    font-size: 0.85rem; color: var(--muted); margin: 0 0 14px 38px;
+  }
+
+  .fala {
+    margin: 0 0 0 38px; padding: 14px 16px; border-left: 3px solid var(--red);
+    background: #fbf7f7; border-radius: 0 8px 8px 0; font-size: 1.02rem;
+  }
+  .fala p { margin: 0 0 10px; }
+  .fala p:last-child { margin-bottom: 0; }
+  .fala strong { color: var(--bordo); }
+
+  .hint {
+    margin: 12px 0 0 38px; font-size: 0.88rem; color: var(--ink-2);
+  }
+  .hint summary {
+    cursor: pointer; color: var(--red); font-weight: 600; user-select: none;
+  }
+  .hint ul { margin: 8px 0 0; padding-left: 18px; }
+  .hint li { margin-bottom: 3px; }
+
+  /* Modo "treino": esconde o texto da fala para você tentar de cabeça. */
+  body.treino .fala { filter: blur(5px); transition: filter .12s; cursor: pointer; }
+  body.treino .fala:hover, body.treino .fala.reveal { filter: none; }
+  body.treino .fala::after {
+    content: "treino — passe o mouse ou toque para ver"; display: none;
+  }
+
+  .done-row { margin: 12px 0 0 38px; }
+  .done-row label { font-size: 0.85rem; color: var(--muted); cursor: pointer; user-select: none; }
+  .card.is-done { opacity: 0.6; }
+  .card.is-done h2 .title-txt::after { content: " ✓"; color: var(--ok); }
+
+  .note {
+    background: #fff6e6; border: 1px solid #f0dca8; border-radius: 10px;
+    padding: 12px 16px; font-size: 0.9rem; color: #5b4a1f; margin-bottom: 18px;
+  }
+  footer { max-width: 820px; margin: 0 auto; padding: 0 20px 60px; color: var(--muted); font-size: 0.85rem; }
+  kbd { background: #efeaea; border: 1px solid #ddd; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font-size: 0.8em; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Estudo de falas — Apresentação Final</h1>
+    <p>Controle de Estoque HO / UFPE · roteiro de fala slide a slide para ensaiar em voz alta.</p>
+  </div>
+</header>
+
+<main>
+  <div class="note">
+    Como usar: leia a <strong>fala sugerida</strong> de cada slide em voz alta 2–3 vezes. Ela é um
+    ponto de partida — adapte para o seu jeito de falar, não decore palavra por palavra.
+    Use <strong>Modo treino</strong> para borrar o texto e testar se você lembra; clique em cada
+    fala para revelar. Marque <strong>“ensaiei”</strong> para acompanhar o progresso (fica salvo neste navegador).
+  </div>
+
+  <div class="toolbar">
+    <button id="btn-treino" type="button">🎯 Modo treino: desligado</button>
+    <button id="btn-hints" type="button">💡 Mostrar todas as colas</button>
+    <button id="btn-reset" type="button">↺ Limpar progresso</button>
+    <span class="spacer"></span>
+    <span class="progress" id="progress">0 / 0 ensaiados</span>
+  </div>
+
+  <!-- 0 -->
+  <section class="card" id="s0">
+    <h2><span class="num">0</span><span class="title-txt">Capa &amp; abertura</span></h2>
+    <p class="onscreen">Na tela: título do projeto, a equipe e a data.</p>
+    <div class="fala">
+      <p>“Boa tarde. Nós somos o Grupo 5 de Desenvolvimento de Software, e o nosso projeto é um
+      <strong>sistema de controle de estoque para o Hospital Odontológico da UFPE</strong>.”</p>
+      <p>“Antes de mostrar telas, eu queria contar isso como uma <strong>história de descoberta</strong>:
+      como a gente recebeu o problema, descobriu que ele não era bem o que diziam, e o que a gente
+      construiu a partir disso. Não é só um CRUD.”</p>
+    </div>
+    <details class="hint"><summary>Colar de bolso</summary>
+      <ul>
+        <li>Tom: calmo, convidativo. Esse slide define o clima.</li>
+        <li>Não ler a lista de nomes — só apresentar “Grupo 5”.</li>
+        <li>Plantar a palavra “descoberta”: ela volta no slide 2.</li>
+      </ul>
+    </details>
+    <div class="done-row"><label><input type="checkbox" data-done> ensaiei este slide</label></div>
+  </section>
+
+  <!-- 1 -->
+  <section class="card" id="s1">
+    <h2><span class="num">1</span><span class="title-txt">O problema <span class="tag">Item 1</span></span></h2>
+    <p class="onscreen">Título na tela: “Um estoque que vive em planilhas”. Mostra: divergência registrado × físico, perda por vencimento, pedidos por e-mail/papel.</p>
+    <div class="fala">
+      <p>“Hoje o hospital controla o estoque em <strong>planilhas de Excel</strong>. Isso traz três dores:
+      o estoque <strong>registrado não bate com o físico</strong>, materiais <strong>vencem sem ninguém ser avisado</strong>,
+      e os pedidos chegam soltos, por <strong>e-mail e papel</strong>.”</p>
+      <p>“E foi difícil até levantar isso: o acesso ao pessoal da Dispensação foi limitado, a gente
+      conseguiu pouca informação no começo — e parte do que recebemos estava errada. Isso nos levou
+      direto ao próximo slide.”</p>
+    </div>
+    <details class="hint"><summary>Colar de bolso</summary>
+      <ul>
+        <li>Narrar a dificuldade de contato com o stakeholder — é honesto e prepara a virada.</li>
+        <li>Gancho: “parte da informação estava errada” → puxa o insight do slide 2.</li>
+      </ul>
+    </details>
+    <div class="done-row"><label><input type="checkbox" data-done> ensaiei este slide</label></div>
+  </section>
+
+  <!-- 2 -->
+  <section class="card" id="s2">
+    <h2><span class="num">2</span><span class="title-txt">O insight que mudou o projeto <span class="tag">Item 1</span></span></h2>
+    <p class="onscreen">Título na tela: “O insight que mudou o escopo”. Mostra: o CEO não tem estoque próprio; HO é a fonte de verdade; CEO é célula-piloto.</p>
+    <div class="fala">
+      <p>“Diziam para a gente: <em>‘o CEO não tem controle de estoque’</em>. Investigando, a gente
+      descobriu uma coisa diferente: o CEO <strong>não tem estoque próprio</strong>. Quem abastece os
+      setores é o HO, a Unidade de Dispensação.”</p>
+      <p>“Isso mudou o projeto inteiro. A gente reposicionou: o <strong>HO é a fonte de verdade</strong>
+      do estoque, e o <strong>CEO é a primeira célula-piloto</strong>. A arquitetura ficou modular, então
+      depois dá pra acoplar outras clínicas — Endodontia, Cirurgia — sem refazer tudo.”</p>
+      <p>“O valor de engenharia aqui foi ter <strong>questionado a premissa do cliente</strong> em vez de só
+      obedecer. E por isso a gente documentou tudo, para quem assumir o projeto depois.”</p>
+    </div>
+    <details class="hint"><summary>Colar de bolso</summary>
+      <ul>
+        <li>Este é o slide-chave da narrativa. Falar devagar.</li>
+        <li>Ênfase em “questionamos a premissa” — é o que diferencia o trabalho.</li>
+        <li>Mencionar a documentação proposital para o futuro.</li>
+      </ul>
+    </details>
+    <div class="done-row"><label><input type="checkbox" data-done> ensaiei este slide</label></div>
+  </section>
+
+  <!-- 3 -->
+  <section class="card" id="s3">
+    <h2><span class="num">3</span><span class="title-txt">Visão geral da solução <span class="tag">Item 1</span></span></h2>
+    <p class="onscreen">Título na tela: “O que o sistema entrega”. Mostra: catálogo × lotes, pedidos multi-item (FEFO), estoque do CEO automático, dashboards por perfil, 4 perfis, agente de e-mail.</p>
+    <div class="fala">
+      <p>“Em uma visão geral, o sistema tem: <strong>catálogo com lotes</strong> — cada produto tem vários
+      lotes, com validade; <strong>pedidos com vários itens</strong>, que podem ser atendidos parcialmente
+      seguindo FEFO; e o <strong>estoque do CEO que se alimenta sozinho</strong> conforme o HO expede.”</p>
+      <p>“Tem ainda <strong>dashboards por perfil</strong>, <strong>quatro perfis de acesso</strong>, e um
+      <strong>agente de e-mail</strong> que eu deixo para o final, porque ele é a parte mais original.”</p>
+    </div>
+    <details class="hint"><summary>Colar de bolso</summary>
+      <ul>
+        <li>É só panorama — não aprofundar nada agora.</li>
+        <li>Plantar a “semente” do agente é UX, que volta no fecho.</li>
+      </ul>
+    </details>
+    <div class="done-row"><label><input type="checkbox" data-done> ensaiei este slide</label></div>
+  </section>
+
+  <!-- 4 -->
+  <section class="card" id="s4">
+    <h2><span class="num">4</span><span class="title-txt">Gestão do trabalho <span class="tag">Item 2</span></span></h2>
+    <p class="onscreen">Título na tela: “Gestão e fluxo de desenvolvimento”. Mostra: Scrum/Kanban no Jira, épicos → user stories, PR + code review obrigatório, CI rodando 190 testes por PR.</p>
+    <div class="fala">
+      <p>“Para organizar 7 pessoas, a gente usou <strong>Scrum com board Kanban no Jira</strong>. O backlog
+      vai de <strong>épicos a user stories</strong>, e o trabalho foi dividido em pacotes.”</p>
+      <p>“No código, a regra foi: nada entra direto na main. Tudo passa por <strong>Pull Request</strong>,
+      com <strong>code review obrigatório</strong>, e a <strong>CI no GitHub Actions roda os 190 testes</strong>
+      a cada PR. Isso é o que manteve a qualidade com tanta gente mexendo junto.”</p>
+    </div>
+    <details class="hint"><summary>Colar de bolso</summary>
+      <ul>
+        <li>Se der, mostrar o board do Jira ao vivo ou um print.</li>
+        <li>Mensagem central: PR + review + CI = disciplina, não acaso.</li>
+      </ul>
+    </details>
+    <div class="done-row"><label><input type="checkbox" data-done> ensaiei este slide</label></div>
+  </section>
+
+  <!-- 5 -->
+  <section class="card" id="s5">
+    <h2><span class="num">5</span><span class="title-txt">Requisitos &amp; rastreabilidade <span class="tag">Item 3</span></span></h2>
+    <p class="onscreen">Título na tela: “Requisitos &amp; rastreabilidade”. Mostra: 8 épicos, 37 user stories, 100% rastreadas (RF · US · código); Gherkin + MoSCoW.</p>
+    <div class="fala">
+      <p>“Os requisitos viraram <strong>8 épicos e 37 user stories</strong>, todas no MVP. Elas estão escritas
+      em <strong>Gherkin</strong> — dado, quando, então — e priorizadas por <strong>MoSCoW</strong>.”</p>
+      <p>“O ponto que eu queria destacar é a <strong>rastreabilidade</strong>: cada regra de negócio, tipo a
+      RN10, é <strong>citada no próprio código</strong> que a implementa. Dá pra sair da user story e chegar
+      na linha de código — e isso liga direto no próximo slide, de arquitetura.”</p>
+    </div>
+    <details class="hint"><summary>Colar de bolso</summary>
+      <ul>
+        <li>Se puder, abrir uma user story real com Gherkin no site/docs.</li>
+        <li>Gancho: “RN10 vira código em domain/pedido.ts”.</li>
+      </ul>
+    </details>
+    <div class="done-row"><label><input type="checkbox" data-done> ensaiei este slide</label></div>
+  </section>
+
+  <!-- 6 -->
+  <section class="card" id="s6">
+    <h2><span class="num">6</span><span class="title-txt">Arquitetura (camadas) <span class="tag">Item 4</span></span></h2>
+    <p class="onscreen">Título na tela: “Arquitetura em camadas”. Mostra: monólito; Ports &amp; Adapters (controller → service → interface → repositório); domínio puro; aplicação pragmática.</p>
+    <div class="fala">
+      <p>“A arquitetura é um <strong>monólito</strong>, que foi a escolha certa pro escopo e pro prazo. Por
+      dentro, ele segue <strong>Ports &amp; Adapters</strong>: o fluxo vai de
+      <strong>controller → service → interface → repositório</strong>.”</p>
+      <p>“A sacada é a <strong>inversão de dependência</strong>: o service depende de uma
+      <strong>interface</strong>, não do Postgres direto. O banco é só um adaptador plugado por trás. Isso deixa
+      o <strong>domínio puro e testável</strong>, e permitiu 7 pessoas trabalharem em paralelo sem colidir.”</p>
+      <p>“E a gente foi <strong>pragmático, não dogmático</strong>: tem dois adapters pra mesma porta, o que
+      prova a abstração; mas nas transações multi-tabela a gente usa o ORM direto — uma exceção
+      consciente, porque abstrair ali daria complexidade sem ganho.”</p>
+    </div>
+    <details class="hint"><summary>Colar de bolso (inclui resposta sobre “é hexagonal puro?”)</summary>
+      <ul>
+        <li>Explicar a inversão de dependência com a mão: service → interface ← banco.</li>
+        <li>Por que importa: testabilidade + trabalho paralelo sem conflito.</li>
+        <li>Se perguntarem “é hexagonal puro?”: <strong>não, é pragmático</strong> — e a gente sabe onde e por que abriu exceção (transação multi-tabela usa <code>db.transaction</code> direto).</li>
+      </ul>
+    </details>
+    <div class="done-row"><label><input type="checkbox" data-done> ensaiei este slide</label></div>
+  </section>
+
+  <!-- 7 -->
+  <section class="card" id="s7">
+    <h2><span class="num">7</span><span class="title-txt">O coração: status derivado <span class="tag">Item 4</span></span></h2>
+    <p class="onscreen">Título na tela: “Status do pedido, derivado”. Mostra: pedido = cabeçalho + N itens; status DERIVADO dos itens; máquina de estados de 7 regras por precedência (função pura); nunca fica inconsistente.</p>
+    <div class="fala">
+      <p>“Essa é a melhor evidência técnica do projeto. Um pedido é um <strong>cabeçalho com vários
+      itens</strong>, e cada item pode ser atendido integral, parcial ou ficar em falta.”</p>
+      <p>“O status do pedido <strong>nunca é digitado à mão</strong>: ele é <strong>derivado dos itens</strong>,
+      por uma <strong>função pura com 7 regras de precedência</strong>. A consequência é que o status
+      <strong>nunca fica inconsistente</strong> — a verdade são sempre os itens.”</p>
+      <p>“É o debate clássico de ‘estado calculado versus estado armazenado’, e a gente escolheu calcular.”</p>
+    </div>
+    <details class="hint"><summary>Colar de bolso</summary>
+      <ul>
+        <li>Se perguntarem, abrir <code>domain/pedido.ts</code> → <code>statusDerivadoDoPedido()</code> ao vivo.</li>
+        <li>Frase de efeito: “a verdade são os itens; o cabeçalho é só um reflexo”.</li>
+      </ul>
+    </details>
+    <div class="done-row"><label><input type="checkbox" data-done> ensaiei este slide</label></div>
+  </section>
+
+  <!-- 8 -->
+  <section class="card" id="s8">
+    <h2><span class="num">8</span><span class="title-txt">Decisões documentadas (ADRs) <span class="tag">Item 4</span></span></h2>
+    <p class="onscreen">Na tela: tabela de ADRs (auth JWT+RBAC, Drizzle, camadas, status derivado, Docker, IA no fluxo) com alternativas rejeitadas.</p>
+    <div class="fala">
+      <p>“Cada decisão importante de arquitetura virou um <strong>ADR</strong> — um registro com o contexto,
+      as <strong>alternativas que a gente rejeitou</strong> e as consequências. São <strong>11 ADRs no total</strong>,
+      e cada um aponta para o código correspondente.”</p>
+      <p>“A ideia é deixar claro que nada foi ‘saiu assim’: por que JWT e não sessão, por que Drizzle e não
+      Prisma, por que monólito. Tudo tem o porquê escrito.”</p>
+    </div>
+    <details class="hint"><summary>Colar de bolso</summary>
+      <ul>
+        <li>Mostrar que decisão tem alternativa considerada — maturidade de engenharia.</li>
+        <li>Honestidade: estavam subnotificadas e foram consolidadas para a entrega.</li>
+      </ul>
+    </details>
+    <div class="done-row"><label><input type="checkbox" data-done> ensaiei este slide</label></div>
+  </section>
+
+  <!-- 9 -->
+  <section class="card" id="s9">
+    <h2><span class="num">9</span><span class="title-txt">🎬 Demonstração <span class="tag">Item 7</span></span></h2>
+    <p class="onscreen">Na tela: separador da demo. Aqui você narra enquanto alguém opera. Alvo ~3,5 min. Roteiro completo em roteiro-demo.md.</p>
+    <div class="fala">
+      <p><strong>Abertura da demo:</strong> “Agora deixa eu mostrar isso funcionando. São dois fluxos rápidos:
+      primeiro um <strong>pedido de ponta a ponta</strong>, e depois o <strong>controle de validade dos lotes</strong>.”</p>
+      <p><strong>Fluxo A (pedido):</strong> “Entro como <strong>solicitante do CEO</strong> e crio um pedido com
+      alguns itens — incluindo um item sem estoque, de propósito. Envio: o pedido nasce
+      <strong>pendente</strong>. Agora troco para o <strong>almoxarife</strong>, processo item a item escolhendo o
+      lote — repara que a sugestão segue <strong>FEFO</strong>, o que vence primeiro sai primeiro. Atendo um
+      integral e outro parcial. No fim, o <strong>status do pedido foi calculado sozinho</strong>, e os itens
+      <strong>entraram automaticamente no estoque do CEO</strong>.”</p>
+      <p><strong>Fluxo B (validade):</strong> “No estoque do HO, dá pra ver os <strong>status de validade</strong>:
+      tem lote vencido e vencendo. Eu cadastro um lote novo, a quantidade sobe; depois
+      <strong>segrego o lote vencido</strong> num clique e ele sai do estoque ativo — e aí ele
+      <strong>não aparece mais</strong> pra montar uma expedição.”</p>
+    </div>
+    <details class="hint"><summary>Colar de bolso + plano B</summary>
+      <ul>
+        <li><strong>Tempo!</strong> ~3,5 min no total. Não improvisar fluxo novo no palco.</li>
+        <li>Verbalizar sempre: status derivado, FEFO, entrada automática no CEO.</li>
+        <li>Se travar: F5 e repetir o passo; ou cair para os prints; ou mostrar a triagem via <code>POST /rascunhos</code>.</li>
+        <li>Roteiro literal e detalhado: <code>roteiro-demo.md</code>.</li>
+      </ul>
+    </details>
+    <div class="done-row"><label><input type="checkbox" data-done> ensaiei este slide</label></div>
+  </section>
+
+  <!-- 10 -->
+  <section class="card" id="s10">
+    <h2><span class="num">10</span><span class="title-txt">Qualidade: testes <span class="tag">Item 5</span></span></h2>
+    <p class="onscreen">Título na tela: “Testes automatizados”. Mostra: 190 testes (137 backend + 53 frontend); backend contra banco real; domínio puro em ms; CI verde por PR.</p>
+    <div class="fala">
+      <p>“De qualidade, a gente tem <strong>190 testes automatizados</strong>: 137 no backend e 53 no frontend.
+      O backend não testa só com mocks — ele testa contra um <strong>banco Postgres real</strong>, então cobre
+      a persistência de verdade.”</p>
+      <p>“E como o domínio é puro, as <strong>regras críticas rodam em milissegundos</strong>. Tudo isso é
+      executado na <strong>CI a cada PR</strong>, e precisa estar verde pra fazer merge.”</p>
+    </div>
+    <details class="hint"><summary>Colar de bolso (inclui resposta sobre Postman)</summary>
+      <ul>
+        <li>Mostrar a aba Actions do GitHub com o check verde.</li>
+        <li>Se perguntarem de Postman: “não usamos; 190 testes automatizados contra banco real são mais fortes e repetíveis”.</li>
+      </ul>
+    </details>
+    <div class="done-row"><label><input type="checkbox" data-done> ensaiei este slide</label></div>
+  </section>
+
+  <!-- 11 -->
+  <section class="card" id="s11">
+    <h2><span class="num">11</span><span class="title-txt">Qualidade: revisão &amp; refatoração <span class="tag">Item 5</span></span></h2>
+    <p class="onscreen">Título na tela: “Revisão &amp; refatoração”. Mostra: camadas de revisão (code review humano, /code-review, hook Impeccable, CI) + exemplos de refatoração.</p>
+    <div class="fala">
+      <p>“A qualidade veio de <strong>camadas de revisão</strong>: o <strong>code review humano</strong> no PR é a
+      autoridade final; tem revisão assistida da lógica, um <strong>hook que olha o design</strong> do frontend, e
+      a CI checando testes e tipos.”</p>
+      <p>“E teve refatoração de verdade. O exemplo mais forte: a <strong>regra de status foi extraída para o
+      domínio puro</strong>, e aí passou a ser reaproveitada tanto na criação de pedido quanto pelo agente.”</p>
+    </div>
+    <details class="hint"><summary>Colar de bolso</summary>
+      <ul>
+        <li>Mensagem: qualidade é processo, não sorte.</li>
+        <li>Exemplo concreto âncora: extrair o status para domínio puro.</li>
+      </ul>
+    </details>
+    <div class="done-row"><label><input type="checkbox" data-done> ensaiei este slide</label></div>
+  </section>
+
+  <!-- 12 -->
+  <section class="card" id="s12">
+    <h2><span class="num">12</span><span class="title-txt">Infraestrutura &amp; deploy <span class="tag">Item 6</span></span></h2>
+    <p class="onscreen">Título na tela: “Infraestrutura &amp; deploy”. Mostra: 4 containers (nginx, frontend, backend, Postgres); banco e backend sem porta exposta; subcaminho /estoque-ho; modular.</p>
+    <div class="fala">
+      <p>“A infraestrutura são <strong>4 containers</strong> orquestrados por Docker Compose: nginx, frontend,
+      backend e Postgres. Só o <strong>nginx fica exposto</strong> — o banco e o backend não têm porta aberta pra
+      fora, então a superfície de ataque é mínima.”</p>
+      <p>“A aplicação fica num <strong>subcaminho, /estoque-ho</strong>, no domínio compartilhado do CIn — o que
+      mantém tudo modular pra outras clínicas. Sendo honesto: a stack está <strong>pronta e validada
+      localmente</strong>; publicar no servidor depende de acesso da TI, mas é essencialmente um comando.”</p>
+    </div>
+    <details class="hint"><summary>Colar de bolso</summary>
+      <ul>
+        <li>Ser honesto: roda local, ainda não publicado no servidor CIn (depende de TI). Não esconder.</li>
+        <li>Diferencial: modularidade (replicar para outra clínica).</li>
+      </ul>
+    </details>
+    <div class="done-row"><label><input type="checkbox" data-done> ensaiei este slide</label></div>
+  </section>
+
+  <!-- 13 -->
+  <section class="card" id="s13">
+    <h2><span class="num">13</span><span class="title-txt">O diferencial: o agente é UX <span class="tag">Fecho</span></span></h2>
+    <p class="onscreen">Título na tela: “O agente de e-mail é UX, não tecnologia” (slide escuro). Mostra: solicitantes pedem ~1×/mês; o agente lê o e-mail que eles já mandam e cria o rascunho; almoxarife revisa (human-in-the-loop); ADR-0004.</p>
+    <div class="fala">
+      <p>“Pra fechar, o diferencial. Os solicitantes pedem material mais ou menos <strong>uma vez por mês</strong>.
+      Obrigar alguém que usa o sistema tão pouco a aprender uma tela inteira é <strong>fricção alta</strong>.”</p>
+      <p>“Então a gente inverteu o ônus: o <strong>agente lê o e-mail que a pessoa já manda</strong> e transforma
+      em um <strong>rascunho de pedido</strong>. O almoxarife só <strong>revisa e aprova</strong> — é
+      human-in-the-loop, ninguém aprova nada no automático.”</p>
+      <p>“O ponto é que isso é uma <strong>decisão de experiência, não de tecnologia</strong>. A gente não usou
+      IA porque é moda; usou pra <strong>tirar o trabalho de quem não devia ter esse trabalho</strong>. O backend
+      e a triagem estão prontos; falta só a caixa de e-mail institucional.”</p>
+    </div>
+    <details class="hint"><summary>Colar de bolso</summary>
+      <ul>
+        <li>Enquadrar como UX o tempo todo — não como “usamos IA”.</li>
+        <li>Honesto e ambicioso: pronto no possível; o que falta é infra (e-mail), não código.</li>
+      </ul>
+    </details>
+    <div class="done-row"><label><input type="checkbox" data-done> ensaiei este slide</label></div>
+  </section>
+
+  <!-- 14 -->
+  <section class="card" id="s14">
+    <h2><span class="num">14</span><span class="title-txt">Encerramento &amp; perguntas</span></h2>
+    <p class="onscreen">Na tela: “Obrigado! Perguntas?” + link da documentação.</p>
+    <div class="fala">
+      <p>“É isso. A gente saiu de uma planilha de Excel e de uma premissa errada, e entregou um sistema
+      modular, testado e documentado, com um agente que repensa a experiência de quem pede material.
+      <strong>Obrigado</strong> — e estamos abertos a perguntas.”</p>
+    </div>
+    <details class="hint"><summary>Tenha à mão para o Q&amp;A</summary>
+      <ul>
+        <li>Site de docs, board do Jira, aba Actions (CI verde) e o <code>pedido.ts</code> abertos.</li>
+        <li>Perguntas prováveis e respostas prontas: <code>roteiro-demo.md</code> (Postman, monólito, consistência do status, uso de IA, produção).</li>
+      </ul>
+    </details>
+    <div class="done-row"><label><input type="checkbox" data-done> ensaiei este slide</label></div>
+  </section>
+</main>
+
+<footer>
+  Gerado para ensaio próprio — pareie com os slides (<code>slides.html</code>, tecla <kbd>S</kbd> abre as notas)
+  e o <code>roteiro-demo.md</code> para a demonstração. As falas são sugestões: fale do seu jeito.
+</footer>
+
+<script>
+  // Tudo client-side e offline. Progresso salvo em localStorage.
+  var KEY = "estudo-falas-done-v1";
+  var cards = Array.prototype.slice.call(document.querySelectorAll(".card"));
+  var progressEl = document.getElementById("progress");
+
+  function loadDone() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; }
+  }
+  function saveDone(state) {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  }
+  function refreshProgress() {
+    var total = cards.length;
+    var done = cards.filter(function (c) { return c.classList.contains("is-done"); }).length;
+    progressEl.textContent = done + " / " + total + " ensaiados";
+  }
+
+  var state = loadDone();
+  cards.forEach(function (card) {
+    var box = card.querySelector("input[data-done]");
+    if (!box) return;
+    if (state[card.id]) { box.checked = true; card.classList.add("is-done"); }
+    box.addEventListener("change", function () {
+      card.classList.toggle("is-done", box.checked);
+      state[card.id] = box.checked;
+      saveDone(state);
+      refreshProgress();
+    });
+  });
+  refreshProgress();
+
+  // Modo treino: borra as falas; clicar revela uma a uma.
+  var btnTreino = document.getElementById("btn-treino");
+  btnTreino.addEventListener("click", function () {
+    var on = document.body.classList.toggle("treino");
+    btnTreino.textContent = on ? "🎯 Modo treino: LIGADO" : "🎯 Modo treino: desligado";
+    if (!on) {
+      document.querySelectorAll(".fala.reveal").forEach(function (f) { f.classList.remove("reveal"); });
+    }
+  });
+  document.querySelectorAll(".fala").forEach(function (f) {
+    f.addEventListener("click", function () {
+      if (document.body.classList.contains("treino")) f.classList.toggle("reveal");
+    });
+  });
+
+  // Abrir/fechar todas as colas de uma vez.
+  var btnHints = document.getElementById("btn-hints");
+  var hintsOpen = false;
+  btnHints.addEventListener("click", function () {
+    hintsOpen = !hintsOpen;
+    document.querySelectorAll("details.hint").forEach(function (d) { d.open = hintsOpen; });
+    btnHints.textContent = hintsOpen ? "💡 Esconder todas as colas" : "💡 Mostrar todas as colas";
+  });
+
+  // Limpar progresso.
+  document.getElementById("btn-reset").addEventListener("click", function () {
+    state = {};
+    saveDone(state);
+    cards.forEach(function (c) {
+      c.classList.remove("is-done");
+      var b = c.querySelector("input[data-done]"); if (b) b.checked = false;
+    });
+    refreshProgress();
+  });
+</script>
+</body>
+</html>
