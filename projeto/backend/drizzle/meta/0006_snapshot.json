@@ -1,0 +1,1111 @@
+{
+  "id": "be1c668a-cf32-4e58-9666-655db6279191",
+  "prevId": "582a7a91-74a1-4b3c-9280-72347ff7fbd2",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.item_do_pedido": {
+      "name": "item_do_pedido",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "pedido_id": {
+          "name": "pedido_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "produto_id": {
+          "name": "produto_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "descricao_livre": {
+          "name": "descricao_livre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "qtd_solicitada": {
+          "name": "qtd_solicitada",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "qtd_expedida": {
+          "name": "qtd_expedida",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lote_expedido_id": {
+          "name": "lote_expedido_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unidade": {
+          "name": "unidade",
+          "type": "unidade",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status_item": {
+          "name": "status_item",
+          "type": "status_item",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pendente'"
+        },
+        "motivo_divergencia": {
+          "name": "motivo_divergencia",
+          "type": "motivo_divergencia",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "observacao_motivo": {
+          "name": "observacao_motivo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "item_pai_id": {
+          "name": "item_pai_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "processado_por_id": {
+          "name": "processado_por_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "data_processamento": {
+          "name": "data_processamento",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "item_do_pedido_pedido_id_pedido_id_fk": {
+          "name": "item_do_pedido_pedido_id_pedido_id_fk",
+          "tableFrom": "item_do_pedido",
+          "columnsFrom": [
+            "pedido_id"
+          ],
+          "tableTo": "pedido",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "item_do_pedido_produto_id_produto_id_fk": {
+          "name": "item_do_pedido_produto_id_produto_id_fk",
+          "tableFrom": "item_do_pedido",
+          "columnsFrom": [
+            "produto_id"
+          ],
+          "tableTo": "produto",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "item_do_pedido_lote_expedido_id_lote_id_fk": {
+          "name": "item_do_pedido_lote_expedido_id_lote_id_fk",
+          "tableFrom": "item_do_pedido",
+          "columnsFrom": [
+            "lote_expedido_id"
+          ],
+          "tableTo": "lote",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "item_do_pedido_processado_por_id_usuario_id_fk": {
+          "name": "item_do_pedido_processado_por_id_usuario_id_fk",
+          "tableFrom": "item_do_pedido",
+          "columnsFrom": [
+            "processado_por_id"
+          ],
+          "tableTo": "usuario",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "item_qtd_solicitada_minima": {
+          "name": "item_qtd_solicitada_minima",
+          "value": "\"item_do_pedido\".\"qtd_solicitada\" >= 1"
+        },
+        "item_qtd_expedida_nao_negativa": {
+          "name": "item_qtd_expedida_nao_negativa",
+          "value": "\"item_do_pedido\".\"qtd_expedida\" IS NULL OR \"item_do_pedido\".\"qtd_expedida\" >= 0"
+        },
+        "item_produto_xor_descricao": {
+          "name": "item_produto_xor_descricao",
+          "value": "(\"item_do_pedido\".\"produto_id\" IS NOT NULL) <> (\"item_do_pedido\".\"descricao_livre\" IS NOT NULL)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.lote": {
+      "name": "lote",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "produto_id": {
+          "name": "produto_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "setor_id": {
+          "name": "setor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "numero_lote": {
+          "name": "numero_lote",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fabricacao": {
+          "name": "fabricacao",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "validade": {
+          "name": "validade",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantidade": {
+          "name": "quantidade",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "qtd_danificada": {
+          "name": "qtd_danificada",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "obs_danificada": {
+          "name": "obs_danificada",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "estado_lote",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'ativo'"
+        },
+        "data_segregacao": {
+          "name": "data_segregacao",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "observacao_segregacao": {
+          "name": "observacao_segregacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "lote_produto_setor_numero_unico": {
+          "name": "lote_produto_setor_numero_unico",
+          "columns": [
+            {
+              "expression": "produto_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "setor_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "numero_lote",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "lote_produto_id_produto_id_fk": {
+          "name": "lote_produto_id_produto_id_fk",
+          "tableFrom": "lote",
+          "columnsFrom": [
+            "produto_id"
+          ],
+          "tableTo": "produto",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "lote_setor_id_setor_id_fk": {
+          "name": "lote_setor_id_setor_id_fk",
+          "tableFrom": "lote",
+          "columnsFrom": [
+            "setor_id"
+          ],
+          "tableTo": "setor",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "lote_quantidade_nao_negativa": {
+          "name": "lote_quantidade_nao_negativa",
+          "value": "\"lote\".\"quantidade\" >= 0"
+        },
+        "lote_segregado_tem_data": {
+          "name": "lote_segregado_tem_data",
+          "value": "(\"lote\".\"estado\" <> 'segregado') OR (\"lote\".\"data_segregacao\" IS NOT NULL)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.movimentacao": {
+      "name": "movimentacao",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "tipo_movimentacao",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lote_id": {
+          "name": "lote_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "produto_id": {
+          "name": "produto_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantidade": {
+          "name": "quantidade",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "setor_origem_id": {
+          "name": "setor_origem_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "setor_destino_id": {
+          "name": "setor_destino_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "responsavel_id": {
+          "name": "responsavel_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data": {
+          "name": "data",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "pedido_id": {
+          "name": "pedido_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "observacao": {
+          "name": "observacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "movimentacao_lote_id_lote_id_fk": {
+          "name": "movimentacao_lote_id_lote_id_fk",
+          "tableFrom": "movimentacao",
+          "columnsFrom": [
+            "lote_id"
+          ],
+          "tableTo": "lote",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "movimentacao_produto_id_produto_id_fk": {
+          "name": "movimentacao_produto_id_produto_id_fk",
+          "tableFrom": "movimentacao",
+          "columnsFrom": [
+            "produto_id"
+          ],
+          "tableTo": "produto",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "movimentacao_setor_origem_id_setor_id_fk": {
+          "name": "movimentacao_setor_origem_id_setor_id_fk",
+          "tableFrom": "movimentacao",
+          "columnsFrom": [
+            "setor_origem_id"
+          ],
+          "tableTo": "setor",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "movimentacao_setor_destino_id_setor_id_fk": {
+          "name": "movimentacao_setor_destino_id_setor_id_fk",
+          "tableFrom": "movimentacao",
+          "columnsFrom": [
+            "setor_destino_id"
+          ],
+          "tableTo": "setor",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "movimentacao_responsavel_id_usuario_id_fk": {
+          "name": "movimentacao_responsavel_id_usuario_id_fk",
+          "tableFrom": "movimentacao",
+          "columnsFrom": [
+            "responsavel_id"
+          ],
+          "tableTo": "usuario",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "movimentacao_pedido_id_pedido_id_fk": {
+          "name": "movimentacao_pedido_id_pedido_id_fk",
+          "tableFrom": "movimentacao",
+          "columnsFrom": [
+            "pedido_id"
+          ],
+          "tableTo": "pedido",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pedido": {
+      "name": "pedido",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "setor_origem_id": {
+          "name": "setor_origem_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "setor_destino_id": {
+          "name": "setor_destino_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "solicitante_id": {
+          "name": "solicitante_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data_criacao": {
+          "name": "data_criacao",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "justificativa": {
+          "name": "justificativa",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "status_pedido",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pendente'"
+        },
+        "origem_canal": {
+          "name": "origem_canal",
+          "type": "origem_canal",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'sistema'"
+        },
+        "remetente_email": {
+          "name": "remetente_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remetente_nome": {
+          "name": "remetente_nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pedido_setor_origem_id_setor_id_fk": {
+          "name": "pedido_setor_origem_id_setor_id_fk",
+          "tableFrom": "pedido",
+          "columnsFrom": [
+            "setor_origem_id"
+          ],
+          "tableTo": "setor",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "pedido_setor_destino_id_setor_id_fk": {
+          "name": "pedido_setor_destino_id_setor_id_fk",
+          "tableFrom": "pedido",
+          "columnsFrom": [
+            "setor_destino_id"
+          ],
+          "tableTo": "setor",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "pedido_solicitante_id_usuario_id_fk": {
+          "name": "pedido_solicitante_id_usuario_id_fk",
+          "tableFrom": "pedido",
+          "columnsFrom": [
+            "solicitante_id"
+          ],
+          "tableTo": "usuario",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "pedido_justificativa_minima": {
+          "name": "pedido_justificativa_minima",
+          "value": "char_length(\"pedido\".\"justificativa\") >= 10"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.pedido_rascunho": {
+      "name": "pedido_rascunho",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "message_id": {
+          "name": "message_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email_cru": {
+          "name": "email_cru",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "json_extraido": {
+          "name": "json_extraido",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remetente_email": {
+          "name": "remetente_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remetente_nome": {
+          "name": "remetente_nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "confianca_geral": {
+          "name": "confianca_geral",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status_triagem": {
+          "name": "status_triagem",
+          "type": "status_triagem",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pendente'"
+        },
+        "tem_anexo": {
+          "name": "tem_anexo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "pedido_id": {
+          "name": "pedido_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "processado_em": {
+          "name": "processado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "pedido_rascunho_message_id_unico": {
+          "name": "pedido_rascunho_message_id_unico",
+          "columns": [
+            {
+              "expression": "message_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "pedido_rascunho_pedido_id_pedido_id_fk": {
+          "name": "pedido_rascunho_pedido_id_pedido_id_fk",
+          "tableFrom": "pedido_rascunho",
+          "columnsFrom": [
+            "pedido_id"
+          ],
+          "tableTo": "pedido",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.produto": {
+      "name": "produto",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "categoria": {
+          "name": "categoria",
+          "type": "categoria",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unidade": {
+          "name": "unidade",
+          "type": "unidade",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "estoque_minimo": {
+          "name": "estoque_minimo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "estoque_maximo": {
+          "name": "estoque_maximo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 9999
+        },
+        "localizacao": {
+          "name": "localizacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fornecedor": {
+          "name": "fornecedor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "produto_estoque_minimo_nao_negativo": {
+          "name": "produto_estoque_minimo_nao_negativo",
+          "value": "\"produto\".\"estoque_minimo\" >= 0"
+        },
+        "produto_estoque_maximo_nao_negativo": {
+          "name": "produto_estoque_maximo_nao_negativo",
+          "value": "\"produto\".\"estoque_maximo\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.setor": {
+      "name": "setor",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "tipo_setor",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email_institucional": {
+          "name": "email_institucional",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.usuario": {
+      "name": "usuario",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cargo": {
+          "name": "cargo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "perfil": {
+          "name": "perfil",
+          "type": "perfil",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "setor_id": {
+          "name": "setor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "avatar": {
+          "name": "avatar",
+          "type": "varchar(2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "senha_hash": {
+          "name": "senha_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "trocar_senha": {
+          "name": "trocar_senha",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "ativo": {
+          "name": "ativo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "usuario_email_unico": {
+          "name": "usuario_email_unico",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "usuario_setor_id_setor_id_fk": {
+          "name": "usuario_setor_id_setor_id_fk",
+          "tableFrom": "usuario",
+          "columnsFrom": [
+            "setor_id"
+          ],
+          "tableTo": "setor",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "usuario_email_ufpe": {
+          "name": "usuario_email_ufpe",
+          "value": "\"usuario\".\"email\" LIKE '%@ufpe.br'"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.categoria": {
+      "name": "categoria",
+      "schema": "public",
+      "values": [
+        "EPI",
+        "Anestésico",
+        "Material Restaurador",
+        "Instrumentais",
+        "Higienização",
+        "Material Cirúrgico",
+        "Equipamento",
+        "Outros"
+      ]
+    },
+    "public.estado_lote": {
+      "name": "estado_lote",
+      "schema": "public",
+      "values": [
+        "ativo",
+        "vencido",
+        "segregado"
+      ]
+    },
+    "public.motivo_divergencia": {
+      "name": "motivo_divergencia",
+      "schema": "public",
+      "values": [
+        "falta_estoque",
+        "racionalizacao_setor",
+        "lote_indisponivel",
+        "outros"
+      ]
+    },
+    "public.origem_canal": {
+      "name": "origem_canal",
+      "schema": "public",
+      "values": [
+        "sistema",
+        "email"
+      ]
+    },
+    "public.perfil": {
+      "name": "perfil",
+      "schema": "public",
+      "values": [
+        "gestor",
+        "almoxarife",
+        "solicitante",
+        "dentista"
+      ]
+    },
+    "public.status_item": {
+      "name": "status_item",
+      "schema": "public",
+      "values": [
+        "pendente",
+        "aguardando_reposicao",
+        "atendido_integral",
+        "atendido_parcial",
+        "nao_atendido"
+      ]
+    },
+    "public.status_pedido": {
+      "name": "status_pedido",
+      "schema": "public",
+      "values": [
+        "pendente",
+        "em_processamento",
+        "atendido_integral",
+        "atendido_parcial",
+        "nao_atendido",
+        "aguardando_reposicao"
+      ]
+    },
+    "public.status_triagem": {
+      "name": "status_triagem",
+      "schema": "public",
+      "values": [
+        "pendente",
+        "aprovado",
+        "descartado"
+      ]
+    },
+    "public.tipo_movimentacao": {
+      "name": "tipo_movimentacao",
+      "schema": "public",
+      "values": [
+        "entrada",
+        "saida",
+        "ajuste",
+        "consumo",
+        "segregacao"
+      ]
+    },
+    "public.tipo_setor": {
+      "name": "tipo_setor",
+      "schema": "public",
+      "values": [
+        "almoxarifado",
+        "destinatario"
+      ]
+    },
+    "public.unidade": {
+      "name": "unidade",
+      "schema": "public",
+      "values": [
+        "caixa",
+        "tubo",
+        "seringa",
+        "kit",
+        "pacote",
+        "rolo",
+        "unidade",
+        "frasco",
+        "bastão",
+        "folha",
+        "par"
+      ]
+    }
+  },
+  "schemas": {},
+  "views": {},
+  "sequences": {
+    "public.seq_movimentacao": {
+      "name": "seq_movimentacao",
+      "increment": "1",
+      "minValue": "1",
+      "maxValue": "9223372036854775807",
+      "startWith": "1",
+      "cache": "1",
+      "cycle": false,
+      "schema": "public"
+    },
+    "public.seq_pedido": {
+      "name": "seq_pedido",
+      "increment": "1",
+      "minValue": "1",
+      "maxValue": "9223372036854775807",
+      "startWith": "1",
+      "cache": "1",
+      "cycle": false,
+      "schema": "public"
+    }
+  },
+  "roles": {},
+  "policies": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

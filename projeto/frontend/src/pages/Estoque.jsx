@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useFetch } from "../app/useFetch.js";
 import { listarSetores } from "../api/setores.js";
@@ -320,9 +320,11 @@ export default function Estoque() {
                   {itens.map((p) => {
                     const estaExpandido = produtoExpandidoId === p.produtoId;
                     return (
-                      <tr key={p.produtoId} style={{ display: "contents" }}>
-                        <tr 
-                          style={{ cursor: ehSolicitante ? 'default' : 'pointer' }} 
+                      // Fragment, não <tr> envolvente: <tr> dentro de <tr> é HTML
+                      // inválido e o React 19 dropa o conteúdo da linha interna.
+                      <Fragment key={p.produtoId}>
+                        <tr
+                          style={{ cursor: ehSolicitante ? 'default' : 'pointer' }}
                           onClick={() => !ehSolicitante && setProdutoExpandidoId(estaExpandido ? null : p.produtoId)}
                           className={estaExpandido ? "selected-row" : ""}
                         >
@@ -338,7 +340,7 @@ export default function Estoque() {
                         {estaExpandido && !ehSolicitante && (
                           <DetalheLotes produtoId={p.produtoId} setorId={setorId} />
                         )}
-                      </tr>
+                      </Fragment>
                     );
                   })}
                 </tbody>

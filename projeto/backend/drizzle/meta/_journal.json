@@ -43,6 +43,13 @@
       "when": 1782265612583,
       "tag": "0005_ep08_pedido_rascunho",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1782348155071,
+      "tag": "0006_indices_e_trigger_wallyson",
+      "breakpoints": true
     }
   ]
 }
