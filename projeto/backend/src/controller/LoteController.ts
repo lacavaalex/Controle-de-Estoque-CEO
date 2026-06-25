@@ -125,4 +125,20 @@ export class LoteController {
       return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
+
+  // US-EP08-01 (ou US similar) — Remove lote para corrigir registros
+  async remover(req: Request, res: Response): Promise<Response> {
+    const loteId = Number(req.params.loteId);
+
+    try {
+      await this.loteService.removerLote(loteId);
+      return res.status(200).json({ mensagem: "Lote removido com sucesso" });
+    } catch (error) {
+      if (error instanceof Error) {
+        const status = error.message.includes("não encontrado") ? 404 : 400;
+        return res.status(status).json({ mensagem: error.message });
+      }
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
 }

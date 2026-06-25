@@ -208,6 +208,14 @@ router.post(
   (req, res) => loteController.consumir(req, res),
 );
 
+// US-EP08-01 (ou US similar) — Remover lote para corrigir registros
+router.delete(
+  "/lotes/:loteId",
+  auth,
+  exigir((id) => id.perfil === "gestor" || id.perfil === "almoxarife"),
+  (req, res) => loteController.remover(req, res),
+);
+
 // ─── Pedidos (EP03 expedição / EP04-01 criação) ─────────────────────────────
 
 // EP04-01 — criar pedido (solicitante/gestor do setor de origem — RN12).

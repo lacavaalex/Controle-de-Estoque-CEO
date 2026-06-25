@@ -73,3 +73,9 @@ export async function registrarEntradaLote(produtoId, payload) {
   const resposta = await api.post(`/produtos/${produtoId}/lotes`, payload);
   return resposta.data;
 }
+
+// US-EP08-01 — Remove um lote para correção de registros
+export async function removerLote(loteId) {
+  const resposta = await api.del(`/lotes/${loteId}`);
+  return resposta;
+}

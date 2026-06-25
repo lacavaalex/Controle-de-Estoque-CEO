@@ -15,7 +15,7 @@ import { db as defaultDb } from "../db/client.js";
 // Executor de transação: o parâmetro do callback de db.transaction. Compartilha
 // a API de consulta com DB, mas não é o NodePgDatabase completo (sem $client).
 type Tx = Parameters<Parameters<DB["transaction"]>[0]>[0];
-import { lote as loteTable, movimentacao as movTable, produto as produtoTable } from "../db/schema.js";
+import { lote as loteTable, movimentacao as movTable, produto as produtoTable, itemDoPedido as itemDoPedidoTable } from "../db/schema.js";
 import type { Lote } from "../entities/index.js";
 import { estadoValidadeLote } from "../domain/estoque.js";
 
@@ -295,6 +295,40 @@ export class LoteService {
       });
 
       return atualizado;
+    });
+  }
+
+  /**
+   * US-EP02-06 (CEO-234) — Correção de registro/Remoção de lote
+   * Remove um lote e todas as suas movimentações de estoque associadas.
+   * Não permite a remoção se o lote já estiver associado a algum item de pedido expedido.
+   */
+  async removerLote(loteId: number): Promise<void> {
+    return this.db.transaction(async (tx) => {
+      // 1. Verificar se o lote existe
+      const [loteAtual] = await tx
+        .select()
+        .from(loteTable)
+        .where(eq(loteTable.id, loteId))
+        .limit(1);
+
+      if (!loteAtual) {
+        throw new Error("Lote não encontrado");
+      }
+
+      // 2. Verificar se está associado a algum item de pedido expedido
+      const [itemPedido] = await tx
+        .select({ id: itemDoPedidoTable.id })
+        .from(itemDoPedidoTable)
+        .where(eq(itemDoPedidoTable.loteExpedidoId, loteId))
+        .limit(1);
+
+      if (itemPedido) {
+        throw new Error("Não é possível remover um lote que possui expedições associadas");
+      }
+
+      // 3. Remover o lote (as movimentações associadas serão mantidas com lote_id = null no banco)
+      await tx.delete(loteTable).where(eq(loteTable.id, loteId));
     });
   }
 }

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useFetch } from "../app/useFetch.js";
 import { listarSetores } from "../api/setores.js";
@@ -9,7 +10,8 @@ import {
   registrarConsumoLote, 
   ajustarSaldoLote,
   segregarLote,
-  segregadosDoSetor
+  segregadosDoSetor,
+  removerLote
 } from "../api/estoque.js";
 import { CATEGORIAS, STATUS_ESTOQUE, PERFIL } from "../api/constants.js";
 import { PageHead, StatusEstoque, TableSkeleton, ErrorState, EmptyState } from "../app/ui.jsx";
@@ -104,12 +106,26 @@ export default function Estoque() {
   // Componente que renderiza os lotes reais filhos sob a linha pai correspondente
   function DetalheLotes({ produtoId, setorId }) {
     const [exibirNovoLote, setExibirNovoLote] = useState(false);
+    const [loteParaRemover, setLoteParaRemover] = useState(null);
     const lotesReq = useFetch(
       () => lotesDoProduto(produtoId, setorId, true),
       [produtoId, setorId]
     );
 
     const lotes = (lotesReq.data ?? []).filter(l => l.estado !== 'segregado');
+
+    async function handleConfirmarRemover() {
+      if (!loteParaRemover) return;
+      try {
+        await removerLote(loteParaRemover.id);
+        alert("Lote removido com sucesso!");
+        setLoteParaRemover(null);
+        lotesReq.reload();
+        itensReq.reload();
+      } catch (err) {
+        alert(err.response?.data?.mensagem || "Erro ao remover lote");
+      }
+    }
 
     if (lotesReq.loading) {
       return (
@@ -198,6 +214,13 @@ export default function Estoque() {
                               Segregar
                             </button>
                           )}
+                          <button 
+                            className="btn btn-sm btn-danger" 
+                            style={{ marginLeft: "5px", padding: "2px 8px" }}
+                            onClick={(e) => { e.stopPropagation(); setLoteParaRemover(l); }}
+                          >
+                            Remover
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -206,6 +229,33 @@ export default function Estoque() {
               )
             )}
           </div>
+          
+          {/* Modal de Confirmação para Remoção de Lote */}
+          {loteParaRemover && createPortal(
+            <div className="modal-overlay" onClick={() => setLoteParaRemover(null)}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <h3 style={{ marginBottom: "var(--sp-2)" }}>Tem certeza?</h3>
+                <p style={{ color: "var(--ink-2)", marginBottom: "var(--sp-4)" }}>
+                  Esta ação é irreversível e excluirá permanentemente o lote <code>{loteParaRemover.numeroLote}</code>.
+                </p>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                  <button 
+                    className="btn btn-secondary" 
+                    onClick={() => setLoteParaRemover(null)}
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    className="btn btn-danger" 
+                    onClick={handleConfirmarRemover}
+                  >
+                    Remover
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )}
         </td>
       </tr>
     );

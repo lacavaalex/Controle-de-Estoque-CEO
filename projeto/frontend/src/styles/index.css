@@ -122,6 +122,30 @@ table.data td.num, table.data th.num { text-align: right; font-variant-numeric: 
 .empty { text-align: center; color: var(--ink-3); padding: var(--sp-7) var(--sp-4); }
 .empty h4 { color: var(--ink-2); margin-bottom: var(--sp-2); }
 
+/* ---- Modal Overlay & Content ---- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal-backdrop);
+}
+.modal-content {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-5);
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
 /* ---- Movimento reduzido ---- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }

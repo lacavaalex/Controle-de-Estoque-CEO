@@ -267,13 +267,12 @@ export const itemDoPedido = pgTable(
 );
 
 // ─── Movimentação (auditoria — RN11 / RNF07.1) ──────────────────────────────
-// INV01: referencia um Lote existente (FK NOT NULL).
+// INV01: referencia um Lote existente (FK).
 export const movimentacao = pgTable("movimentacao", {
   id: text("id").primaryKey(), // MOV-NNN
   tipo: tipoMovimentacaoEnum("tipo").notNull(),
   loteId: integer("lote_id")
-    .notNull()
-    .references(() => lote.id),
+    .references(() => lote.id, { onDelete: "set null" }),
   produtoId: integer("produto_id")
     .notNull()
     .references(() => produto.id),
