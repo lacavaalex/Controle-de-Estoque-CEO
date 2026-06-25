@@ -1,0 +1,149 @@
+site_name: Controle de Estoque — CEO/HO UFPE
+site_description: >-
+  Sistema de controle de estoque de materiais entre a Unidade de Dispensação (HO)
+  e o Centro de Especialidades Odontológicas (CEO) do Hospital Odontológico da UFPE.
+site_author: Grupo 5 — Engenharia de Software, CIn-UFPE
+
+# Publicado no GitHub Pages do fork. Ajuste se o repositório oficial mudar.
+site_url: https://lacavaalex.github.io/Controle-de-Estoque-CEO/
+repo_url: https://github.com/lacavaalex/Controle-de-Estoque-CEO
+repo_name: lacavaalex/Controle-de-Estoque-CEO
+edit_uri: edit/develop/docs/
+
+# Os .md já vivem em docs/. O MkDocs lê essa pasta direto — sem reescrever nada.
+docs_dir: docs
+
+# Conteúdo de processo/interno que fica no repo mas NÃO vira página do site
+# (prompts de trabalho, runbook operacional, READMEs de pasta redundantes com o
+# nav). Mantém o `mkdocs build --strict` limpo, sem avisos de "página fora do nav".
+exclude_docs: |
+  PO/README.md
+  db/README.md
+  relatorios/METAPROMPT-AGENTE-DISPENSACAO.md
+  relatorios/METAPROMPT-NOVA-SESSAO-2026-06-21.md
+  runbook-CEO-273-caixa-agente.md
+
+theme:
+  name: material
+  language: pt-BR
+  logo: assets/logo-cin.png
+  favicon: assets/logo-cin.png
+  # Paleta da identidade visual oficial do CIn (vermelho #DB1E2F).
+  # O Material define a cor primária por nome; ajustamos para o vermelho CIn
+  # via custom CSS (extra.css) para casar exatamente com #DB1E2F.
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Modo escuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Modo claro
+  font:
+    text: Montserrat        # substituta web da Proxima Nova (identidade CIn)
+    code: JetBrains Mono
+  features:
+    - navigation.tabs        # itens do professor viram abas no topo
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+    - toc.follow
+
+extra_css:
+  - assets/extra.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - footnotes
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      # Habilita diagramas Mermaid (DER, fluxos) renderizados no navegador.
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - search:
+      lang: pt
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Navegação organizada pelos 7 critérios de avaliação da entrega final.
+# Cada aba mapeia para um item que o professor pediu, facilitando a leitura.
+# ─────────────────────────────────────────────────────────────────────────────
+nav:
+  - Início: index.md
+
+  - 1. Problema & Visão:
+      - Contexto e problema: PO/01-discovery/01-contexto-e-problema.md
+      - Stakeholders: PO/01-discovery/02-stakeholders.md
+      - Jornada atual (as-is): PO/01-discovery/03-jornada-atual-as-is.md
+      - Visão do produto: PO/02-visao-escopo/01-visao-do-produto.md
+      - Escopo do MVP: PO/02-visao-escopo/02-escopo-mvp.md
+      - Personas: PO/03-personas-jornadas/01-personas.md
+      - Jornadas (to-be): PO/03-personas-jornadas/02-jornadas-to-be.md
+
+  - 2. Requisitos & Backlog:
+      - Requisitos funcionais: PO/04-requisitos/01-requisitos-funcionais.md
+      - Requisitos não-funcionais: PO/04-requisitos/02-requisitos-nao-funcionais.md
+      - Épicos: PO/05-backlog/01-epicos.md
+      - User Stories: PO/05-backlog/02-user-stories.md
+      - Roadmap: PO/07-roadmap-metricas/01-roadmap.md
+      - Métricas de sucesso: PO/07-roadmap-metricas/02-metricas-de-sucesso.md
+      - Riscos: PO/07-roadmap-metricas/03-riscos.md
+
+  - 3. Domínio & Regras:
+      - Glossário: PO/06-dominio-regras/01-glossario.md
+      - Regras de negócio: PO/06-dominio-regras/02-regras-de-negocio.md
+      - Modelo conceitual: PO/06-dominio-regras/03-modelo-conceitual.md
+      - Modelo de dados (DER): db/01-der-mermaid.md
+
+  - 4. Arquitetura & Decisões (ADRs):
+      - Visão geral: adr/index.md
+      - "ADR-0001 — PostgreSQL": adr/ADR-0001.md
+      - "ADR-0002 — Monólito": adr/ADR-0002.md
+      - "ADR-0003 — Configuração (.env)": adr/ADR-0003.md
+      - "ADR-0004 — Agente de e-mail (IMAP+LLM)": adr/ADR-0004.md
+      - "ADR-0005 — Auth JWT + RBAC": adr/ADR-0005.md
+      - "ADR-0006 — Drizzle ORM": adr/ADR-0006.md
+      - "ADR-0007 — Camadas (Ports & Adapters)": adr/ADR-0007.md
+      - "ADR-0008 — Pedido & status derivado": adr/ADR-0008.md
+      - "ADR-0009 — Frontend React + Vite": adr/ADR-0009.md
+      - "ADR-0010 — Docker & deploy": adr/ADR-0010.md
+      - "ADR-0011 — IA no fluxo de trabalho": adr/ADR-0011.md
+
+  - 5. Qualidade & Testes:
+      - Como testar (guia da equipe): qualidade/como-testar.md
+      - Integração contínua (CI): qualidade/ci.md
+
+  - 6. Infraestrutura & Deploy:
+      - Arquitetura de implantação: infra/deploy.md
+
+  - 7. Entrega & Relatórios:
+      - Status da entrega: relatorios/status-entrega-2026-06-23.md
+      - Roteiro da demonstração: apresentacao/roteiro-demo.md
+      - Slides da apresentação: apresentacao/index.md

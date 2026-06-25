@@ -1,0 +1,60 @@
+/* =============================================================================
+   Identidade visual CIn-UFPE para o site de documentação.
+   Cores extraídas do template oficial "Apresentação Padrão CIn-UFPE.pptx":
+     vermelho principal  #DB1E2F
+     vermelho escuro     #AF0421  (hover / estados pressionados)
+     preto institucional #231F20
+     cinza de texto      #595959
+   ========================================================================== */
+
+:root {
+  --cin-red: #DB1E2F;
+  --cin-red-dark: #AF0421;
+  --cin-black: #231F20;
+  --cin-gray: #595959;
+
+  /* Mapeia a paleta "custom" do Material para o vermelho CIn. */
+  --md-primary-fg-color: var(--cin-red);
+  --md-primary-fg-color--light: #e84a58;
+  --md-primary-fg-color--dark: var(--cin-red-dark);
+  --md-accent-fg-color: var(--cin-red-dark);
+  --md-accent-fg-color--transparent: rgba(219, 30, 47, 0.1);
+}
+
+/* Links e elementos de destaque seguem o vermelho CIn. */
+.md-typeset a {
+  color: var(--cin-red);
+}
+.md-typeset a:hover {
+  color: var(--cin-red-dark);
+}
+
+/* Cabeçalhos em preto institucional para contraste forte com o vermelho. */
+[data-md-color-scheme="default"] .md-typeset h1,
+[data-md-color-scheme="default"] .md-typeset h2 {
+  color: var(--cin-black);
+  font-weight: 700;
+}
+
+/* Barra superior e de navegação no vermelho da marca. */
+.md-header,
+.md-tabs {
+  background-color: var(--cin-red);
+}
+
+/* Tabelas (RFs, User Stories, ADRs) mais legíveis — cabeçalho vermelho suave. */
+.md-typeset table:not([class]) th {
+  background-color: rgba(219, 30, 47, 0.08);
+  color: var(--cin-black);
+  font-weight: 600;
+}
+
+/* Realce de "chips" de status usados nas páginas (Aceito, Pendente etc.). */
+.status-ok    { color: #1a7f37; font-weight: 600; }
+.status-warn  { color: #bf8700; font-weight: 600; }
+.status-block { color: var(--cin-red-dark); font-weight: 600; }
+
+/* Logo um pouco maior no header, já que tem texto ("Centro de Informática"). */
+.md-header__button.md-logo img {
+  height: 1.8rem;
+}
