@@ -17,11 +17,11 @@ import * as authApi from "../api/auth.js";
 describe("Login", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("mostra os campos e a dica de demonstração", () => {
+  it("mostra os campos e a marca do sistema", () => {
     renderApp(<Login />);
     expect(screen.getByLabelText(/e-mail/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/senha/i)).toBeInTheDocument();
-    expect(screen.getByText(/ceoufpe2026/)).toBeInTheDocument();
+    expect(screen.getByText(/Estoque HO/i)).toBeInTheDocument();
   });
 
   it("faz login com sucesso e chama a API com e-mail aparado", async () => {
