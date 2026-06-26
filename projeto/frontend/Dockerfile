@@ -8,13 +8,13 @@ ARG APP_BASE=/estoque-ho/
 ARG VITE_API_BASE=/estoque-ho/api
 ENV VITE_API_BASE=${VITE_API_BASE}
 
-COPY package.json package-lock.json ./
+COPY package*.json ./
 RUN npm ci
-
 COPY . .
-RUN npm run build -- --base="${APP_BASE}"
+RUN npm run build
 
-FROM nginx:1.27-alpine AS runtime
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=builder /app/dist /usr/share/nginx/html/estoque-ho
-EXPOSE 80
+# imagem final só para copiar o dist para /output
+FROM alpine:3.20
+WORKDIR /app
+COPY --from=build /app/dist /dist
+CMD ["sh", "-c", "rm -rf /output/* && cp -r /dist/. /output/"]

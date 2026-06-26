@@ -10,6 +10,7 @@ import react from '@vitejs/plugin-react'
 // Em produção/integração real, basta o backend habilitar CORS e apontar
 // VITE_API_BASE para a URL da API.
 export default defineConfig({
+  base:"/ho-estoque/",
   plugins: [react()],
   // Garante o runtime JSX automático (React 19) também nos arquivos de teste,
   // que o esbuild transforma sem passar pelo plugin-react.
