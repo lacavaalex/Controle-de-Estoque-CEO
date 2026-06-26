@@ -107,6 +107,10 @@ cd projeto/frontend && npm test     # telas e cliente de API (vitest)
 | **Contrato de API (FE↔BE)**| `docs/PO/07-roadmap-metricas/05-contrato-api.md`         |
 | Decisões de arquitetura    | `ADR-0001` … `ADR-0006` (raiz)                           |
 
+## Demonstração em Vídeo
+Para entender o funcionamento do sistema e o fluxo das funcionalidades integradas, assista ao vídeo de demonstração no YouTube:
+[Demonstração do Controle de Estoque](https://www.youtube.com/watch?v=1OhQthoOFMI)
+
 ## Status
 
 Projeto em desenvolvimento — disciplina de Desenvolvimento de Sistemas (UFPE),
