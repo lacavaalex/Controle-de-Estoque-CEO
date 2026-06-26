@@ -1,6 +1,6 @@
 # node:20-slim (Debian/glibc) e não alpine: o Vite 8 puxa o binário nativo do
 # lightningcss e em alpine (musl) o npm ci não resolve o .node — quebra o build.
-FROM node:20-slim AS builder
+FROM node:20-slim AS build
 WORKDIR /app
 
 # Subcaminho do deploy (precisa de barra no fim) e base da API que o front chama.
