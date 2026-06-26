@@ -35,6 +35,8 @@ services:
       - /opt/docker/frontends/projeto5:/output
     depends_on:
       - backend
+    networks:
+      - cin_proxy
     restart: "no"
 
 networks:
