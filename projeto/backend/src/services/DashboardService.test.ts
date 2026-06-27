@@ -281,6 +281,40 @@ describe("DashboardService.kpis", () => {
     expect(acido.numPedidos).toBe(1);
   });
 
+  it("inclui os setores de origem envolvidos na demanda represada (CEO-253)", async () => {
+    const kpis = await service.kpis(1, HOJE);
+    const luva = kpis.demandaRepresada.find((d) => d.produtoId === 1)!;
+    // PED-002 e PED-003 (ambos com origem no CEO) represaram a Luva.
+    expect(luva.setoresEnvolvidos).toEqual(["CEO"]);
+  });
+
+  it("ordena demanda represada por quantidade e limita ao top 10 (CEO-253)", async () => {
+    // 12 produtos represados, cada um em seu próprio pedido, com quantidades
+    // crescentes — só os 10 maiores devem voltar, em ordem decrescente.
+    const setores: Setor[] = [{ id: 1, nome: "HO", tipo: "almoxarifado", emailInstitucional: null }, { id: 2, nome: "CEO", tipo: "destinatario", emailInstitucional: null }];
+    const produtos: Produto[] = Array.from({ length: 12 }, (_, i) => ({
+      id: i + 1, nome: `Produto ${i + 1}`, categoria: "Outros", unidade: "caixa",
+      estoqueMinimo: 0, estoqueMaximo: 9999, localizacao: null, fornecedor: null,
+    }));
+    const pedidos: PedidoComItens[] = produtos.map((p, i) =>
+      pedido({
+        id: `PED-${i + 1}`, setorOrigemId: 2, setorDestinoId: 1, status: "aguardando_reposicao",
+        itens: [item({ id: i + 1, pedidoId: `PED-${i + 1}`, produtoId: p.id, qtdSolicitada: i + 1, unidade: "caixa", statusItem: "aguardando_reposicao" })],
+      }),
+    );
+    const produtoRepo = new InMemProdutoRepo(produtos);
+    const setorRepo = new InMemSetorRepo(setores);
+    const svc = new DashboardService(
+      produtoRepo, new InMemLoteRepo([]), new InMemPedidoRepo(pedidos),
+      new EstoqueService(produtoRepo, new InMemLoteRepo([]), setorRepo), setorRepo,
+      new InMemMovimentacaoRepo([]) as any,
+    );
+    const kpis = await svc.kpis(1, HOJE);
+    expect(kpis.demandaRepresada).toHaveLength(10);
+    expect(kpis.demandaRepresada[0].qtdSolicitadaTotal).toBe(12); // maior primeiro
+    expect(kpis.demandaRepresada[9].qtdSolicitadaTotal).toBe(3); // 12..3 = 10 itens
+  });
+
   it("escopa lotes pelo setor informado", async () => {
     const kpisHo = await service.kpis(1, HOJE);
     const kpisCeo = await service.kpis(2, HOJE);
@@ -333,6 +367,23 @@ describe("DashboardService.ultimasMovimentacoes", () => {
     const movs = await service.ultimasMovimentacoes(1, 1);
     expect(movs).toHaveLength(1);
     expect(movs[0].id).toBe("MOV-002"); // mais recente
+  });
+
+  it("filtra por intervalo de datas (inclusivo, dataFim até o fim do dia)", async () => {
+    // MOV-001 = 2026-05-05, MOV-002 = 2026-06-01.
+    // Só maio: pega MOV-001 e exclui MOV-002.
+    const soMaio = await service.ultimasMovimentacoes(1, 10, undefined, {
+      dataInicio: new Date("2026-05-01T00:00:00Z"),
+      dataFim: new Date("2026-05-31T00:00:00Z"),
+    });
+    expect(soMaio.map((m) => m.id)).toEqual(["MOV-001"]);
+
+    // dataFim inclusiva: filtrar exatamente o dia de MOV-002 deve trazê-la.
+    const soDia = await service.ultimasMovimentacoes(1, 10, undefined, {
+      dataInicio: new Date("2026-06-01T00:00:00Z"),
+      dataFim: new Date("2026-06-01T00:00:00Z"),
+    });
+    expect(soDia.map((m) => m.id)).toEqual(["MOV-002"]);
   });
 
   it("enriquece movimentações com nomes de produtos e setores", async () => {

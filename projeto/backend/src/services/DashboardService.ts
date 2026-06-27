@@ -14,7 +14,14 @@ export interface DemandaRepresadaItem {
   nome: string;
   qtdSolicitadaTotal: number;
   numPedidos: number;
+  // Nomes dos setores de origem dos pedidos que represaram o item (CEO-253 — AC
+  // "setores envolvidos"). Distintos e ordenados, para o gestor saber de onde vem a demanda.
+  setoresEnvolvidos: string[];
 }
+
+// CEO-253 — o painel mostra os itens com mais demanda represada; limitamos ao
+// top N (AC "top 10") para a tabela do dashboard não crescer sem limite.
+const TOP_DEMANDA_REPRESADA = 10;
 
 export interface UltimaMovimentacao {
   id: string;
@@ -24,6 +31,8 @@ export interface UltimaMovimentacao {
   setorOrigemNome: string;
   setorDestinoNome: string | null;
   data: string;
+  // CEO-267 — quem retirou fisicamente (só em saídas de expedição); null nas demais.
+  retiradoPor: string | null;
 }
 
 export interface DashboardKpis {
@@ -126,18 +135,34 @@ export class DashboardService {
     }
 
   /**
-   * Retorna as últimas movimentações de um setor, opcionalmente filtradas por tipo.
-   * US-EP05 — Log filtrável: últimas movimentações (entrada, saída, ajuste, consumo, segregação).
+   * Retorna as últimas movimentações de um setor, opcionalmente filtradas por
+   * tipo e por intervalo de datas (US-EP05 — log filtrável). `dataInicio`/`dataFim`
+   * são inclusivos: dataFim é tratada como o fim do dia (até 23:59:59.999) para
+   * que filtrar por um único dia traga as movimentações daquele dia.
    */
   async ultimasMovimentacoes(
     setorId: number,
     limite: number = 10,
     tipo?: TipoMovimentacao,
+    periodo?: { dataInicio?: Date | undefined; dataFim?: Date | undefined },
   ): Promise<UltimaMovimentacao[]> {
     const movimentos = await this.movimentacaoRepo.listarPorSetor(setorId);
 
     // Filtra por tipo se informado
     let filtradas = tipo ? movimentos.filter((m) => m.tipo === tipo) : movimentos;
+
+    // Filtra por intervalo de datas (inclusivo) se informado.
+    const inicio = periodo?.dataInicio;
+    const fim = periodo?.dataFim;
+    if (inicio || fim) {
+      const inicioMs = inicio ? inicio.getTime() : -Infinity;
+      // dataFim inclusiva até o fim do dia.
+      const fimMs = fim ? fim.getTime() + 24 * 60 * 60 * 1000 - 1 : Infinity;
+      filtradas = filtradas.filter((m) => {
+        const t = new Date(m.data).getTime();
+        return t >= inicioMs && t <= fimMs;
+      });
+    }
 
     // Ordena por data descendente (mais recentes primeiro) e limita
     filtradas = filtradas
@@ -171,37 +196,61 @@ export class DashboardService {
       setorOrigemNome: setoresMap.get(mov.setorOrigemId) ?? `Setor #${mov.setorOrigemId}`,
       setorDestinoNome: mov.setorDestinoId ? setoresMap.get(mov.setorDestinoId) ?? `Setor #${mov.setorDestinoId}` : null,
       data: mov.data.toISOString(),
+      retiradoPor: mov.retiradoPor ?? null,
     }));
   }
 
   private async enriquecerDemandaRepresada(
     pedidos: Awaited<ReturnType<IPedidoRepository["listarPorSetor"]>>,
   ): Promise<DemandaRepresadaItem[]> {
-    const agrupado = new Map<number, { qtdSolicitadaTotal: number; pedidos: Set<string> }>();
+    const agrupado = new Map<
+      number,
+      { qtdSolicitadaTotal: number; pedidos: Set<string>; setoresOrigem: Set<number> }
+    >();
 
     for (const pedido of pedidos) {
       for (const item of pedido.itens) {
         if (item.statusItem !== "aguardando_reposicao" || item.produtoId === null) continue;
         const produtoId = item.produtoId;
-        const atual = agrupado.get(produtoId) ?? { qtdSolicitadaTotal: 0, pedidos: new Set() };
+        const atual =
+          agrupado.get(produtoId) ??
+          { qtdSolicitadaTotal: 0, pedidos: new Set<string>(), setoresOrigem: new Set<number>() };
         atual.qtdSolicitadaTotal += item.qtdSolicitada;
         atual.pedidos.add(pedido.id);
+        atual.setoresOrigem.add(pedido.setorOrigemId);
         agrupado.set(produtoId, atual);
       }
     }
 
+    // Resolve nomes de setor uma única vez (evita N+1 quando o mesmo setor
+    // origina demanda de vários produtos).
+    const nomeSetorCache = new Map<number, string>();
+    const nomeSetor = async (id: number): Promise<string> => {
+      if (!nomeSetorCache.has(id)) {
+        const s = await this.setorRepo.buscarPorId(id);
+        nomeSetorCache.set(id, s?.nome ?? `Setor #${id}`);
+      }
+      return nomeSetorCache.get(id)!;
+    };
+
     const resultado: DemandaRepresadaItem[] = [];
     for (const [produtoId, dados] of agrupado) {
       const produto = await this.produtoRepo.buscarPorId(produtoId);
+      const setoresEnvolvidos = (
+        await Promise.all([...dados.setoresOrigem].map(nomeSetor))
+      ).sort((a, b) => a.localeCompare(b, "pt-BR"));
       resultado.push({
         produtoId,
         nome: produto?.nome ?? `Produto #${produtoId}`,
         qtdSolicitadaTotal: dados.qtdSolicitadaTotal,
         numPedidos: dados.pedidos.size,
+        setoresEnvolvidos,
       });
     }
 
-    return resultado.sort((a, b) => b.qtdSolicitadaTotal - a.qtdSolicitadaTotal);
+    return resultado
+      .sort((a, b) => b.qtdSolicitadaTotal - a.qtdSolicitadaTotal)
+      .slice(0, TOP_DEMANDA_REPRESADA);
   }
 }
 

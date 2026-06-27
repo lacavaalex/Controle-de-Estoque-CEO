@@ -93,7 +93,7 @@ export default function Dashboard() {
             <div className="table-wrap">
               <table className="data">
                 <thead>
-                  <tr><th>Produto</th><th className="num">Qtd. solicitada</th><th className="num">Nº pedidos</th></tr>
+                  <tr><th>Produto</th><th className="num">Qtd. solicitada</th><th className="num">Nº pedidos</th><th>Setores envolvidos</th></tr>
                 </thead>
                 <tbody>
                   {d.demandaRepresada.map((r) => (
@@ -101,6 +101,7 @@ export default function Dashboard() {
                       <td>{r.nome}</td>
                       <td className="num">{r.qtdSolicitadaTotal}</td>
                       <td className="num">{r.numPedidos}</td>
+                      <td>{r.setoresEnvolvidos?.length ? r.setoresEnvolvidos.join(", ") : "—"}</td>
                     </tr>
                   ))}
                 </tbody>
