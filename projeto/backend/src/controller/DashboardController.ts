@@ -17,9 +17,11 @@ export class DashboardController {
   }
 
   async consumoMensalSetor(req: Request, res: Response): Promise<Response> {
+    // setorId aqui é o setor FORNECEDOR (ex.: HO); o serviço soma as saídas dele por destino.
     const setorId = Number(req.query.setorId ?? req.identidade!.setorId);
+    const meses = Math.min(Math.max(Number(req.query.meses ?? 6), 1), 24); // 1..24 meses
     try {
-      const data = await this.dashboardService.consumoMensalSetor(setorId);
+      const data = await this.dashboardService.consumoMensalSetorFornecedor(setorId, meses);
       return res.status(200).json(data);
     } catch (error) {
       if (error instanceof Error) return res.status(400).json({ mensagem: error.message });

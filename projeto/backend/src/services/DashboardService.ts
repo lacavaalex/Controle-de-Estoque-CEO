@@ -66,26 +66,6 @@ export class DashboardService {
     };
   }
 
-    async consumoMensalSetor(setorId: number, hoje: Date = new Date()): Promise<DashboardKpis> {
-      // Reutiliza a agregação de KPIs para garantir consistência com `kpis()`.
-      const [produtos, lotes, pedidos] = await Promise.all([
-        this.produtoRepo.listar(),
-        this.loteRepo.listarPorSetor(setorId),
-        this.pedidoRepo.listarPorSetor(setorId),
-      ]);
-
-      const estoque = await this.estoqueService.estoqueDoSetor(setorId, {}, hoje);
-
-      return {
-        totalProdutos: produtos.length,
-        produtosCriticos: estoque.filter((p) => p.status === "critico").length,
-        lotesVencendo30: contarLotesVencendo(lotes, hoje, 30),
-        lotesVencendo60: contarLotesVencendo(lotes, hoje, 60),
-        pedidosPendentes: pedidos.filter((p) => p.status === "pendente").length,
-        demandaRepresada: await this.enriquecerDemandaRepresada(pedidos),
-      };
-  }
-
     /**
      * Retorna consumo mensal por setor destinatário para os últimos `meses` meses
      * contado a partir do setor fornecedor (`setorId`, ex.: HO).
@@ -107,8 +87,9 @@ export class DashboardService {
         labels.push(`${y}-${m}`);
       }
 
-      // Nomes fixos esperados no produto final do gráfico (PO)
-      const esperado = ["CEO", "CME", "Laboratórios", "Dispensação"];  // TODO
+      // Setores destinatários fixos no gráfico, na ordem definida pelo PO. Se um
+      // não estiver cadastrado, sua série aparece zerada (setorId null) em vez de sumir.
+      const esperado = ["CEO", "CME", "Laboratórios", "Dispensação"];
 
       const setoresCadastrados = await this.setorRepo.listar();
 
@@ -138,7 +119,8 @@ export class DashboardService {
 
         const destId = mov.setorDestinoId ?? null;
         const s = setores.find((ss) => ss.setorId === destId);
-9
+        // idx já validado (>=0) e valores tem o mesmo length de labels, então o slot existe.
+        if (s) s.valores[idx] = (s.valores[idx] ?? 0) + mov.quantidade;
       }
 
       return { meses: labels, setores };
