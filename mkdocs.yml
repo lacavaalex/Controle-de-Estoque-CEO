@@ -115,6 +115,7 @@ nav:
       - Roadmap: PO/07-roadmap-metricas/01-roadmap.md
       - Métricas de sucesso: PO/07-roadmap-metricas/02-metricas-de-sucesso.md
       - Riscos: PO/07-roadmap-metricas/03-riscos.md
+      - Contrato de API: PO/07-roadmap-metricas/05-contrato-api.md
 
   - 3. Domínio & Regras:
       - Glossário: PO/06-dominio-regras/01-glossario.md
