@@ -1,12 +1,6 @@
-// =============================================================================
-// RBAC perfil × setor (RN01, RN12) — funções PURAS e testáveis.
-// O "setor" do almoxarifado (HO) é tratado como global; destinatários (CEO...)
-// são restritos ao próprio setor.
-//
-// Identidade autenticada que as funções consomem (vem do JWT):
-//   { perfil, setorId, setorTipo }
-// onde setorTipo = 'almoxarifado' (HO) | 'destinatario' (CEO...).
-// =============================================================================
+// RBAC por perfil e setor (RN01, RN12). O almoxarifado (HO) é global; os
+// setores destinatários (CEO etc.) ficam restritos ao próprio setor. As funções
+// recebem a identidade do JWT: { perfil, setorId, setorTipo }.
 import type { Perfil, TipoSetor } from "../entities/index.js";
 
 export interface Identidade {

@@ -19,6 +19,13 @@
   background: var(--ufpe-bordo);
   color: #fff;
 }
+/* Brasão bordô da UFPE sobre o fundo bordô: assenta numa pílula branca para
+   manter as cores oficiais legíveis (em vez de inverter a marca). */
+.login-brand .brand-crest {
+  height: 96px; width: auto; align-self: flex-start; margin-bottom: var(--sp-4);
+  background: #fff; padding: var(--sp-3) var(--sp-4); border-radius: var(--radius-lg);
+  box-shadow: 0 8px 24px -10px rgba(0,0,0,.35);
+}
 .login-brand .brand-mark { font-size: var(--fs-22); font-weight: 700; letter-spacing: 0.2px; }
 .login-brand .brand-mark span { opacity: 0.85; font-weight: 400; }
 .login-brand .brand-tagline { max-width: 36ch; font-size: var(--fs-18); line-height: var(--lh-prose); color: #fff; }

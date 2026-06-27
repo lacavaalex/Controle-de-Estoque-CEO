@@ -1,19 +1,7 @@
-// =============================================================================
-// Seed do banco v2 — CEO-UFPE
-// Dados realistas derivados de DS-prototype/src/data/data.js, remodelados para
-// o domínio v2 (Produto × Lote, Setor como entidade, Pedido + ItemDoPedido).
-//
-// As validades são posicionadas em relação à data REAL de hoje para exercitar
-// RN05 (vencido/vencendo/atenção) e RN17 (lote segregado). Há, de propósito:
-//   - 1 lote VENCIDO (validade no passado),
-//   - lotes VENCENDO (<=30d) e em ATENÇÃO (31–60d),
-//   - 1 lote SEGREGADO (sala de biossegurança),
-//   - 1 produto SEM lotes (caso "Não Tem"),
-//   - pedidos cobrindo status pendente / aguardando_reposicao / atendido.
-//
-// Idempotente: limpa as tabelas (TRUNCATE ... RESTART IDENTITY CASCADE) e
-// repopula. Rode com: npm run db:seed
-// =============================================================================
+// Seed de dados de demonstração. As validades são relativas à data atual para
+// cobrir os estados de RN05 (vencido/vencendo/atenção) e RN17 (segregado); os
+// pedidos cobrem os status pendente/aguardando_reposicao/atendido.
+// Idempotente (TRUNCATE ... RESTART IDENTITY CASCADE). Rode com: npm run db:seed
 import "dotenv/config";
 import { sql } from "drizzle-orm";
 import { db, pool } from "./client.js";
@@ -52,14 +40,14 @@ async function seed() {
   await db.execute(sql`ALTER SEQUENCE seq_movimentacao RESTART WITH 1`);
   await db.execute(sql`ALTER SEQUENCE seq_pedido RESTART WITH 1`);
 
-  // ─── Setores ──────────────────────────────────────────────────────────────
+  // Setores
   console.log("Inserindo setores...");
   const [ho, ceo, dispensacao] = await db
     .insert(setor)
     .values([
       { nome: "HO", tipo: "almoxarifado", emailInstitucional: "almoxarifado@ufpe.br" },
       { nome: "CEO", tipo: "destinatario", emailInstitucional: "ceo@ufpe.br" },
-      // Setor do Agente de Email (EP08 / ADR-0004). Neutro de propósito: o
+      // Setor do Agente de Email (EP08 / ADR-0004). Neutro: o
       // usuário-robô mora aqui em vez de num setor solicitante real (CEO etc.),
       // porque os solicitantes por email são dispersos. O setor de ORIGEM real
       // do pedido é escolhido pelo almoxarife na triagem (CEO-276).
@@ -69,7 +57,7 @@ async function seed() {
 
   if (!ho || !ceo || !dispensacao) throw new Error("Falha ao inserir setores");
 
-  // ─── Usuários (3 perfis) ────────────────────────────────────────────────
+  // Usuários (3 perfis)
   console.log("Inserindo usuários...");
   const senhaHash = await gerarHashSenha(SENHA_DEV);
   const [gestorHo, almoxarife, solicitanteCeo, gestorCeo, agenteRobo] = await db
@@ -111,10 +99,9 @@ async function seed() {
         avatar: "HL",
         senhaHash,
       },
-      // Usuário-robô do Agente de Email (EP08 / ADR-0004). É a identidade
-      // técnica em pedido.solicitanteId quando um rascunho vira pedido — o
-      // humano real fica em pedido.remetenteEmail/Nome. NÃO loga: sem senhaHash
-      // (o CHECK email LIKE '%@ufpe.br' segue valendo e este email o satisfaz).
+      // Usuário-robô do Agente de Email (EP08 / ADR-0004): identidade técnica
+      // em pedido.solicitanteId quando um rascunho vira pedido. Não loga (sem
+      // senhaHash); o remetente humano real fica em pedido.remetenteEmail/Nome.
       {
         nome: "Agente de Email (Dispensação)",
         email: "dispensacao-agente@ufpe.br",
@@ -130,9 +117,8 @@ async function seed() {
     throw new Error("Falha ao inserir usuários");
   }
 
-  // ─── Produtos (catálogo) ─────────────────────────────────────────────────
-  // Derivados dos ITEMS do protótipo (que misturavam produto+lote). Aqui o
-  // produto é só o catálogo; os lotes vêm depois.
+  // Produtos (catálogo)
+  // O produto é só o catálogo; os lotes são inseridos em seguida.
   console.log("Inserindo produtos...");
   const produtosSeed: Array<{
     nome: string;
@@ -193,7 +179,7 @@ async function seed() {
     return p.id;
   };
 
-  // ─── Lotes no HO ───────────────────────────────────────────────────────────
+  // Lotes no HO
   // Validades posicionadas para exercitar RN05/RN06/RN17. "Papel Articular" e
   // "Fotopolimerizador" propositalmente sem lote ativo de consumível.
   console.log("Inserindo lotes (HO)...");
@@ -211,7 +197,7 @@ async function seed() {
       { produtoId: P("Anestésico Lidocaína 2%"), setorId: ho.id, numeroLote: "LT-2025-010", fabricacao: emDias(-120), validade: emDias(180), quantidade: 45, estado: "ativo" },
       // VENCIDO (validade no passado) — exercita RN05/RN06. estado=vencido (RN17)
       { produtoId: P("Resina Composta A2"), setorId: ho.id, numeroLote: "LT-2025-020", fabricacao: emDias(-200), validade: emDias(-16), quantidade: 18, estado: "vencido" },
-      // ATENÇÃO (31–60d)
+      // vencendo em 31-60 dias
       { produtoId: P("Resina Composta A3"), setorId: ho.id, numeroLote: "LT-2025-021", fabricacao: emDias(-150), validade: emDias(40), quantidade: 12, estado: "ativo" },
       { produtoId: P("Cimento Ionômero de Vidro"), setorId: ho.id, numeroLote: "LT-2025-022", fabricacao: emDias(-90), validade: emDias(250), quantidade: 8, estado: "ativo" },
       { produtoId: P("Algodão em Rolo"), setorId: ho.id, numeroLote: "LT-2024-030", fabricacao: emDias(-300), validade: emDias(320), quantidade: 250, estado: "ativo" },
@@ -231,7 +217,7 @@ async function seed() {
     ])
     .returning();
 
-  // ─── Lotes no CEO ──────────────────────────────────────────────────────────
+  // Lotes no CEO
   console.log("Inserindo lotes (CEO)...");
   await db.insert(lote).values([
     { produtoId: P("Luvas Descartáveis P"), setorId: ceo.id, numeroLote: "LT-2024-001", fabricacao: emDias(-400), validade: emDias(120), quantidade: 40, estado: "ativo" },
@@ -245,7 +231,7 @@ async function seed() {
     { produtoId: P("Gaze Estéril"), setorId: ceo.id, numeroLote: "TESTE-CEO-01", fabricacao: emDias(-30), validade: emDias(365), quantidade: 15, estado: "ativo" }
   ]);
 
-  // ─── Pedidos (cabeçalho + itens) cobrindo status ────────────────────────────
+  // Pedidos (cabeçalho + itens) cobrindo status
   console.log("Inserindo pedidos...");
   await db.insert(pedido).values([
     { id: "PED-001", setorOrigemId: ceo.id, setorDestinoId: ho.id, solicitanteId: solicitanteCeo.id, justificativa: "Estoque do CEO zerado para a semana de atendimento.", status: "pendente" },

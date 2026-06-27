@@ -1,20 +1,10 @@
-// =============================================================================
-// Funções de domínio — cálculos de estoque em runtime (v2, lote-aware)
-// Espelham getItemStatus/getCEOItemStatus do protótipo, mas no modelo
-// Produto × Lote. São PURAS (sem I/O) e totalmente testáveis.
-//
-// Regras implementadas:
-//   RN03/RN04 — status crítico/baixo/excessivo sobre qtd_total agregada.
-//   RN05      — estado de validade do lote (vencido / vencendo / atenção).
-//   RN06      — precedência de status do produto agregado.
-//   RN07      — qtd_total = soma de lotes ATIVOS por (produto, setor).
-//   RN17      — estado do lote derivado da validade (ativo/vencido).
-//   RN20      — ordenação FEFO dos lotes expedíveis.
-//   RN02      — categoria Equipamento é isenta de status de quantidade.
-// =============================================================================
+// Cálculos de estoque sobre o modelo Produto × Lote, sem I/O.
+// Regras: RN03/RN04 (crítico/baixo/excessivo), RN05 (validade do lote),
+// RN06 (precedência do status agregado), RN07 (soma de lotes ativos),
+// RN17 (estado do lote), RN20 (ordenação FEFO), RN02 (equipamento sem status).
 import type { Lote, Produto } from "../entities/index.js";
 
-// ─── Status agregado do produto (RN06) ──────────────────────────────────────
+// Status agregado do produto (RN06)
 export type StatusProduto =
   | "indisponivel"
   | "vencido"
@@ -25,7 +15,7 @@ export type StatusProduto =
   | "excessivo"
   | "normal";
 
-// ─── Estado de validade de um lote (RN05) ────────────────────────────────────
+// Estado de validade de um lote (RN05)
 export type EstadoValidade = "vencido" | "vencendo" | "atencao" | "ok";
 
 const MS_POR_DIA = 86_400_000;
@@ -135,7 +125,7 @@ export function statusProduto(
   return "normal";
 }
 
-/** Rótulos PT-BR para UI (espelha getStatusLabel do protótipo). */
+/** Rótulos PT-BR para UI. */
 export function rotuloStatus(status: StatusProduto): string {
   const labels: Record<StatusProduto, string> = {
     indisponivel: "Indisponível",
@@ -150,7 +140,6 @@ export function rotuloStatus(status: StatusProduto): string {
   return labels[status];
 }
 
-// =============================================================================
 // CEO-250 — Listas de alerta "vencendo / crítico"
 //
 // O alerta que justifica o sistema: a partir do status agregado de cada produto
@@ -161,8 +150,7 @@ export function rotuloStatus(status: StatusProduto): string {
 //  - vencimento: produto com algum lote ATIVO vencido/perto de vencer
 //                (vencido, vencendo, atencao) — RN05. Exige segregar/expedir antes.
 //
-// São funções PURAS (sem I/O): recebem o agregado já pronto e classificam.
-// =============================================================================
+// São funções puras (sem I/O): recebem o agregado já pronto e classificam.
 
 /** Status que indicam necessidade de REPOSIÇÃO (saldo insuficiente — RN03). */
 const STATUS_REPOSICAO: ReadonlySet<StatusProduto> = new Set([

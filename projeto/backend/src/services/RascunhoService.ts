@@ -1,11 +1,6 @@
-// =============================================================================
-// RascunhoService — admissão de solicitações por email (EP08 / ADR-0004).
-//
-// Princípio: admissão ≠ processamento. Este serviço só enche a antecâmara
-// (pedido_rascunho). NÃO aplica RN10/INV nem cria pedido — rascunho não é
-// pedido. A promoção rascunho→pedido roda na triagem (CEO-276), no backend,
-// passando por todas as regras de domínio. Ver skill agente-dispensacao-rascunho.
-// =============================================================================
+// Admissão de solicitações vindas por email (EP08). Grava apenas o rascunho
+// (pedido_rascunho); não cria pedido nem aplica as regras de domínio — isso
+// acontece na promoção a pedido, durante a triagem do almoxarife.
 import type {
   IRascunhoRepository,
   ResultadoUpsertRascunho,
@@ -73,7 +68,7 @@ export class RascunhoService {
       dados.confiancaGeral !== undefined &&
       dados.confiancaGeral !== null &&
       // !Number.isFinite barra NaN/Infinity: NaN é typeof "number" e NaN<0/NaN>1
-      // são ambos false, então sem isso um NaN passaria e viraria "NaN%" na UI.
+      // evita NaN quando ambos são ausentes.
       (!Number.isFinite(dados.confiancaGeral) ||
         dados.confiancaGeral < 0 ||
         dados.confiancaGeral > 1)
@@ -93,7 +88,7 @@ export class RascunhoService {
     });
   }
 
-  // ─── Triagem (CEO-276) ──────────────────────────────────────────────────────
+  // Triagem (CEO-276)
 
   /** Fila da triagem: rascunhos ainda não decididos. */
   async listarPendentes(): Promise<PedidoRascunho[]> {

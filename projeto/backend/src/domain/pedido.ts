@@ -1,17 +1,13 @@
-// =============================================================================
 // Função de domínio — status DERIVADO do pedido a partir dos seus itens (RN10).
 // Pura e testável. O status do pedido nunca é setado à mão: é calculado.
-// =============================================================================
 import type { StatusItem, StatusPedido, Unidade } from "../entities/index.js";
 import type { Lote, MotivoDivergencia } from "../entities/index.js";
 import { ordenarFEFO } from "./estoque.js";
 
-// =============================================================================
-// Validação dos itens de um pedido novo (RN09 + INV07) — PURA, sem I/O.
+// Validação dos itens de um pedido novo (RN09 + INV07) — pura, sem I/O.
 // Fonte única usada tanto pela criação direta (PedidoService.criar) quanto pela
 // promoção de rascunho (RascunhoService.promover): ambas têm que gerar itens que
 // respeitam o XOR produto/descrição e qtd>=1 ANTES de chegar ao banco.
-// =============================================================================
 
 // Item como entra (do solicitante ou da triagem): XOR entre produtoId e
 // descricaoLivre; quantidade e unidade obrigatórias.
@@ -36,8 +32,7 @@ export interface ItemValidado {
  * descritivo (com o índice do item) na primeira violação. Não faz I/O.
  */
 export function validarItensNovoPedido(itens: ItemEntrada[]): ItemValidado[] {
-  // Array.isArray protege contra body malformado (ex.: itens como string/objeto):
-  // sem isso o .map abaixo estouraria um 500 em vez de um 400 com mensagem útil.
+  // Valida o formato antes do .map para responder 400, não 500.
   if (!Array.isArray(itens) || itens.length === 0) {
     throw new Error("Pedido deve ter ao menos um item (RN09)");
   }
@@ -53,8 +48,7 @@ export function validarItensNovoPedido(itens: ItemEntrada[]): ItemValidado[] {
         `Item ${idx + 1}: informe produtoId OU descricaoLivre (exatamente um) — INV07`,
       );
     }
-    // Number.isInteger barra NaN/strings/floats: sem ele, `NaN < 1` é false e o
-    // valor inválido passaria o guard e estouraria como erro de coluna no INSERT.
+    // Number.isInteger barra NaN, strings e floats.
     if (!Number.isInteger(i.qtdSolicitada) || i.qtdSolicitada < 1) {
       throw new Error(`Item ${idx + 1}: quantidade solicitada deve ser >= 1 (RN09)`);
     }
@@ -126,14 +120,12 @@ export function statusDerivadoDoPedido(statusItens: StatusItem[]): StatusPedido 
   return "pendente";
 }
 
-// =============================================================================
-// Expedição de um item (RN16/RN19/RN20) — PURO, sem I/O.
+// Expedição de um item (RN16/RN19/RN20) — puro, sem I/O.
 // Dado quanto se pede e os lotes disponíveis no setor de origem (HO), calcula:
 //   - como repartir a quantidade entre lotes (FEFO, RN20);
 //   - quanto sai no total (qtdExpedida);
 //   - o status do item resultante (RN10) e, se houver divergência, o motivo (RN16).
 // O service consome este plano para fazer as baixas e movimentações na transação.
-// =============================================================================
 
 /** Uma alocação concreta: tirar `quantidade` do lote `loteId`. */
 export interface AlocacaoLote {
@@ -210,8 +202,7 @@ export function planejarExpedicaoItem(
   };
 }
 
-// =============================================================================
-// Direção física das movimentações de uma expedição (RN19/INV09) — PURO.
+// Direção física das movimentações de uma expedição (RN19/INV09) — puro.
 //
 // Atenção ao duplo sentido de "origem/destino" no domínio:
 //  - No PEDIDO, origem/destino = direção da REQUISIÇÃO:
@@ -220,7 +211,6 @@ export function planejarExpedicaoItem(
 //  - Na MOVIMENTAÇÃO, origem/destino = direção física dos BENS, que fluem ao
 //    contrário: saem do HO e entram no CEO. Por isso a expedição lê os lotes do
 //    HO (= pedido.setorDestinoId) e gera saída@HO + entrada@CEO.
-// =============================================================================
 
 export interface DirecaoExpedicao {
   /** De onde os bens saem fisicamente: o almoxarifado HO. */
@@ -237,12 +227,10 @@ export function direcaoExpedicao(pedido: {
   return { setorHoId: pedido.setorDestinoId, setorCeoId: pedido.setorOrigemId };
 }
 
-// =============================================================================
 // Segunda perna do RN19/INV09 — planeja a ENTRADA no CEO a partir das baixas
 // feitas no HO. Para cada alocação (saída de um lote-HO), decide se soma num
 // lote-CEO já existente (mesmo numeroLote + produto) ou cria um novo lote-CEO
-// copiando numeroLote/fabricacao/validade do lote-HO. PURO e testável.
-// =============================================================================
+// copiando numeroLote/fabricacao/validade do lote-HO. puro e testável.
 
 /** Uma perna de entrada no CEO derivada de uma baixa no HO. */
 export interface EntradaCeoLeg {

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { registrarEntradaLote } from "../api/estoque.js";
 import { ErrorState } from "../app/ui.jsx";
+import { useNavigate } from "react-router-dom";
 
 export default function NovoLote({ produtoId, onSuccess, onCancel }) {
   const [form, setForm] = useState({
@@ -12,6 +13,7 @@ export default function NovoLote({ produtoId, onSuccess, onCancel }) {
   });
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState(null);
+  const navigate = useNavigate();
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -37,8 +39,17 @@ export default function NovoLote({ produtoId, onSuccess, onCancel }) {
         obsDanificada: form.obsDanificada || undefined
       };
 
-      await registrarEntradaLote(produtoId, payload);
-      alert("Entrada de lote registrada com sucesso!");
+      const res = await registrarEntradaLote(produtoId, payload);
+      
+      if (res.pedidosAguardando > 0) {
+        const irParaFila = window.confirm(`${res.pedidosAguardando} pedido(s) aguardando este produto — abrir fila represada?`);
+        if (irParaFila) {
+          navigate("/pedidos", { state: { statusFiltro: "aguardando_reposicao" } });
+          return;
+        }
+      } else {
+        alert("Entrada de lote registrada com sucesso!");
+      }
       
       if (onSuccess) onSuccess();
     } catch (err) {

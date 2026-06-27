@@ -1,8 +1,6 @@
-// =============================================================================
 // JWT stateless (ADR-0005). O token carrega perfil + setor para o middleware
 // de RBAC verificar perfil×setor (RN01, RN12) sem ir ao banco a cada request.
 // Segredo e expiração vêm do .env (ADR-0003).
-// =============================================================================
 import jwt from "jsonwebtoken";
 import type { Perfil } from "../entities/index.js";
 

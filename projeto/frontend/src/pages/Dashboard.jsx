@@ -25,7 +25,7 @@ export default function Dashboard() {
     [user?.setorId],
   );
 
-  // Endpoint do dashboard é do Pacote 2 (🔨). Se ainda não existir, mostramos
+  // Endpoint do dashboard é do Pacote 2 (). Se ainda não existir, mostramos
   // um aviso honesto em vez de fingir números.
   const indisponivel = req.error instanceof ApiError && (req.error.status === 404 || req.error.status === 501);
   const d = req.data || {};

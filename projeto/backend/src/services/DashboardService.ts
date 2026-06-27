@@ -1,7 +1,5 @@
-// =============================================================================
 // DashboardService — agrega KPIs do dashboard por setor (CEO-248 / EP05).
 // Reutiliza repos e EstoqueService; sem SQL novo.
-// =============================================================================
 import type { IProdutoRepository } from "../interfaces/repository-interfaces/IProdutoRepo.js";
 import type { ILoteRepository } from "../interfaces/repository-interfaces/ILoteRepo.js";
 import type { IPedidoRepository } from "../interfaces/repository-interfaces/IPedidoRepo.js";

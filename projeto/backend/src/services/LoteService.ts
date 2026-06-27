@@ -1,21 +1,14 @@
-// =============================================================================
-// LoteService — entrada, ajuste, consumo e segregação de lotes.
-//
-// Todos os métodos são ATÔMICOS: atualizam o lote E geram a Movimentação na
-// MESMA transação (db.transaction), para que estoque e auditoria nunca
-// divirjam (RN11 / INV01).
-//
-// Estado inicial do lote é derivado da validade (RN05/RN17): validade no
-// passado entra como `vencido` (com aviso ao chamador via flag de retorno).
-// =============================================================================
-import { eq, sql } from "drizzle-orm";
+// Entrada, ajuste, consumo e segregação de lotes. Cada método atualiza o lote e
+// grava a Movimentação na mesma transação, para estoque e auditoria não
+// divergirem (RN11/INV01). O estado inicial vem da validade (RN05/RN17).
+import { eq, sql, and } from "drizzle-orm";
 import type { DB } from "../db/client.js";
 import { db as defaultDb } from "../db/client.js";
 
 // Executor de transação: o parâmetro do callback de db.transaction. Compartilha
 // a API de consulta com DB, mas não é o NodePgDatabase completo (sem $client).
 type Tx = Parameters<Parameters<DB["transaction"]>[0]>[0];
-import { lote as loteTable, movimentacao as movTable, produto as produtoTable } from "../db/schema.js";
+import { lote as loteTable, movimentacao as movTable, produto as produtoTable, itemDoPedido } from "../db/schema.js";
 import type { Lote } from "../entities/index.js";
 import { estadoValidadeLote } from "../domain/estoque.js";
 
@@ -33,6 +26,7 @@ export interface ResultadoEntrada {
   lote: Lote;
   movimentacaoId: string;
   entrouVencido: boolean;
+  pedidosAguardando: number;
 }
 
 export class LoteService {
@@ -117,11 +111,24 @@ export class LoteService {
         responsavelId: dados.responsavelId,
         observacao: observacaoMovimento,
       });
-
+      
+      const aguardandoResult = await tx
+        .select({ count: sql<number>`count(distinct ${itemDoPedido.pedidoId})` })
+        .from(itemDoPedido)
+        .where(
+          and(
+            eq(itemDoPedido.produtoId, produtoId),
+            eq(itemDoPedido.statusItem, "aguardando_reposicao")
+          )
+        );
+      
+      const pedidosAguardando = Number(aguardandoResult[0]?.count || 0);
+      
       return {
         lote: loteCriado,
         movimentacaoId: movId,
         entrouVencido: estado === "vencido",
+        pedidosAguardando,
       };
     });
   }

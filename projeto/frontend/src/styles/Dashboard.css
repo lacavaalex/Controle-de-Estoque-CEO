@@ -9,6 +9,10 @@
   border-radius: var(--radius-lg);
   padding: var(--sp-5);
   min-height: 104px;
+  /* Preenche 100% da célula do grid para que cards com e sem link (que ficam
+     aninhados em .kpi-link) tenham exatamente a mesma altura. */
+  height: 100%;
+  box-sizing: border-box;
 }
 .kpi-value { font-size: var(--fs-28); font-weight: 700; line-height: 1.1; color: var(--ink); }
 .kpi-label { margin-top: var(--sp-2); font-size: var(--fs-14); color: var(--ink-2); font-weight: 600; }
@@ -20,7 +24,7 @@
 .kpi-info   .kpi-value { color: var(--info); }
 .kpi-neutral .kpi-value { color: var(--ufpe-bordo); }
 
-.kpi-link { text-decoration: none; display: block; transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease); }
+.kpi-link { text-decoration: none; display: block; height: 100%; transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease); }
 .kpi-link:hover { text-decoration: none; transform: translateY(-1px); }
 .kpi-link:hover .kpi { box-shadow: var(--shadow-1); border-color: #d8d4d4; }
 .kpi-link:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--radius-lg); }

@@ -1,7 +1,6 @@
 import type { IItemService } from "../interfaces/service-interfaces/IItemService.js";
 import type { Request, Response } from "express";
 
-
 export class ItemController {
     constructor(private itemService: IItemService){}
 
@@ -20,7 +19,6 @@ export class ItemController {
                 return res.status(500).json({error: "Erro interno do servidor"});
             }
         }
-
 
     }
 

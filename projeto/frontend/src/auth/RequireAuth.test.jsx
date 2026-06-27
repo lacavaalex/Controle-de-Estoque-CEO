@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
-import { screen } from "@testing-library/react";
-import { renderApp, loginFake } from "../test/utils.jsx";
+import { render, screen } from "@testing-library/react";
+import { MemoryRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./AuthContext.jsx";
+import { loginFake } from "../test/utils.jsx";
 import RequireAuth from "./RequireAuth.jsx";
 
 vi.mock("../api/auth.js", () => ({
@@ -10,18 +12,35 @@ vi.mock("../api/auth.js", () => ({
 
 function Protegido() { return <div>conteúdo protegido</div>; }
 
+// RequireAuth sem sessão renderiza <Navigate to="/login">. O destino PRECISA
+// existir no <Routes>: redirecionar para uma rota inexistente trava o
+// react-router v7 no jsdom (loop de resolução). Por isso montamos um router
+// real com a rota /login, em vez do renderApp "solto".
+function renderGuarda(route = "/") {
+  return render(
+    <AuthProvider>
+      <MemoryRouter initialEntries={[route]}>
+        <Routes>
+          <Route path="/" element={<RequireAuth><Protegido /></RequireAuth>} />
+          <Route path="/login" element={<div>tela de login</div>} />
+        </Routes>
+      </MemoryRouter>
+    </AuthProvider>,
+  );
+}
+
 describe("RequireAuth", () => {
   it("sem sessão, redireciona para /login", () => {
-    renderApp(
-      <RequireAuth><Protegido /></RequireAuth>,
-      { route: "/", },
-    );
+    renderGuarda("/");
     expect(screen.queryByText("conteúdo protegido")).not.toBeInTheDocument();
+    expect(screen.getByText("tela de login")).toBeInTheDocument();
   });
 
-  it("com sessão, mostra o conteúdo", () => {
+  it("com sessão, mostra o conteúdo", async () => {
     loginFake();
-    renderApp(<RequireAuth><Protegido /></RequireAuth>);
-    expect(screen.getByText("conteúdo protegido")).toBeInTheDocument();
+    renderGuarda("/");
+    // Com token salvo, o AuthProvider inicia em "Carregando…" e revalida via
+    // eu() (assíncrono); o conteúdo só aparece quando essa promessa resolve.
+    expect(await screen.findByText("conteúdo protegido")).toBeInTheDocument();
   });
 });

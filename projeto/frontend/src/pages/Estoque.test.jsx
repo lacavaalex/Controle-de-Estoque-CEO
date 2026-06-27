@@ -34,10 +34,13 @@ describe("Estoque", () => {
   it("gestor vê a coluna Situação e os status", async () => {
     loginFake({ id: 7, nome: "Ana", perfil: "gestor", setorId: 1 });
     renderApp(<Estoque />);
-    expect(await screen.findByText("Luva")).toBeInTheDocument();
+    // exact:false porque na visão de gestor a célula vem com o prefixo "▶ " do
+    // expansor de lotes (▶ Luva), então o texto não é exatamente "Luva".
+    expect(await screen.findByText("Luva", { exact: false })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: /situação/i })).toBeInTheDocument();
     // "Crítico" aparece no <option> do filtro e no badge da linha; conferimos o badge.
-    const linhaAnest = screen.getByText("Anestésico X").closest("tr");
+    // exact:false pelo mesmo prefixo "▶ " da visão de gestor (▶ Anestésico X).
+    const linhaAnest = screen.getByText("Anestésico X", { exact: false }).closest("tr");
     expect(within(linhaAnest).getByText("Crítico")).toBeInTheDocument();
     expect(estoqueDoSetor).toHaveBeenCalled();
   });
@@ -55,7 +58,7 @@ describe("Estoque", () => {
     loginFake({ id: 7, nome: "Ana", perfil: "gestor", setorId: 1 });
     const user = userEvent.setup();
     renderApp(<Estoque />);
-    await screen.findByText("Luva");
+    await screen.findByText("Luva", { exact: false }); // prefixo "▶ " na visão de gestor
 
     await user.type(screen.getByLabelText(/buscar/i), "anest");
     await user.click(screen.getByRole("button", { name: /^filtrar$/i }));
