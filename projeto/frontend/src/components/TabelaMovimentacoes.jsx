@@ -28,6 +28,7 @@ export default function TabelaMovimentacoes({ movimentacoes }) {
             <th>Produto</th>
             <th className="num">Qtd.</th>
             <th>Origem → Destino</th>
+            <th>Retirado por</th>
           </tr>
         </thead>
         <tbody>
@@ -41,6 +42,7 @@ export default function TabelaMovimentacoes({ movimentacoes }) {
                 {m.setorOrigemNome}
                 {m.setorDestinoNome ? ` → ${m.setorDestinoNome}` : ""}
               </td>
+              <td className="text-2">{m.retiradoPor || "—"}</td>
             </tr>
           ))}
         </tbody>

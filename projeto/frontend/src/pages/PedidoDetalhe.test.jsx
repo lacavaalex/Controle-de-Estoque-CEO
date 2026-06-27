@@ -49,14 +49,30 @@ describe("PedidoDetalhe — expedição item a item", () => {
     const user = userEvent.setup();
     renderApp(<PedidoDetalhe />, { route: "/pedidos/PED-001", path: "/pedidos/:id" });
 
-    const linhaLuva = (await screen.findByText("Luva de procedimento")).closest("tr");
+    await screen.findByText("Luva de procedimento");
+    // CEO-267 — expedir exige identificar quem retira o material.
+    await user.type(screen.getByPlaceholderText(/quem retira/i), "Profa. Helena");
+    const linhaLuva = screen.getByText("Luva de procedimento").closest("tr");
     await user.click(within(linhaLuva).getByRole("button", { name: /expedir/i }));
 
-    await waitFor(() => expect(expedirItem).toHaveBeenCalledWith("PED-001", 101));
+    await waitFor(() => expect(expedirItem).toHaveBeenCalledWith("PED-001", 101, "Profa. Helena"));
     // item passou a "Atendido integral"
     await waitFor(() => expect(within(linhaLuva).getByText(/atendido integral/i)).toBeInTheDocument());
     // feedback de movimentação aparece
     expect(within(linhaLuva).getByText(/estoque CEO atualizado/i)).toBeInTheDocument();
+  });
+
+  it("não deixa expedir sem informar quem retira o material (CEO-267)", async () => {
+    obterPedido.mockResolvedValue(PEDIDO);
+    const user = userEvent.setup();
+    renderApp(<PedidoDetalhe />, { route: "/pedidos/PED-001", path: "/pedidos/:id" });
+
+    const linhaLuva = (await screen.findByText("Luva de procedimento")).closest("tr");
+    // Sem retirante: botão desabilitado.
+    expect(within(linhaLuva).getByRole("button", { name: /expedir/i })).toBeDisabled();
+    // Após informar o retirante: habilita.
+    await user.type(screen.getByPlaceholderText(/quem retira/i), "Profa. Helena");
+    expect(within(linhaLuva).getByRole("button", { name: /expedir/i })).toBeEnabled();
   });
 
   it("item de linha livre não pode ser expedido diretamente", async () => {
@@ -81,7 +97,9 @@ describe("PedidoDetalhe — expedição item a item", () => {
     const user = userEvent.setup();
     renderApp(<PedidoDetalhe />, { route: "/pedidos/PED-001", path: "/pedidos/:id" });
 
-    const linhaLuva = (await screen.findByText("Luva de procedimento")).closest("tr");
+    await screen.findByText("Luva de procedimento");
+    await user.type(screen.getByPlaceholderText(/quem retira/i), "Profa. Helena");
+    const linhaLuva = screen.getByText("Luva de procedimento").closest("tr");
     await user.click(within(linhaLuva).getByRole("button", { name: /expedir/i }));
     expect(await within(linhaLuva).findByText("Sem lote disponível")).toBeInTheDocument();
   });

@@ -50,6 +50,13 @@
       "when": 1782348155071,
       "tag": "0006_indices_e_trigger_wallyson",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1782542318376,
+      "tag": "0007_lonely_viper",
+      "breakpoints": true
     }
   ]
 }
