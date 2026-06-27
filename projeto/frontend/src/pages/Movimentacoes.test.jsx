@@ -51,6 +51,42 @@ describe("Movimentações (log)", () => {
     expect(ultima[1]).toMatchObject({ tipo: "entrada" });
   });
 
+  it("passa o intervalo de datas para a API ao preencher os filtros (CEO-252)", async () => {
+    ultimasMovimentacoes.mockResolvedValue(MOVS);
+    const user = userEvent.setup();
+    const { container } = renderApp(<Movimentacoes />);
+    await screen.findByText("Luvas M");
+
+    const [de, ate] = container.querySelectorAll('input[type="date"]');
+    await user.type(de, "2026-06-01");
+    await user.type(ate, "2026-06-30");
+
+    const ultima = ultimasMovimentacoes.mock.calls.at(-1);
+    expect(ultima[1]).toMatchObject({ dataInicio: "2026-06-01", dataFim: "2026-06-30" });
+  });
+
+  it("exporta CSV: cria um link de download a partir das movimentações (CEO-252)", async () => {
+    ultimasMovimentacoes.mockResolvedValue(MOVS);
+    // jsdom não implementa URL.createObjectURL nem o click de download — instalamos
+    // stubs (a função não existe, então atribuímos antes de espionar).
+    const createURL = vi.fn().mockReturnValue("blob:fake");
+    const revokeURL = vi.fn();
+    URL.createObjectURL = createURL;
+    URL.revokeObjectURL = revokeURL;
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    const user = userEvent.setup();
+    renderApp(<Movimentacoes />);
+    await screen.findByText("Luvas M");
+
+    await user.click(screen.getByRole("button", { name: /exportar csv/i }));
+    expect(createURL).toHaveBeenCalled();
+    expect(clickSpy).toHaveBeenCalled();
+
+    clickSpy.mockRestore();
+    delete URL.createObjectURL;
+    delete URL.revokeObjectURL;
+  });
+
   it("mostra estado vazio quando não há movimentações", async () => {
     ultimasMovimentacoes.mockResolvedValue([]);
     renderApp(<Movimentacoes />);

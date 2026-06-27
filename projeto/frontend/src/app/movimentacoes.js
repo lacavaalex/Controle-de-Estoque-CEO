@@ -30,3 +30,38 @@ export function formatarDataHora(iso) {
     ? "—"
     : d.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
 }
+
+// Escapa um campo para CSV (RFC 4180): envolve em aspas se contém ; , aspas ou
+// quebra de linha, e dobra as aspas internas.
+function campoCsv(valor) {
+  const s = valor == null ? "" : String(valor);
+  return /[";,\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+// Cabeçalhos do CSV do log, na ordem das colunas exportadas.
+const CSV_CABECALHO = ["Quando", "Tipo", "Produto", "Quantidade", "Origem", "Destino", "Retirado por"];
+
+/**
+ * Converte a lista de movimentações (shape de UltimaMovimentacao) em texto CSV
+ * (CEO-252 — exportar log; almoxarife vive em planilha). Usa ';' como separador,
+ * que o Excel pt-BR abre direto, e BOM para acentos não quebrarem.
+ */
+export function movimentacoesParaCsv(movimentacoes) {
+  const linhas = [CSV_CABECALHO.join(";")];
+  for (const m of movimentacoes ?? []) {
+    linhas.push(
+      [
+        formatarDataHora(m.data),
+        ROTULO_TIPO[m.tipo] || m.tipo,
+        m.produtoNome,
+        m.quantidade,
+        m.setorOrigemNome,
+        m.setorDestinoNome ?? "",
+        m.retiradoPor ?? "",
+      ]
+        .map(campoCsv)
+        .join(";"),
+    );
+  }
+  return "﻿" + linhas.join("\r\n");
+}

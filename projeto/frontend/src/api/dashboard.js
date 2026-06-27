@@ -7,10 +7,13 @@ export function dashboard(setorId) {
   return api.get(`/dashboard?setorId=${setorId}`);
 }
 
-// GET /dashboard/movimentacoes?setorId=&limite=&tipo= → últimas movimentações (CEO-252)
-export function ultimasMovimentacoes(setorId, { limite = 10, tipo } = {}) {
+// GET /dashboard/movimentacoes?setorId=&limite=&tipo=&dataInicio=&dataFim= → últimas movimentações (CEO-252)
+// dataInicio/dataFim em YYYY-MM-DD; intervalo inclusivo no backend.
+export function ultimasMovimentacoes(setorId, { limite = 10, tipo, dataInicio, dataFim } = {}) {
   const qs = new URLSearchParams({ setorId, limite });
   if (tipo) qs.set("tipo", tipo);
+  if (dataInicio) qs.set("dataInicio", dataInicio);
+  if (dataFim) qs.set("dataFim", dataFim);
   return api.get(`/dashboard/movimentacoes?${qs.toString()}`);
 }
 
