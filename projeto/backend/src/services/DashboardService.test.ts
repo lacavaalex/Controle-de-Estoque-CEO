@@ -213,10 +213,11 @@ beforeEach(() => {
   const pedidoRepo = new InMemPedidoRepo(pedidos);
   const estoqueService = new EstoqueService(produtoRepo, loteRepo, new InMemSetorRepo(setores));
   const movimentacoes = [
-    // Saída do HO para CEO em maio
-    { id: "MOV-001", tipo: "saida", loteId: 1, produtoId: 1, quantidade: 10, setorOrigemId: 1, setorDestinoId: 2, responsavelId: 1, data: new Date("2026-05-05T12:00:00Z") },
+    // Saída do HO para CEO em maio. Saídas são gravadas com quantidade NEGATIVA
+    // (ver PedidoService) — o consumo no gráfico é o módulo.
+    { id: "MOV-001", tipo: "saida", loteId: 1, produtoId: 1, quantidade: -10, setorOrigemId: 1, setorDestinoId: 2, responsavelId: 1, data: new Date("2026-05-05T12:00:00Z") },
     // Saída do HO para Dispensação em junho
-    { id: "MOV-002", tipo: "saida", loteId: 2, produtoId: 2, quantidade: 5, setorOrigemId: 1, setorDestinoId: 3, responsavelId: 1, data: new Date("2026-06-01T12:00:00Z") },
+    { id: "MOV-002", tipo: "saida", loteId: 2, produtoId: 2, quantidade: -5, setorOrigemId: 1, setorDestinoId: 3, responsavelId: 1, data: new Date("2026-06-01T12:00:00Z") },
   ];
 
   const movRepo = new InMemMovimentacaoRepo(movimentacoes);

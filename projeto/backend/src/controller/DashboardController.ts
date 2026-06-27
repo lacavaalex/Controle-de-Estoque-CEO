@@ -19,7 +19,8 @@ export class DashboardController {
   async consumoMensalSetor(req: Request, res: Response): Promise<Response> {
     // setorId aqui é o setor FORNECEDOR (ex.: HO); o serviço soma as saídas dele por destino.
     const setorId = Number(req.query.setorId ?? req.identidade!.setorId);
-    const meses = Math.min(Math.max(Number(req.query.meses ?? 6), 1), 24); // 1..24 meses
+    const mesesRaw = Number(req.query.meses);
+    const meses = Math.min(Math.max(Number.isFinite(mesesRaw) ? mesesRaw : 6, 1), 24); // 1..24, default 6
     try {
       const data = await this.dashboardService.consumoMensalSetorFornecedor(setorId, meses);
       return res.status(200).json(data);
@@ -31,7 +32,8 @@ export class DashboardController {
 
   async ultimasMovimentacoes(req: Request, res: Response): Promise<Response> {
     const setorId = Number(req.query.setorId ?? req.identidade!.setorId);
-    const limite = Math.min(Number(req.query.limite ?? 10), 100); // máx 100 para não sobrecarregar
+    const limiteRaw = Number(req.query.limite);
+    const limite = Math.min(Math.max(Number.isFinite(limiteRaw) ? limiteRaw : 10, 1), 100); // 1..100, default 10
     const tipo = (req.query.tipo as TipoMovimentacao | undefined) ?? undefined;
     try {
       const data = await this.dashboardService.ultimasMovimentacoes(setorId, limite, tipo);

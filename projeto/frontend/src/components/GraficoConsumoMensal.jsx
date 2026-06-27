@@ -30,10 +30,12 @@ export default function GraficoConsumoMensal({ dados }) {
   const meses = dados?.meses ?? [];
   const setores = dados?.setores ?? [];
 
+  // "Sem dados" = nenhuma série tem qualquer valor diferente de zero. Usa === 0
+  // explícito (em vez de !v) para não confundir valores negativos com vazio.
   const semDados =
     !meses.length ||
     !setores.length ||
-    setores.every((s) => (s.valores ?? []).every((v) => !v));
+    setores.every((s) => (s.valores ?? []).every((v) => (v ?? 0) === 0));
 
   if (semDados) {
     return (

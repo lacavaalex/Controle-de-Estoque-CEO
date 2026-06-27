@@ -117,8 +117,9 @@ export class DashboardService {
 
         const destId = mov.setorDestinoId ?? null;
         const s = setores.find((ss) => ss.setorId === destId);
-        // idx já validado (>=0) e valores tem o mesmo length de labels, então o slot existe.
-        if (s) s.valores[idx] = (s.valores[idx] ?? 0) + mov.quantidade;
+        // Saídas são gravadas com quantidade NEGATIVA (ver PedidoService); consumo é
+        // o módulo. idx já validado (>=0) e valores tem o length de labels.
+        if (s) s.valores[idx] = (s.valores[idx] ?? 0) + Math.abs(mov.quantidade);
       }
 
       return { meses: labels, setores };
