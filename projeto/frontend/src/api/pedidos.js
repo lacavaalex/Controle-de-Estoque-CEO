@@ -29,7 +29,8 @@ export async function listarPedidosGerais(status) {
 }
 
 // POST /pedidos/:id/itens/:itemId/expedir { item, movimentacoes, statusPedido }
-// FEFO é automático no backend; corpo vazio.
-export async function expedirItem(pedidoId, itemId) {
-  return api.post(`/pedidos/${pedidoId}/itens/${itemId}/expedir`, {});
+// FEFO é automático no backend. retiradoPor (CEO-267): nome de quem retira
+// fisicamente o material — obrigatório, vai gravado na movimentação de saída.
+export async function expedirItem(pedidoId, itemId, retiradoPor) {
+  return api.post(`/pedidos/${pedidoId}/itens/${itemId}/expedir`, { retiradoPor });
 }

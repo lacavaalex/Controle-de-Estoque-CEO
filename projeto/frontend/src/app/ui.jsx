@@ -73,3 +73,25 @@ export function EmptyState({ title, children }) {
     </div>
   );
 }
+
+// AsyncBoundary — padroniza o trio carregando / erro / vazio em telas que
+// carregam dados. Substitui o ternário repetido `loading ? skeleton : error ?
+// <ErrorState/> : vazio ? <EmptyState/> : conteúdo` espalhado pelas páginas.
+//
+// Ordem de precedência: loading → error → vazio → children (conteúdo real).
+// Slots `skeleton` e `empty` são opcionais (têm defaults); passe os seus quando
+// quiser dimensões de tabela específicas ou uma mensagem de vazio sob medida.
+export function AsyncBoundary({
+  loading,
+  error,
+  onRetry,
+  isEmpty = false,
+  skeleton,
+  empty,
+  children,
+}) {
+  if (loading) return skeleton ?? <TableSkeleton />;
+  if (error) return <ErrorState error={error} onRetry={onRetry} />;
+  if (isEmpty) return empty ?? <EmptyState title="Nada por aqui ainda." />;
+  return children;
+}

@@ -346,4 +346,9 @@ export const movimentacao = pgTable("movimentacao", {
   data: timestamp("data", { withTimezone: true }).notNull().defaultNow(),
   pedidoId: text("pedido_id").references(() => pedido.id),
   observacao: text("observacao"),
+  // CEO-267 (RF05.5 / RNF07.1) — nome de quem retirou fisicamente o material na
+  // expedição. Texto livre (não FK): o retirante pode não ser usuário do sistema,
+  // só precisa estar identificado para a auditoria do handoff. Nulo nas
+  // movimentações que não são retirada física (entrada, ajuste, consumo, segregação).
+  retiradoPor: text("retirado_por"),
 });

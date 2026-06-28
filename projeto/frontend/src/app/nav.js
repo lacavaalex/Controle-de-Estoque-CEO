@@ -12,6 +12,7 @@ export const NAV_ITEMS = [
   { to: "/pedidos",   label: "Processar pedidos", icon: "🗂️", perfis: [GESTOR, ALMOXARIFE] },
   // Triagem do Agente de Email (EP08): mesmo escopo de quem processa pedidos.
   { to: "/triagem",   label: "Triagem", icon: "📨", perfis: [GESTOR, ALMOXARIFE] },
+  { to: "/movimentacoes", label: "Movimentações", icon: "🔁", perfis: [GESTOR, ALMOXARIFE] },
   { to: "/usuarios",  label: "Usuários",  icon: "👥", perfis: [GESTOR] },
 ];
 

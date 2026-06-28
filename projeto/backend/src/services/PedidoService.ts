@@ -102,13 +102,21 @@ export class PedidoService {
   /**
    * Expede um item de produto (descricaoLivre não é expedível — não tem lote).
    * `responsavelId` é o almoxarife/gestor HO que processa (RN11).
+   * `retiradoPor` (CEO-267 / RF05.5) é o nome de quem retira fisicamente o
+   * material; obrigatório, pois a saída só pode ser entregue a pessoa
+   * identificada/autorizada. Fica gravado na movimentação de saída para auditoria.
    */
   async expedir(
     pedidoId: string,
     itemId: number,
     responsavelId: number,
+    retiradoPor: string,
     hoje: Date = new Date(),
   ): Promise<ResultadoExpedicao> {
+    const retirante = retiradoPor?.trim();
+    if (!retirante || retirante.length < 2) {
+      throw new Error("Informe quem está retirando o material (retiradoPor) — RN11/CEO-267");
+    }
     return this.db.transaction(async (tx) => {
       // 1. Carrega pedido + item, com locks de leitura coerentes na transação.
       const [pedido] = await tx
@@ -171,6 +179,9 @@ export class PedidoService {
           setorOrigemId: setorHoId,
           setorDestinoId: setorCeoId,
           responsavelId,
+          // CEO-267: a retirada física ocorre na SAÍDA (HO entrega ao retirante).
+          // A entrada-CEO (RN19) é automática e não tem retirante.
+          retiradoPor: retirante,
           pedidoId,
           observacao: `Expedição do pedido ${pedidoId} (item ${itemId}).`,
         });

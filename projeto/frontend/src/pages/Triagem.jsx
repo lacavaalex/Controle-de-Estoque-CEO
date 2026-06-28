@@ -10,7 +10,7 @@ import { listarSetores } from "../api/setores.js";
 import { catalogoDoSetor } from "../api/estoque.js";
 import { UNIDADES } from "../api/constants.js";
 import { ApiError } from "../api/client.js";
-import { PageHead, TableSkeleton, ErrorState, EmptyState } from "../app/ui.jsx";
+import { PageHead, TableSkeleton, ErrorState, EmptyState, AsyncBoundary } from "../app/ui.jsx";
 
 let _uid = 0;
 const itemVazio = () => ({
@@ -64,17 +64,20 @@ export default function Triagem() {
         sub="Solicitações que chegaram por email. Revise e aprove (vira pedido) ou descarte."
       />
 
-      {listaReq.loading ? (
-        <TableSkeleton rows={4} cols={4} />
-      ) : listaReq.error ? (
-        <ErrorState error={listaReq.error} onRetry={listaReq.reload} />
-      ) : rascunhos.length === 0 ? (
-        <div className="panel">
-          <EmptyState title="Nenhum rascunho pendente">
-            Quando o agente extrair uma solicitação de email, ela aparece aqui para revisão.
-          </EmptyState>
-        </div>
-      ) : (
+      <AsyncBoundary
+        loading={listaReq.loading}
+        error={listaReq.error}
+        onRetry={listaReq.reload}
+        isEmpty={rascunhos.length === 0}
+        skeleton={<TableSkeleton rows={4} cols={4} />}
+        empty={
+          <div className="panel">
+            <EmptyState title="Nenhum rascunho pendente">
+              Quando o agente extrair uma solicitação de email, ela aparece aqui para revisão.
+            </EmptyState>
+          </div>
+        }
+      >
         <div className="table-wrap">
           <table className="data">
             <thead>
@@ -107,7 +110,7 @@ export default function Triagem() {
             </tbody>
           </table>
         </div>
-      )}
+      </AsyncBoundary>
 
       {aberto && (
         <PainelRevisao

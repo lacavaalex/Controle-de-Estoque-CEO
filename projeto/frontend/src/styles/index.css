@@ -100,6 +100,13 @@ table.data td.num, table.data th.num { text-align: right; font-variant-numeric: 
 .st-ok           { color: var(--st-ok); background: var(--ok-bg); }
 .st-indisponivel { color: var(--st-indisponivel); background: var(--surface-2); }
 
+/* ---- Badge de tipo de movimentação (log — CEO-252) ---- */
+.mv-entrada    { color: var(--ok);     background: var(--ok-bg); }
+.mv-saida      { color: var(--info);   background: var(--info-bg); }
+.mv-ajuste     { color: var(--st-indisponivel); background: var(--surface-2); }
+.mv-consumo    { color: var(--warn);   background: var(--warn-bg); }
+.mv-segregacao { color: var(--danger); background: var(--danger-bg); }
+
 /* ---- Feedback / alertas (sem side-stripe; borda completa + tint) ---- */
 .alert { padding: var(--sp-3) var(--sp-4); border-radius: var(--radius); border: 1px solid var(--line); font-size: var(--fs-14); }
 .alert-danger { color: var(--danger); background: var(--danger-bg); border-color: #f3c7c2; }
@@ -121,6 +128,22 @@ table.data td.num, table.data th.num { text-align: right; font-variant-numeric: 
 /* ---- Empty state ---- */
 .empty { text-align: center; color: var(--ink-3); padding: var(--sp-7) var(--sp-4); }
 .empty h4 { color: var(--ink-2); margin-bottom: var(--sp-2); }
+
+/* ---- Chips de filtro (log de movimentações, etc.) ---- */
+.chips { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-bottom: var(--sp-3); }
+.chip {
+  min-height: 30px; padding: 0 var(--sp-3);
+  font: 600 var(--fs-12)/1 var(--font);
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface); color: var(--ink-2); cursor: pointer;
+  transition: background-color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.chip:hover { border-color: var(--ufpe-bordo); }
+.chip-on { background: var(--ufpe-bordo); border-color: var(--ufpe-bordo); color: #fff; }
+
+/* ---- Cabeçalho de painel com link "ver todas" ---- */
+.mov-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-3); }
+.mov-vertodas { font-size: var(--fs-14); white-space: nowrap; }
 
 /* ---- Movimento reduzido ---- */
 @media (prefers-reduced-motion: reduce) {

@@ -70,6 +70,7 @@ export class PedidoController {
   }
 
   // POST /pedidos/:id/itens/:itemId/expedir — processa um item (almoxarife/gestor HO).
+  // Corpo: { retiradoPor } — nome de quem retira fisicamente (CEO-267 / RF05.5).
   async expedir(req: Request, res: Response): Promise<Response> {
     const id = req.identidade!;
     try {
@@ -77,6 +78,7 @@ export class PedidoController {
         req.params.id as string,
         Number(req.params.itemId),
         id.usuarioId,
+        String(req.body?.retiradoPor ?? ""),
       );
       return res.status(200).json(resultado);
     } catch (error) {

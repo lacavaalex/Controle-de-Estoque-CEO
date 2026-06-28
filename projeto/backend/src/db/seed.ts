@@ -294,6 +294,8 @@ async function seed() {
       setorOrigemId: ho.id,
       setorDestinoId: ceo.id,
       responsavelId: almoxarife.id,
+      // CEO-267 — quem retirou fisicamente (autorizado do CEO).
+      retiradoPor: "Dr. Rafael Henrique Moura",
       pedidoId: "PED-003",
       observacao: "Expedição do pedido PED-003 (saída no HO).",
     },

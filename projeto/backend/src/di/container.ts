@@ -1,6 +1,3 @@
-import { JsonItemRepo } from "../repositories/JsonItemRepo.js";
-import { ItemService } from "../services/ItemService.js";
-import { ItemController } from "../controller/ItemController.js";
 import { UsuarioController } from "../controller/UsuarioController.js";
 
 // Stack v2: persistência Postgres (Drizzle) + auth real (JWT + RBAC).
@@ -8,6 +5,7 @@ import { PgUsuarioRepo } from "../repositories/PgUsuarioRepo.js";
 import { PgSetorRepo } from "../repositories/PgSetorRepo.js";
 import { PgProdutoRepo } from "../repositories/PgProdutoRepo.js";
 import { PgLoteRepo } from "../repositories/PgLoteRepo.js";
+import { PgMovimentacaoRepo } from "../repositories/PgMovimentacaoRepo.js";
 import { AuthService } from "../services/AuthService.js";
 import { AuthController } from "../controller/AuthController.js";
 import { EstoqueService } from "../services/EstoqueService.js";
@@ -24,16 +22,12 @@ import { RascunhoController } from "../controller/RascunhoController.js";
 import { DashboardService } from "../services/DashboardService.js";
 import { DashboardController } from "../controller/DashboardController.js";
 
-// --- Legado v1 (Item/User em JSON) — mantido até a migração das rotas ---
-const itemRepo = new JsonItemRepo();
-const itemService = new ItemService(itemRepo);
-const itemController = new ItemController(itemService);
-
 // --- v2 (Postgres + auth) ---
 const usuarioRepo = new PgUsuarioRepo();
 const setorRepo = new PgSetorRepo();
 const produtoRepo = new PgProdutoRepo();
 const loteRepo = new PgLoteRepo();
+const movimentacaoRepo = new PgMovimentacaoRepo();
 
 const authService = new AuthService(usuarioRepo, setorRepo);
 const authController = new AuthController(authService);
@@ -51,7 +45,14 @@ const pedidoService = new PedidoService(pedidoRepo);
 const pedidoController = new PedidoController(pedidoService);
 const usuarioController = new UsuarioController(usuarioRepo);
 
-const dashboardService = new DashboardService(produtoRepo, loteRepo, pedidoRepo, estoqueService);
+const dashboardService = new DashboardService(
+  produtoRepo,
+  loteRepo,
+  pedidoRepo,
+  estoqueService,
+  setorRepo,
+  movimentacaoRepo,
+);
 const dashboardController = new DashboardController(dashboardService);
 
 // Agente de Email da Dispensação (EP08) — antecâmara de rascunhos + triagem.
@@ -60,7 +61,6 @@ const rascunhoService = new RascunhoService(rascunhoRepo, pedidoRepo, usuarioRep
 const rascunhoController = new RascunhoController(rascunhoService);
 
 export {
-  itemController,
   authController,
   setorRepo,
   estoqueService,
