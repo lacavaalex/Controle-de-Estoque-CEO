@@ -94,8 +94,8 @@ export default function NovoLote({ produtoId, onSuccess, onCancel }) {
         </div>
 
         {/* CEO-268: Seção de Avarias */}
-        <div style={{ borderLeft: "3px solid #f5a623", paddingLeft: "var(--sp-3)", marginBottom: "var(--sp-4)" }}>
-          <h4 style={{ fontSize: "var(--fs-13)", color: "#666", marginBottom: "var(--sp-2)" }}>
+        <div style={{ borderLeft: "3px solid var(--warn)", paddingLeft: "var(--sp-3)", marginBottom: "var(--sp-4)" }}>
+          <h4 style={{ fontSize: "var(--fs-13)", color: "var(--ink-3)", marginBottom: "var(--sp-2)" }}>
             Conferência de Avarias (Opcional)
           </h4>
           <div className="row" style={{ flexWrap: "wrap" }}>

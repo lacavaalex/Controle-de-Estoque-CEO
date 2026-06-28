@@ -4,7 +4,7 @@ import { useAuth } from "../auth/AuthContext.jsx";
 import { useFetch } from "../app/useFetch.js";
 import { listarPedidosGerais } from "../api/pedidos.js"; 
 import { STATUS_PEDIDO } from "../api/constants.js";
-import { PageHead, StatusPedido, TableSkeleton, ErrorState, EmptyState } from "../app/ui.jsx";
+import { PageHead, StatusPedido, TableSkeleton, EmptyState, AsyncBoundary } from "../app/ui.jsx";
 
 export default function Pedidos() {
   const { user } = useAuth();
@@ -38,17 +38,20 @@ export default function Pedidos() {
         ))}
       </div>
 
-      {req.loading ? (
-        <TableSkeleton rows={5} cols={5} />
-      ) : req.error ? (
-        <ErrorState error={req.error} onRetry={req.reload} />
-      ) : pedidos.length === 0 ? (
-        <div className="panel">
-          <EmptyState title="Nenhum pedido aqui">
-            {status ? "Nenhum pedido com esse status." : "Quando houver pedidos, eles aparecerão nesta fila."}
-          </EmptyState>
-        </div>
-      ) : (
+      <AsyncBoundary
+        loading={req.loading}
+        error={req.error}
+        onRetry={req.reload}
+        isEmpty={pedidos.length === 0}
+        skeleton={<TableSkeleton rows={5} cols={5} />}
+        empty={
+          <div className="panel">
+            <EmptyState title="Nenhum pedido aqui">
+              {status ? "Nenhum pedido com esse status." : "Quando houver pedidos, eles aparecerão nesta fila."}
+            </EmptyState>
+          </div>
+        }
+      >
         <div className="table-wrap">
           <table className="data">
             <thead>
@@ -77,7 +80,7 @@ export default function Pedidos() {
             </tbody>
           </table>
         </div>
-      )}
+      </AsyncBoundary>
     </div>
   );
 }

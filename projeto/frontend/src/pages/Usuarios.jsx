@@ -74,12 +74,12 @@ export default function Usuarios() {
         
         {senhaGerada ? (
           <div className="alert alert-info" style={{ textAlign: 'center', padding: '30px' }}>
-            <h4 style={{ color: '#0c5460' }}>✅ Conta criada com sucesso!</h4>
+            <h4>✅ Conta criada com sucesso!</h4>
             <p>A senha provisória do usuário é:</p>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', margin: '15px 0', letterSpacing: '2px' }}>
+            <div style={{ fontSize: 'var(--fs-22)', fontWeight: 'bold', margin: 'var(--sp-3) 0', letterSpacing: '2px' }}>
               <code>{senhaGerada}</code>
             </div>
-            <p style={{ fontSize: '13px', color: '#666' }}>
+            <p style={{ fontSize: 'var(--fs-13)', color: 'var(--ink-3)' }}>
               O usuário será obrigado a trocar esta senha no primeiro login.
             </p>
             <button className="btn btn-secondary" onClick={() => setSenhaGerada(null)}>
