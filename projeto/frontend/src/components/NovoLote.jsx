@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { registrarEntradaLote } from "../api/estoque.js";
-import { ErrorState } from "../app/ui.jsx";
 import { useNavigate } from "react-router-dom";
 
 export default function NovoLote({ produtoId, onSuccess, onCancel }) {

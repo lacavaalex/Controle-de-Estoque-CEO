@@ -3,10 +3,16 @@ name: CI
 # Integração Contínua do CEO-UFPE.
 # Roda a cada push e a cada Pull Request, em dois jobs paralelos:
 #   - backend: sobe um Postgres 16 efêmero, aplica as migrations (Drizzle),
-#     popula o seed e roda os ~137 testes do Vitest contra o banco real.
-#   - frontend: roda os ~53 testes do Vitest (jsdom, sem banco).
+#     popula o seed e roda os testes do Vitest contra o banco real — inclui os
+#     testes de HTTP (supertest), que exercitam a API ponta-a-ponta.
+#   - frontend: lint (ESLint) + testes do Vitest (jsdom, sem banco) + build de
+#     produção (Vite) — o build falha o PR se algo quebrar a compilação.
 # Um PR só fica "verde" se ambos os jobs passarem — é a rede de segurança
 # automatizada que complementa o code review manual (ver ADR de Qualidade).
+#
+# IMPORTANTE: "verde" aqui é informativo. Para BLOQUEAR o merge enquanto a CI
+# não passa é preciso ativar Branch Protection em Settings → Branches (requer
+# admin do repositório). Ver docs/qualidade/ci.md.
 
 on:
   push:
@@ -91,7 +97,7 @@ jobs:
   # Frontend — React + Vite. Testes rodam em jsdom, sem dependência de banco.
   # ---------------------------------------------------------------------------
   frontend:
-    name: Frontend (Vitest)
+    name: Frontend (Lint + Vitest + Build)
     runs-on: ubuntu-latest
 
     defaults:
@@ -112,5 +118,11 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
+      - name: Lint (ESLint)
+        run: npm run lint
+
       - name: Rodar testes (Vitest)
         run: npm test
+
+      - name: Build de produção (Vite)
+        run: npm run build
