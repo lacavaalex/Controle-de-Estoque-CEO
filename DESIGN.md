@@ -6,8 +6,9 @@ não use cor/fonte/spacing hardcoded nos componentes.
 
 ## Identidade visual — qual marca?
 
-Existem **duas marcas** no contexto do projeto, e a decisão (16/06/2026) está
-registrada nos requisitos:
+Existem **duas marcas** no contexto do projeto, e a decisão (16/06/2026, **reconfirmada
+pelo dono em 28/06/2026**) está registrada nos requisitos: **fica o bordô `#990000`** —
+sem rebrand para o vermelho do CIn.
 
 | | Marca | Primária | Fonte | Papel aqui |
 |---|---|---|---|---|
