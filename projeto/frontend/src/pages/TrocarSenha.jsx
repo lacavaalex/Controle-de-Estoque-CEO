@@ -39,15 +39,15 @@ export default function TrocarSenha() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center", backgroundColor: "var(--bg-body, #f4f4f5)" }}>
+    <div style={{ minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center", backgroundColor: "var(--bg)" }}>
       <div className="login-card" style={{ width: "100%", maxWidth: "420px", margin: "20px" }}>
         <h2>Bem-vindo(a) ao C.E.O.</h2>
-        <p style={{ marginBottom: '20px', color: 'var(--ink-2, #666)' }}>
+        <p style={{ marginBottom: 'var(--sp-5)', color: 'var(--ink-2)' }}>
           Este é o seu primeiro acesso. Por questões de segurança, você precisa definir uma senha definitiva.
         </p>
         
-        {sucesso && <div className="alert alert-success" style={{ marginBottom: "15px", backgroundColor: "#d4edda", color: "#155724", padding: "10px", borderRadius: "4px" }}>Senha atualizada com sucesso! Redirecionando...</div>}
-        {erro && <div className="alert alert-danger" style={{ marginBottom: "15px", backgroundColor: "#f8d7da", color: "#721c24", padding: "10px", borderRadius: "4px" }}>{erro}</div>}
+        {sucesso && <div className="alert alert-ok" style={{ marginBottom: "var(--sp-3)" }}>Senha atualizada com sucesso! Redirecionando...</div>}
+        {erro && <div className="alert alert-danger" style={{ marginBottom: "var(--sp-3)" }}>{erro}</div>}
         
         <form onSubmit={handleSubmit}>
           <div className="field">

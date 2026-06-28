@@ -99,12 +99,14 @@ verdade (testes + build rodados), não estimado.</p>
   depois <code>develop</code>→<code>main</code> é trivial.
 </div>
 
-<h2>2. Estado do PR</h2>
+<h2>2. Estado dos PRs</h2>
 <div class="card">
-  <b>PR #49</b> → <code>develop</code> · <span class="badge b-ok">CI verde</span>
-  <span class="badge b-info">MERGEABLE</span><br>
-  Contém o dashboard (CEO-249/252/253/267/280) + o pacote de qualidade + design system A/B.<br>
-  <span class="sub">O merge é seu (ação irreversível). Jira: comentado na CEO-228; CEO-281 criado p/ o pacote de qualidade.</span>
+  <b>PR #49</b> → <code>develop</code> · <span class="badge b-ok">MESCLADA</span><br>
+  Dashboard (CEO-249/252/253/267/280) + pacote de qualidade + design system A/B.<br>
+  <b>PR #50</b> → <code>main</code> · <span class="badge b-ok">MESCLADA</span><br>
+  Reconciliou <code>develop</code> → <code>main</code> (as duas ficam alinhadas). De quebra, corrigiu um build do mkdocs quebrado (link/nav pré-existente).<br>
+  <b>PR (em aberto, esta sessão)</b> · <span class="badge b-warn">🟡/🟢</span> — AsyncBoundary nas telas restantes + sweep de hex→tokens + fonte web.<br>
+  <span class="sub">Jira: comentado na CEO-228; CEO-281 criado p/ o pacote de qualidade.</span>
 </div>
 
 <h2>3. O que ainda pode ser feito</h2>
@@ -119,8 +121,13 @@ verdade (testes + build rodados), não estimado.</p>
   </tr>
   <tr>
     <td><span class="pri pri-alta">Alta</span></td>
-    <td>Decidir a <b>cor primária</b> (#990000 vs #DB1E2F)</td>
-    <td>Bloqueia “fechar” o design system. 10s de decisão; eu aplico em minutos. Ver nota acima.</td>
+    <td>Habilitar <b>GitHub Pages</b> (Source: GitHub Actions)</td>
+    <td>O job <code>Deploy (GitHub Pages)</code> falha porque o Pages não está com origem "GitHub Actions" — ajuste de admin (você). O <i>build</i> do site já passa. Passo-a-passo em <code>docs/qualidade/PENDENTE-config-pages.md</code>.</td>
+  </tr>
+  <tr>
+    <td><span class="pri pri-baixa">✓ feito</span></td>
+    <td>Cor primária <b>decidida</b>: fica <code>#990000</code></td>
+    <td>Sem rebrand para o vermelho do CIn. Registrado em <code>DESIGN.md</code>.</td>
   </tr>
   <tr>
     <td><span class="pri pri-media">Média</span></td>
@@ -154,14 +161,14 @@ verdade (testes + build rodados), não estimado.</p>
   </tr>
   <tr>
     <td><span class="pri pri-baixa">Baixa</span></td>
-    <td>Reconciliar <code>develop</code> → <code>main</code></td>
-    <td>Depois de mergear a #49, levar pra <code>main</code> (são poucos commits) pra manter a “fonte de verdade” alinhada.</td>
+    <td><s>Reconciliar <code>develop</code> → <code>main</code></s> — <b>feito</b> (PR #50)</td>
+    <td><code>develop</code> e <code>main</code> alinhadas. <span class="badge b-ok">concluído</span></td>
   </tr>
 </table>
 
 <footer>
   Gerado por Claude Code em 28/06/2026. Saúde verificada: backend 150 testes + tsc · frontend 67 testes + lint + build.
-  Branch <code>feat/dashboard-consumo-e-log</code> · PR #49.
+  PRs #49 e #50 mesclados; trabalho 🟡/🟢 em PR à parte.
 </footer>
 
 </div>

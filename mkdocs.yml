@@ -21,6 +21,7 @@ exclude_docs: |
   db/README.md
   relatorios/METAPROMPT-AGENTE-DISPENSACAO.md
   relatorios/METAPROMPT-NOVA-SESSAO-2026-06-21.md
+  qualidade/PENDENTE-config-pages.md
   runbook-CEO-273-caixa-agente.md
 
 theme:
