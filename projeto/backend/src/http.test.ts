@@ -7,10 +7,15 @@ import { criarApp } from "./app.js";
 // — roteamento, middleware de auth, RBAC e os controllers — contra o Postgres
 // de desenvolvimento. Codificam a validação que antes era feita à mão com curl.
 //
-// Pré-requisito: banco com o seed aplicado (`npm run db:seed`). O seed TRUNCATE
-// + RESTART IDENTITY, então os IDs abaixo são determinísticos: HO=1, CEO=2.
-// Estes testes são read-mostly de propósito — não mutam estado compartilhado,
-// para não interferir nas outras suítes que usam o mesmo banco.
+// Pré-requisito: o banco precisa estar com o seed RECÉM-aplicado
+// (`npm run db:seed`). O seed faz TRUNCATE + RESTART IDENTITY e insere os
+// setores na ordem HO, CEO, Dispensação — por isso os IDs abaixo são
+// determinísticos: HO=1, CEO=2. No CI o passo de seed roda logo antes destes
+// testes; localmente, rode o seed antes se os IDs tiverem divergido.
+//
+// Os testes são quase todos de leitura. A única escrita é a tentativa de criar
+// pedido com itens vazios, que o backend REJEITA (não persiste linha) — então
+// na prática a suíte não muta estado compartilhado com as outras.
 
 const app = criarApp();
 
@@ -31,6 +36,20 @@ async function logar(cred: { email: string; senha: string }): Promise<string> {
 }
 
 const bearer = (t: string) => ({ Authorization: `Bearer ${t}` });
+
+// Loga cada identidade UMA vez e reusa o token na suíte inteira (JWT vale 8h).
+// Evita repetir o bcrypt.compare (caro, SALT_ROUNDS alto) a cada teste.
+let tokenAlmoxarife: string;
+let tokenGestorHo: string;
+let tokenSolicitante: string;
+
+beforeAll(async () => {
+  [tokenAlmoxarife, tokenGestorHo, tokenSolicitante] = await Promise.all([
+    logar(ALMOXARIFE),
+    logar(GESTOR_HO),
+    logar(SOLICITANTE),
+  ]);
+});
 
 describe("Healthcheck", () => {
   it("GET /health responde 200 { ok: true }", async () => {
@@ -68,7 +87,7 @@ describe("Autenticação (EP01)", () => {
   });
 
   it("GET /eu com token retorna a identidade do usuário logado", async () => {
-    const token = await logar(GESTOR_HO);
+    const token = tokenGestorHo;
     const res = await request(app).get("/eu").set(bearer(token));
     expect(res.status).toBe(200);
     // A identidade do JWT carrega perfil/setor (não o email — RNF03 / ADR-0005).
@@ -87,7 +106,7 @@ describe("Autenticação (EP01)", () => {
 
 describe("Setores", () => {
   it("GET /setores autenticado lista os setores do seed", async () => {
-    const token = await logar(ALMOXARIFE);
+    const token = tokenAlmoxarife;
     const res = await request(app).get("/setores").set(bearer(token));
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body.setores)).toBe(true);
@@ -104,37 +123,37 @@ describe("Setores", () => {
 
 describe("RBAC — escopo de perfil e de setor (RN11/RN12)", () => {
   it("solicitante NÃO pode listar usuários (gestor-only) → 403", async () => {
-    const token = await logar(SOLICITANTE);
+    const token = tokenSolicitante;
     const res = await request(app).get("/usuarios").set(bearer(token));
     expect(res.status).toBe(403);
   });
 
   it("gestor HO PODE listar usuários → 200", async () => {
-    const token = await logar(GESTOR_HO);
+    const token = tokenGestorHo;
     const res = await request(app).get("/usuarios").set(bearer(token));
     expect(res.status).toBe(200);
   });
 
   it("solicitante do CEO NÃO enxerga o estoque do HO (cross-setor) → 403", async () => {
-    const token = await logar(SOLICITANTE);
+    const token = tokenSolicitante;
     const res = await request(app).get(`/setores/${SETOR_HO}/estoque`).set(bearer(token));
     expect(res.status).toBe(403);
   });
 
   it("solicitante do CEO enxerga o estoque do próprio setor → 200", async () => {
-    const token = await logar(SOLICITANTE);
+    const token = tokenSolicitante;
     const res = await request(app).get(`/setores/${SETOR_CEO}/catalogo`).set(bearer(token));
     expect(res.status).toBe(200);
   });
 
   it("solicitante NÃO pode processar a fila de pedidos pendentes → 403", async () => {
-    const token = await logar(SOLICITANTE);
+    const token = tokenSolicitante;
     const res = await request(app).get("/pedidos/pendentes").set(bearer(token));
     expect(res.status).toBe(403);
   });
 
   it("almoxarife PODE ver a fila de pedidos pendentes → 200", async () => {
-    const token = await logar(ALMOXARIFE);
+    const token = tokenAlmoxarife;
     const res = await request(app).get("/pedidos/pendentes").set(bearer(token));
     expect(res.status).toBe(200);
   });
@@ -142,13 +161,13 @@ describe("RBAC — escopo de perfil e de setor (RN11/RN12)", () => {
 
 describe("Dashboard (EP05)", () => {
   it("almoxarife HO obtém KPIs do próprio setor → 200", async () => {
-    const token = await logar(ALMOXARIFE);
+    const token = tokenAlmoxarife;
     const res = await request(app).get(`/dashboard?setorId=${SETOR_HO}`).set(bearer(token));
     expect(res.status).toBe(200);
   });
 
   it("solicitante do CEO NÃO obtém KPIs do HO (cross-setor) → 403", async () => {
-    const token = await logar(SOLICITANTE);
+    const token = tokenSolicitante;
     const res = await request(app).get(`/dashboard?setorId=${SETOR_HO}`).set(bearer(token));
     expect(res.status).toBe(403);
   });
@@ -156,7 +175,7 @@ describe("Dashboard (EP05)", () => {
 
 describe("Pedidos — criação (EP04-01)", () => {
   it("solicitante cria pedido no próprio setor e o detalhe fica acessível", async () => {
-    const token = await logar(SOLICITANTE);
+    const token = tokenSolicitante;
     const cria = await request(app)
       .post("/pedidos")
       .set(bearer(token))
@@ -174,7 +193,7 @@ describe("Pedidos — criação (EP04-01)", () => {
   });
 
   it("solicitante NÃO cria pedido para um setor de origem que não é o seu → 403", async () => {
-    const token = await logar(SOLICITANTE);
+    const token = tokenSolicitante;
     const res = await request(app)
       .post("/pedidos")
       .set(bearer(token))
