@@ -39,6 +39,12 @@
   --st-indisponivel: #6b6b6b;
 
   /* ---- Tipografia (escala fixa em rem, product UI) ---- */
+  /* Fonte é DE PROPÓSITO uma stack de sistema, não um webfont: a fonte oficial
+     da UFPE para o produto é a Trebuchet MS (escolhida por ser fonte de sistema,
+     livre e sem licenciamento — ver DESIGN.md / RNF01.1). NÃO adicione um @font-face
+     de Montserrat aqui "para carregar a fonte": Montserrat é a marca do CIn, e o
+     produto mantém a identidade da UFPE (#990000 + Trebuchet). O fallback abaixo
+     cobre todas as plataformas (Win/Mac→Trebuchet, demais→system-ui). */
   --font: "Trebuchet MS", "Segoe UI", system-ui, -apple-system, sans-serif;
   --fs-12: 0.75rem;  --fs-13: 0.8125rem; --fs-14: 0.875rem;
   --fs-16: 1rem;     --fs-18: 1.125rem;  --fs-22: 1.375rem; --fs-28: 1.75rem;
