@@ -145,6 +145,6 @@ nav:
       - Arquitetura de implantação: infra/deploy.md
 
   - 7. Entrega & Relatórios:
-      - Status da entrega: relatorios/status-entrega-2026-06-23.md
+      - Status e melhorias: relatorios/metaprompt-status-e-melhorias-2026-06-27.md
       - Roteiro da demonstração: apresentacao/roteiro-demo.md
       - Slides da apresentação: apresentacao/index.md

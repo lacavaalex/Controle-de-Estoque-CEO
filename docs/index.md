@@ -63,7 +63,7 @@ A navegação segue os **critérios de avaliação da entrega final**:
 4. **[Arquitetura & Decisões](adr/index.md)** — os **ADRs** que registram cada decisão arquitetural.
 5. **[Qualidade & Testes](qualidade/como-testar.md)** — estratégia de testes, CI, como rodar.
 6. **[Infraestrutura & Deploy](infra/deploy.md)** — Docker, arquitetura de implantação.
-7. **[Entrega & Relatórios](relatorios/status-entrega-2026-06-23.md)** — status, roteiro da demo, slides.
+7. **[Entrega & Relatórios](relatorios/metaprompt-status-e-melhorias-2026-06-27.md)** — status, roteiro da demo, slides.
 
 !!! note "Sobre o uso de IA neste projeto"
     A equipe usou assistentes de IA como **ferramenta de engenharia e gestão**
