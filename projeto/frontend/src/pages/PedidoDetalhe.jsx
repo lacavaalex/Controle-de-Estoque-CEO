@@ -23,6 +23,9 @@ export default function PedidoDetalhe() {
 
   // estado por item: expedindo / erro / "acabou de mexer" (highlight)
   const [itemState, setItemState] = useState({}); // { [itemId]: { loading, erro, justMoved } }
+  // CEO-267 — nome de quem retira fisicamente o material (obrigatório p/ expedir).
+  const [retiradoPor, setRetiradoPor] = useState("");
+  const retiranteOk = retiradoPor.trim().length >= 2;
 
   function setIS(itemId, patch) {
     setItemState((s) => ({ ...s, [itemId]: { ...s[itemId], ...patch } }));
@@ -31,7 +34,7 @@ export default function PedidoDetalhe() {
   async function expedir(itemId) {
     setIS(itemId, { loading: true, erro: null });
     try {
-      const res = await expedirItem(id, itemId);
+      const res = await expedirItem(id, itemId, retiradoPor.trim());
       // Atualiza o item no pedido e o status do pedido com a resposta.
       req.setData((prev) => {
         if (!prev) return prev;
@@ -89,6 +92,28 @@ export default function PedidoDetalhe() {
 
       <h3 style={{ marginBottom: "var(--sp-3)" }}>Itens</h3>
 
+      {/* CEO-267 — identificação de quem retira o material. Só pessoas
+          autorizadas podem retirar; o nome fica gravado na saída (auditoria). */}
+      {podeProcessar && (
+        <div className="panel" style={{ padding: "var(--sp-3)", marginBottom: "var(--sp-3)" }}>
+          <label style={{ margin: 0, display: "block" }}>
+            Retirado por <span className="muted">(quem está levando o material)</span>
+            <input
+              type="text"
+              value={retiradoPor}
+              onChange={(e) => setRetiradoPor(e.target.value)}
+              placeholder="Nome de quem retira (professor / pessoa autorizada)"
+              style={{ display: "block", width: "100%", maxWidth: 420, marginTop: 4 }}
+            />
+          </label>
+          {!retiranteOk && (
+            <p className="muted" style={{ margin: "var(--sp-2) 0 0", fontSize: "var(--fs-13)" }}>
+              Informe quem está retirando para liberar a expedição.
+            </p>
+          )}
+        </div>
+      )}
+
       {!pedido.itens?.length ? (
         <div className="panel"><EmptyState title="Pedido sem itens" /></div>
       ) : (
@@ -125,8 +150,8 @@ export default function PedidoDetalhe() {
                       <td className="num">
                         <button
                           className="btn btn-primary btn-sm"
-                          disabled={st.loading || finalizado || livre}
-                          title={livre ? "Linha livre precisa virar produto antes de expedir" : finalizado ? "Item já atendido" : "Expedir por FEFO"}
+                          disabled={st.loading || finalizado || livre || !retiranteOk}
+                          title={livre ? "Linha livre precisa virar produto antes de expedir" : finalizado ? "Item já atendido" : !retiranteOk ? "Informe quem está retirando o material" : "Expedir por FEFO"}
                           onClick={() => expedir(it.id)}
                         >
                           {st.loading ? "Expedindo…" : finalizado ? "Atendido" : "Expedir"}

@@ -1,6 +1,5 @@
 import express from "express";
 import {
-  itemController,
   authController,
   setorRepo,
   estoqueService,
@@ -286,11 +285,6 @@ router.post(
   (req, res) => loteController.segregarLote(req, res)
 );
 
-// Itens (legado v1) — mantidas até a migração para Produto/Lote
-router.post("/items", async (req, res) => await itemController.createItem(req, res));
-router.patch("/items/:id/stock", async (req, res) => await itemController.addStock(req, res));
-router.patch("/items/:id/name", async (req, res) => await itemController.changeItemName(req, res));
-
 // EP04-08 (CEO-247) — Listagem geral de pedidos baseada no escopo do usuário.
 router.get(
   "/pedidos",
@@ -306,6 +300,22 @@ router.get(
   auth,
   exigir((id, req) => podeVerSetor(id, Number(req.query.setorId ?? id.setorId))),
   (req, res) => dashboardController.kpis(req, res),
+);
+
+// US-EP05-02 — Consumo mensal por setor para gráficos do dashboard.
+router.get(
+  "/dashboard/consumo-mensal",
+  auth,
+  exigir((id, req) => podeVerSetor(id, Number(req.query.setorId ?? id.setorId))),
+  (req, res) => dashboardController.consumoMensalSetor(req, res),
+);
+
+// US-EP05 — Últimas movimentações: log filtrável por tipo (entrada, saída, ajuste, consumo, segregação).
+router.get(
+  "/dashboard/movimentacoes",
+  auth,
+  exigir((id, req) => podeVerSetor(id, Number(req.query.setorId ?? id.setorId))),
+  (req, res) => dashboardController.ultimasMovimentacoes(req, res),
 );
 
 export { router };

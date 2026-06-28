@@ -39,8 +39,8 @@
 | ID | Descrição | Prioridade | Origem |
 |----|-----------|-----------|--------|
 | RF02.1 | O sistema **deve exibir KPIs** no dashboard, parametrizados por perfil e setor. | Must | `Dashboard.jsx` |
-| RF02.2 | O dashboard do **Gestor HO** deve incluir: KPIs consolidados, gráfico de consumo mensal por setor de destino, lista de itens próximos do vencimento, alertas de estoque crítico, log de movimentações e **demanda represada (top N)**. | Must | (revisado) |
-| RF02.3 | O dashboard do **Almoxarife** deve incluir: KPIs operacionais, fila de pedidos pendentes, alertas de vencimento e estoque crítico, e alertas de **reposição para demanda represada**. | Must | (revisado) |
+| RF02.2 | O dashboard do **Gestor HO** deve incluir: KPIs consolidados, gráfico de consumo mensal por setor de destino, lista de itens próximos do vencimento, alertas de estoque crítico, log de movimentações e **demanda represada (top N)**. | Must | `Dashboard.jsx`, `GraficoConsumoMensal.jsx`, `TabelaMovimentacoes.jsx` |
+| RF02.3 | O dashboard do **Almoxarife** deve incluir: KPIs operacionais, fila de pedidos pendentes, alertas de vencimento e estoque crítico, e alertas de **reposição para demanda represada**. | Must | `Dashboard.jsx`, `TabelaMovimentacoes.jsx` |
 | RF02.4 | O dashboard do **Solicitante** deve incluir: saudação, KPIs do seu setor (estoque local — se houver), seus pedidos recentes e botão proeminente "Novo Pedido". | Must | (revisado) |
 | RF02.5 | O dashboard do **Gestor CEO** deve incluir: KPIs do CEO (estoque local, pedidos enviados pendentes/aguardando reposição), gráfico de consumo, lista de itens críticos no estoque CEO. | Must | (novo) |
 | RF02.6 | Os KPIs devem **refletir em tempo real** alterações no estoque e nos pedidos (sem reload). | Must | derivado de Context API |

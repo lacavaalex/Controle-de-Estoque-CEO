@@ -1,10 +1,18 @@
+import { useState, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useFetch } from "../app/useFetch.js";
-import { dashboard } from "../api/dashboard.js";
+import { dashboard, ultimasMovimentacoes, consumoMensal } from "../api/dashboard.js";
 import { ApiError } from "../api/client.js";
 import { ROTULO_PERFIL } from "../app/nav.js";
+import { PERFIL } from "../api/constants.js";
 import { PageHead, ErrorState } from "../app/ui.jsx";
+import TabelaMovimentacoes from "../components/TabelaMovimentacoes.jsx";
+import { TIPOS_MOVIMENTACAO, ROTULO_TIPO } from "../app/movimentacoes.js";
+
+// Recharts é pesado e só perfis de gestão veem o gráfico — carrega sob demanda
+// para não inflar o bundle inicial de todos os usuários.
+const GraficoConsumoMensal = lazy(() => import("../components/GraficoConsumoMensal.jsx"));
 import "../styles/Dashboard.css";
 
 function Kpi({ label, value, tone, to, hint }) {
@@ -25,7 +33,25 @@ export default function Dashboard() {
     [user?.setorId],
   );
 
-  // Endpoint do dashboard é do Pacote 2 (). Se ainda não existir, mostramos
+  // Painel de últimas movimentações (CEO-252) — fetch independente do de KPIs,
+  // com filtro opcional por tipo. Falha aqui não derruba o resto do dashboard.
+  const [tipoMov, setTipoMov] = useState("");
+  const movReq = useFetch(
+    () => (user?.setorId ? ultimasMovimentacoes(user.setorId, { limite: 8, tipo: tipoMov || undefined }) : Promise.resolve([])),
+    [user?.setorId, tipoMov],
+  );
+  const movIndisponivel = movReq.error instanceof ApiError && (movReq.error.status === 404 || movReq.error.status === 501);
+
+  // Gráfico de consumo mensal por setor (CEO-249/253) — visão gerencial, só para
+  // quem gerencia o estoque (gestor/almoxarife). O setorId é o do fornecedor (HO).
+  const ehGestao = user?.perfil === PERFIL.GESTOR || user?.perfil === PERFIL.ALMOXARIFE;
+  const consumoReq = useFetch(
+    () => (ehGestao && user?.setorId ? consumoMensal(user.setorId, { meses: 6 }) : Promise.resolve(null)),
+    [ehGestao, user?.setorId],
+  );
+  const consumoIndisponivel = consumoReq.error instanceof ApiError && (consumoReq.error.status === 404 || consumoReq.error.status === 501);
+
+  // Endpoint do dashboard é do Pacote 2. Se ainda não existir, mostramos
   // um aviso honesto em vez de fingir números.
   const indisponivel = req.error instanceof ApiError && (req.error.status === 404 || req.error.status === 501);
   const d = req.data || {};
@@ -67,7 +93,7 @@ export default function Dashboard() {
             <div className="table-wrap">
               <table className="data">
                 <thead>
-                  <tr><th>Produto</th><th className="num">Qtd. solicitada</th><th className="num">Nº pedidos</th></tr>
+                  <tr><th>Produto</th><th className="num">Qtd. solicitada</th><th className="num">Nº pedidos</th><th>Setores envolvidos</th></tr>
                 </thead>
                 <tbody>
                   {d.demandaRepresada.map((r) => (
@@ -75,6 +101,7 @@ export default function Dashboard() {
                       <td>{r.nome}</td>
                       <td className="num">{r.qtdSolicitadaTotal}</td>
                       <td className="num">{r.numPedidos}</td>
+                      <td>{r.setoresEnvolvidos?.length ? r.setoresEnvolvidos.join(", ") : "—"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -82,6 +109,64 @@ export default function Dashboard() {
             </div>
           )}
         </>
+      )}
+
+      {/* Consumo mensal por setor (CEO-249/253) — só para perfis de gestão. */}
+      {ehGestao && (
+        <>
+          <h3 style={{ margin: "var(--sp-6) 0 var(--sp-3)" }}>Consumo mensal por setor</h3>
+          {consumoReq.loading ? (
+            <div className="panel"><div className="skeleton" style={{ height: 320 }} /></div>
+          ) : consumoIndisponivel ? (
+            <div className="alert alert-info">
+              O gráfico de consumo mensal ainda está sendo entregue no backend. Assim que a rota
+              <code> GET /dashboard/consumo-mensal </code> entrar, ele aparece aqui automaticamente.
+            </div>
+          ) : consumoReq.error ? (
+            <ErrorState error={consumoReq.error} onRetry={consumoReq.reload} />
+          ) : (
+            <Suspense fallback={<div className="panel"><div className="skeleton" style={{ height: 320 }} /></div>}>
+              <GraficoConsumoMensal dados={consumoReq.data} />
+            </Suspense>
+          )}
+        </>
+      )}
+
+      {/* Últimas movimentações (CEO-252) — independente dos KPIs acima. */}
+      <div className="mov-head">
+        <h3 style={{ margin: "var(--sp-6) 0 var(--sp-3)" }}>Últimas movimentações</h3>
+        <Link to="/movimentacoes" className="mov-vertodas">Ver todas →</Link>
+      </div>
+
+      <div className="chips">
+        <button
+          className={`chip ${tipoMov === "" ? "chip-on" : ""}`}
+          onClick={() => setTipoMov("")}
+        >
+          Todas
+        </button>
+        {TIPOS_MOVIMENTACAO.map((t) => (
+          <button
+            key={t}
+            className={`chip ${tipoMov === t ? "chip-on" : ""}`}
+            onClick={() => setTipoMov(t)}
+          >
+            {ROTULO_TIPO[t]}
+          </button>
+        ))}
+      </div>
+
+      {movReq.loading ? (
+        <div className="panel"><div className="skeleton" style={{ height: 120 }} /></div>
+      ) : movIndisponivel ? (
+        <div className="alert alert-info">
+          O log de movimentações ainda está sendo entregue no backend. Assim que a rota
+          <code> GET /dashboard/movimentacoes </code> entrar, ele aparece aqui automaticamente.
+        </div>
+      ) : movReq.error ? (
+        <ErrorState error={movReq.error} onRetry={movReq.reload} />
+      ) : (
+        <TabelaMovimentacoes movimentacoes={movReq.data} />
       )}
     </div>
   );

@@ -1,0 +1,1 @@
+ALTER TABLE "movimentacao" ADD COLUMN "retirado_por" text;
