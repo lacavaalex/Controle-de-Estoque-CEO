@@ -1,6 +1,3 @@
-import { JsonItemRepo } from "../repositories/JsonItemRepo.js";
-import { ItemService } from "../services/ItemService.js";
-import { ItemController } from "../controller/ItemController.js";
 import { UsuarioController } from "../controller/UsuarioController.js";
 
 // Stack v2: persistência Postgres (Drizzle) + auth real (JWT + RBAC).
@@ -24,11 +21,6 @@ import { RascunhoService } from "../services/RascunhoService.js";
 import { RascunhoController } from "../controller/RascunhoController.js";
 import { DashboardService } from "../services/DashboardService.js";
 import { DashboardController } from "../controller/DashboardController.js";
-
-// --- Legado v1 (Item/User em JSON) — mantido até a migração das rotas ---
-const itemRepo = new JsonItemRepo();
-const itemService = new ItemService(itemRepo);
-const itemController = new ItemController(itemService);
 
 // --- v2 (Postgres + auth) ---
 const usuarioRepo = new PgUsuarioRepo();
@@ -69,7 +61,6 @@ const rascunhoService = new RascunhoService(rascunhoRepo, pedidoRepo, usuarioRep
 const rascunhoController = new RascunhoController(rascunhoService);
 
 export {
-  itemController,
   authController,
   setorRepo,
   estoqueService,

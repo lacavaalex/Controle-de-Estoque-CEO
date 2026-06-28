@@ -12,7 +12,7 @@ function validadeEmDias(dias: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-// Repos in-memory implementando as interfaces (molde de ItemService.test.ts).
+// Repos in-memory implementando as interfaces de repositório.
 class InMemSetorRepo implements ISetorRepository {
   constructor(private rows: Setor[]) {}
   async criar(s: NovoSetor): Promise<Setor> {

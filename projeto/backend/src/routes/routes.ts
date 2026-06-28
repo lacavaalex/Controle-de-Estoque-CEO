@@ -1,6 +1,5 @@
 import express from "express";
 import {
-  itemController,
   authController,
   setorRepo,
   estoqueService,
@@ -285,11 +284,6 @@ router.post(
   exigir((id) => id.perfil === "gestor" || id.perfil === "almoxarife"),
   (req, res) => loteController.segregarLote(req, res)
 );
-
-// Itens (legado v1) — mantidas até a migração para Produto/Lote
-router.post("/items", async (req, res) => await itemController.createItem(req, res));
-router.patch("/items/:id/stock", async (req, res) => await itemController.addStock(req, res));
-router.patch("/items/:id/name", async (req, res) => await itemController.changeItemName(req, res));
 
 // EP04-08 (CEO-247) — Listagem geral de pedidos baseada no escopo do usuário.
 router.get(
