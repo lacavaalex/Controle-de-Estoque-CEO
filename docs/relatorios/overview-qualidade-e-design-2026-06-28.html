@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview — Qualidade & Design · Controle de Estoque CEO-UFPE</title>
+<style>
+  :root{
+    --bordo:#990000; --bordo-2:#7a0000; --bordo-weak:#f7e9ea;
+    --ink:#1a1a1a; --ink-2:#4d4d4d; --ink-3:#6b6b6b;
+    --bg:#fafafa; --surface:#fff; --surface-2:#f6f4f4; --line:#e2e2e2;
+    --ok:#0a7d33; --ok-bg:#eaf6ee; --warn:#b35900; --warn-bg:#fff4e5;
+    --info:#0b5cad; --info-bg:#e8f1fb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.55 "Segoe UI",system-ui,-apple-system,sans-serif;}
+  .wrap{max-width:940px;margin:0 auto;padding:32px 20px 80px}
+  header{border-bottom:4px solid var(--bordo);padding-bottom:16px;margin-bottom:28px}
+  h1{margin:0 0 4px;font-size:1.7rem}
+  h2{margin:34px 0 12px;font-size:1.25rem;border-left:4px solid var(--bordo);padding-left:10px}
+  h3{margin:20px 0 8px;font-size:1.02rem}
+  .sub{color:var(--ink-3);font-size:.95rem}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;
+    padding:16px 18px;margin:12px 0;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:14px 0}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .kpi .n{font-size:1.6rem;font-weight:700;color:var(--bordo)}
+  .kpi .l{font-size:.8rem;color:var(--ink-3);margin-top:2px}
+  .badge{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;vertical-align:middle}
+  .b-ok{background:var(--ok-bg);color:var(--ok)} .b-warn{background:var(--warn-bg);color:var(--warn)}
+  .b-info{background:var(--info-bg);color:var(--info)} .b-bordo{background:var(--bordo-weak);color:var(--bordo)}
+  table{width:100%;border-collapse:collapse;margin:8px 0;font-size:.92rem;background:var(--surface)}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--surface-2);font-size:.78rem;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-2)}
+  code{background:var(--surface-2);padding:1px 5px;border-radius:4px;font-size:.86em}
+  ul{margin:6px 0 6px 0;padding-left:22px} li{margin:4px 0}
+  .tag{font-family:monospace;font-size:.82rem;color:var(--ink-2)}
+  .ok-row td:first-child{color:var(--ok);font-weight:700}
+  .note{background:var(--warn-bg);border:1px solid #f0d8b0;border-radius:8px;padding:12px 14px;margin:12px 0}
+  .note b{color:var(--warn)}
+  .deci{background:var(--info-bg);border:1px solid #bcd7f3;border-radius:8px;padding:12px 14px;margin:12px 0}
+  footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);color:var(--ink-3);font-size:.85rem}
+  .pri{font-weight:700} .pri-alta{color:var(--bordo)} .pri-media{color:var(--warn)} .pri-baixa{color:var(--ink-3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Overview — Qualidade &amp; Design</h1>
+  <div class="sub">Controle de Estoque CEO-UFPE · sessão de 27–28/06/2026 · projeto agora em manutenção solo</div>
+</header>
+
+<p>Resumo do que foi feito nesta rodada e do que ainda dá pra evoluir. Tudo verificado de
+verdade (testes + build rodados), não estimado.</p>
+
+<div class="grid">
+  <div class="kpi"><div class="n">150</div><div class="l">testes backend ✓</div></div>
+  <div class="kpi"><div class="n">67</div><div class="l">testes frontend ✓</div></div>
+  <div class="kpi"><div class="n">tsc ✓</div><div class="l">backend type-check</div></div>
+  <div class="kpi"><div class="n">lint+build ✓</div><div class="l">frontend</div></div>
+</div>
+
+<h2>1. O que foi feito</h2>
+
+<h3>Pacote de qualidade (já na PR #49 → <code>develop</code>)</h3>
+<table>
+  <tr><th>Item</th><th>O quê</th><th>Status</th></tr>
+  <tr class="ok-row"><td>Testes HTTP</td><td>Extraído <code>criarApp()</code> em <code>app.ts</code>; novo <code>http.test.ts</code> com 20 casos ponta-a-ponta (supertest) contra Postgres real: login/401/sem-vazar-hash, <code>/eu</code>, RBAC perfil+setor, dashboard, criar pedido.</td><td><span class="badge b-ok">feito</span></td></tr>
+  <tr class="ok-row"><td>Bug corrigido</td><td><code>UsuarioController</code> lia campo de identidade errado → gestão de usuário (CEO-228) dava <b>500</b> em produção. Corrigido + teste de regressão.</td><td><span class="badge b-ok">feito</span></td></tr>
+  <tr class="ok-row"><td>Legado v1</td><td>Removida a stack Item/JsonItemRepo + rotas <code>/items/*</code> (código morto ao lado do v2 Postgres). −468 linhas.</td><td><span class="badge b-ok">feito</span></td></tr>
+  <tr class="ok-row"><td>CI reforçada</td><td>Job frontend agora roda <code>lint</code> + <code>build</code>; contagens corrigidas; documentado Branch Protection.</td><td><span class="badge b-ok">feito</span></td></tr>
+  <tr class="ok-row"><td>Code-review</td><td>Review multi-agente (alto esforço, 5 finders): convenção <code>req.identidade!</code>; tokens de teste cacheados (−9 logins bcrypt/run).</td><td><span class="badge b-ok">feito</span></td></tr>
+</table>
+
+<h3>Design system (esta sessão — commits novos na branch)</h3>
+<table>
+  <tr><th>Item</th><th>O quê</th><th>Status</th></tr>
+  <tr class="ok-row"><td>A · Design tokens</td><td>Criado <code>DESIGN.md</code> (fonte de verdade); helper <code>tokenColor()</code> p/ libs que exigem cor concreta (recharts); gráfico e <code>Estoque.jsx</code> sem mais hex hardcoded — tudo via <code>var(--token)</code>.</td><td><span class="badge b-ok">feito</span></td></tr>
+  <tr class="ok-row"><td>B · Componentização</td><td>Novo <code>&lt;AsyncBoundary&gt;</code> (loading/erro/vazio) + 5 testes; <code>Estoque</code> (×2) e <code>Triagem</code> migrados; import órfão de <code>ErrorState</code> removido.</td><td><span class="badge b-ok">feito</span></td></tr>
+</table>
+
+<div class="note">
+  <b>⚠️ Decisão que precisa de você (rápida):</b> você pediu <code>#DB1E2F</code> + Montserrat, mas
+  os <b>requisitos do próprio projeto</b> fixam o <b>bordô <code>#990000</code> da UFPE</b> como cor primária
+  (RNF01.1 “Must”, RN15 e critérios de aceite de user story). Por isso <b>não</b> troquei a cor —
+  seria reverter um requisito documentado. Fiz a parte neutra (centralizar tudo em tokens), então
+  <b>recolorir agora é trocar ~4 linhas em <code>theme.css</code></b>. Se você quer mesmo adotar a
+  identidade do CIn (<code>#DB1E2F</code>/Montserrat), é uma decisão legítima de rebrand — só me
+  confirme e eu troco os tokens <em>e</em> atualizo os requisitos pra spec e código baterem. Detalhes
+  em <code>DESIGN.md</code>.
+</div>
+
+<div class="deci">
+  <b>Sobre a <code>main</code>:</b> você estava certo — <code>origin/main</code> e <code>origin/develop</code>
+  estão praticamente sincronizadas (1–2 commits de diferença). O “115 commits atrás” que falei antes
+  era um erro meu (histórico local desatualizado). A PR #49 vai pra <code>develop</code> (convenção do time);
+  depois <code>develop</code>→<code>main</code> é trivial.
+</div>
+
+<h2>2. Estado do PR</h2>
+<div class="card">
+  <b>PR #49</b> → <code>develop</code> · <span class="badge b-ok">CI verde</span>
+  <span class="badge b-info">MERGEABLE</span><br>
+  Contém o dashboard (CEO-249/252/253/267/280) + o pacote de qualidade + design system A/B.<br>
+  <span class="sub">O merge é seu (ação irreversível). Jira: comentado na CEO-228; CEO-281 criado p/ o pacote de qualidade.</span>
+</div>
+
+<h2>3. O que ainda pode ser feito</h2>
+<p class="sub">Por prioridade, pensando em manutenção a longo prazo (não mais entrega acadêmica).</p>
+
+<table>
+  <tr><th>Prioridade</th><th>Item</th><th>Por quê</th></tr>
+  <tr>
+    <td><span class="pri pri-alta">Alta</span></td>
+    <td>Ativar <b>Branch Protection</b> (CI obrigatória no merge)</td>
+    <td>Hoje a CI verde é informativa; nada impede merge com CI vermelha. Trabalhando sozinho, isso é sua principal rede de segurança. Exige admin do repo (você). Passo-a-passo em <code>docs/qualidade/ci.md</code>.</td>
+  </tr>
+  <tr>
+    <td><span class="pri pri-alta">Alta</span></td>
+    <td>Decidir a <b>cor primária</b> (#990000 vs #DB1E2F)</td>
+    <td>Bloqueia “fechar” o design system. 10s de decisão; eu aplico em minutos. Ver nota acima.</td>
+  </tr>
+  <tr>
+    <td><span class="pri pri-media">Média</span></td>
+    <td>Carregar a <b>fonte web</b> (Montserrat ou manter Trebuchet)</td>
+    <td>Hoje a fonte é Trebuchet MS (system). Se for adotar Montserrat, falta o <code>@font-face</code>/link — pequeno, mas é parte do “parecer institucional”.</td>
+  </tr>
+  <tr>
+    <td><span class="pri pri-media">Média</span></td>
+    <td>Migrar mais telas pro <b>&lt;AsyncBoundary&gt;</b></td>
+    <td>Pedidos/PedidoDetalhe/NovoPedido ainda têm o padrão inline. Reduz repetição e fecha a consistência. (Dashboard fica de fora de propósito — tem 4 estados.)</td>
+  </tr>
+  <tr>
+    <td><span class="pri pri-media">Média</span></td>
+    <td>Sweep dos <b>hex restantes</b> → tokens</td>
+    <td>Ainda há alguns <code>#666/#ddd</code> soltos em outras páginas (Triagem/NovoPedido). Tornaria o recolor 100% num arquivo.</td>
+  </tr>
+  <tr>
+    <td><span class="pri pri-media">Média</span></td>
+    <td>Resolver os <b>In Progress</b> do Jira</td>
+    <td>CEO-275 (worker IMAP+LLM do agente) e CEO-279 (aviso de retirante não-autorizado) seguem abertos. CEO-281 fecha no merge da #49.</td>
+  </tr>
+  <tr>
+    <td><span class="pri pri-baixa">Baixa</span></td>
+    <td>Smoke <b>E2E real</b> (Playwright) nas jornadas-chave</td>
+    <td>Os testes HTTP cobrem a API; um E2E de browser cobriria o fluxo login→pedido→expedição na UI. Bom quando houver tempo.</td>
+  </tr>
+  <tr>
+    <td><span class="pri pri-baixa">Baixa</span></td>
+    <td>Acessibilidade (a11y) em tabelas/formulários</td>
+    <td>Foco, labels, contraste, navegação por teclado. Eleva a qualidade percebida e é exigência comum em produto institucional.</td>
+  </tr>
+  <tr>
+    <td><span class="pri pri-baixa">Baixa</span></td>
+    <td>Reconciliar <code>develop</code> → <code>main</code></td>
+    <td>Depois de mergear a #49, levar pra <code>main</code> (são poucos commits) pra manter a “fonte de verdade” alinhada.</td>
+  </tr>
+</table>
+
+<footer>
+  Gerado por Claude Code em 28/06/2026. Saúde verificada: backend 150 testes + tsc · frontend 67 testes + lint + build.
+  Branch <code>feat/dashboard-consumo-e-log</code> · PR #49.
+</footer>
+
+</div>
+</body>
+</html>
