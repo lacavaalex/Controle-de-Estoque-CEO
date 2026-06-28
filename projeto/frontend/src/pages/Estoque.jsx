@@ -12,7 +12,7 @@ import {
   segregadosDoSetor
 } from "../api/estoque.js";
 import { CATEGORIAS, STATUS_ESTOQUE, PERFIL } from "../api/constants.js";
-import { PageHead, StatusEstoque, TableSkeleton, ErrorState, EmptyState } from "../app/ui.jsx";
+import { PageHead, StatusEstoque, TableSkeleton, EmptyState, AsyncBoundary } from "../app/ui.jsx";
 import NovoLote from "../components/NovoLote.jsx";
 
 export default function Estoque() {
@@ -114,7 +114,7 @@ export default function Estoque() {
     if (lotesReq.loading) {
       return (
         <tr>
-          <td colSpan="5" style={{ padding: "15px", color: "#666", textAlign: "center" }}>
+          <td colSpan="5" style={{ padding: "var(--sp-4)", color: "var(--ink-3)", textAlign: "center" }}>
             Carregando lotes ativos...
           </td>
         </tr>
@@ -122,13 +122,13 @@ export default function Estoque() {
     }
 
     return (
-      <tr style={{ backgroundColor: '#f9f9f9' }}>
+      <tr style={{ backgroundColor: 'var(--surface-2)' }}>
         <td colSpan="5" style={{ padding: 'var(--sp-4)' }}>
-          <div style={{ borderLeft: '3px solid #990000', paddingLeft: 'var(--sp-3)' }}>
+          <div style={{ borderLeft: '3px solid var(--ufpe-bordo)', paddingLeft: 'var(--sp-3)' }}>
             
             {/* Cabeçalho flexível com o título e o botão */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: "var(--sp-2)" }}>
-              <h4 style={{ color: "#111111", fontSize: "var(--fs-14)", margin: 0 }}>
+              <h4 style={{ color: "var(--ink)", fontSize: "var(--fs-14)", margin: 0 }}>
                 Lotes Ativos no Setor
               </h4>
               {/* Botão para abrir o formulário */}
@@ -156,12 +156,12 @@ export default function Estoque() {
             )}
 
             {lotes.length === 0 && !exibirNovoLote ? (
-              <p style={{ color: "#666", margin: 0, marginTop: "var(--sp-2)" }}>Nenhum lote ativo encontrado para este setor.</p>
+              <p style={{ color: "var(--ink-3)", margin: 0, marginTop: "var(--sp-2)" }}>Nenhum lote ativo encontrado para este setor.</p>
             ) : (
               !exibirNovoLote && (
                 <table style={{ width: "100%", fontSize: "var(--fs-13)", marginTop: "var(--sp-2)" }}>
                   <thead>
-                    <tr style={{ borderBottom: "1px solid #ddd" }}>
+                    <tr style={{ borderBottom: "1px solid var(--line)" }}>
                       <th style={{ textAlign: "left" }}>Nº Lote</th>
                       <th style={{ textAlign: "left" }}>Validade</th>
                       <th className="num" style={{ textAlign: "right" }}>Qtd. Atual</th>
@@ -170,7 +170,7 @@ export default function Estoque() {
                   </thead>
                   <tbody>
                     {lotes.map((l) => (
-                      <tr key={l.id} style={{ borderBottom: "1px solid #eee" }}>
+                      <tr key={l.id} style={{ borderBottom: "1px solid var(--line)" }}>
                         <td style={{ padding: "8px 0" }}><code>{l.numeroLote}</code></td>
                         <td>{new Date(l.validade).toLocaleDateString("pt-BR")}</td>
                         <td className="num" style={{ textAlign: "right" }}><strong>{l.quantidade}</strong></td>
@@ -294,17 +294,20 @@ export default function Estoque() {
             </div>
           </form>
 
-          {itensReq.loading ? (
-            <TableSkeleton rows={6} cols={ehSolicitante ? 4 : 5} />
-          ) : itensReq.error ? (
-            <ErrorState error={itensReq.error} onRetry={itensReq.reload} />
-          ) : itens.length === 0 ? (
-            <div className="panel">
-              <EmptyState title="Nenhum produto encontrado">
-                {setorId ? "Ajuste os filtros ou troque de setor." : "Selecione um setor para ver o estoque."}
-              </EmptyState>
-            </div>
-          ) : (
+          <AsyncBoundary
+            loading={itensReq.loading}
+            error={itensReq.error}
+            onRetry={itensReq.reload}
+            isEmpty={itens.length === 0}
+            skeleton={<TableSkeleton rows={6} cols={ehSolicitante ? 4 : 5} />}
+            empty={
+              <div className="panel">
+                <EmptyState title="Nenhum produto encontrado">
+                  {setorId ? "Ajuste os filtros ou troque de setor." : "Selecione um setor para ver o estoque."}
+                </EmptyState>
+              </div>
+            }
+          >
             <div className="table-wrap">
               <table className="data">
                 <thead>
@@ -346,7 +349,7 @@ export default function Estoque() {
                 </tbody>
               </table>
             </div>
-          )}
+          </AsyncBoundary>
 
           {nomeSetor && !itensReq.loading && itens.length > 0 && (
             <p className="muted" style={{ marginTop: "var(--sp-3)", fontSize: "var(--fs-13)" }}>
@@ -357,20 +360,23 @@ export default function Estoque() {
       ) : (
         /* VISÃO LOTES SEGREGADOS */
         <div className="panel" style={{ padding: 'var(--sp-4)' }}>
-           <h3 style={{ marginBottom: "var(--sp-2)", color: "#990000" }}>Sala de Biossegurança</h3>
-           <p style={{ color: '#666', marginBottom: 'var(--sp-4)' }}>
+           <h3 style={{ marginBottom: "var(--sp-2)", color: "var(--ufpe-bordo)" }}>Sala de Biossegurança</h3>
+           <p style={{ color: 'var(--ink-3)', marginBottom: 'var(--sp-4)' }}>
              Lotes vencidos ou danificados aguardando descarte.
            </p>
 
-           {segregadosReq.loading ? (
-             <TableSkeleton rows={3} cols={5} />
-           ) : segregadosReq.error ? (
-             <ErrorState error={segregadosReq.error} onRetry={segregadosReq.reload} />
-           ) : lotesSegregados.length === 0 ? (
-             <EmptyState title="Nenhum lote segregado">
-               Este setor não possui lotes na sala de biossegurança.
-             </EmptyState>
-           ) : (
+           <AsyncBoundary
+             loading={segregadosReq.loading}
+             error={segregadosReq.error}
+             onRetry={segregadosReq.reload}
+             isEmpty={lotesSegregados.length === 0}
+             skeleton={<TableSkeleton rows={3} cols={5} />}
+             empty={
+               <EmptyState title="Nenhum lote segregado">
+                 Este setor não possui lotes na sala de biossegurança.
+               </EmptyState>
+             }
+           >
              <div className="table-wrap">
                <table className="data">
                  <thead>
@@ -397,7 +403,7 @@ export default function Estoque() {
                  </tbody>
                </table>
              </div>
-           )}
+           </AsyncBoundary>
         </div>
       )}
     </div>
