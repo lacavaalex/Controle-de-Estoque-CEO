@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import type { IUsuarioRepository } from "../interfaces/repository-interfaces/IUsuarioRepo.js";
+import type { Identidade } from "../auth/rbac.js";
 import { randomBytes } from "crypto";
 import bcrypt from "bcrypt";
 
@@ -9,7 +10,7 @@ export class UsuarioController {
   // US-EP01-07 — Lista usuários do escopo do gestor
   async listar(req: Request, res: Response): Promise<Response> {
     try {
-      const id = (req as any).identity;
+      const id = req.identidade as Identidade;
       const todos = await this.usuarioRepo.listar();
 
       // Gestor HO vê todos; gestor de outro setor vê só o seu setor
@@ -30,7 +31,7 @@ export class UsuarioController {
   // US-EP01-07 — Desativa usuário (ativo = false)
   async desativar(req: Request, res: Response): Promise<Response> {
     try {
-      const id = (req as any).identity;
+      const id = req.identidade as Identidade;
       const alvoId = Number(req.params.id);
 
       const alvo = await this.usuarioRepo.buscarPorId(alvoId);
@@ -42,7 +43,7 @@ export class UsuarioController {
       }
 
       // Não pode desativar a si mesmo
-      if (alvo.id === id.sub) {
+      if (alvo.id === id.usuarioId) {
         return res.status(400).json({ mensagem: "Você não pode desativar sua própria conta." });
       }
 
@@ -57,7 +58,7 @@ export class UsuarioController {
   // US-EP01-07 — Reseta senha e força troca no próximo login
   async resetarSenha(req: Request, res: Response): Promise<Response> {
     try {
-      const id = (req as any).identity;
+      const id = req.identidade as Identidade;
       const alvoId = Number(req.params.id);
 
       const alvo = await this.usuarioRepo.buscarPorId(alvoId);
