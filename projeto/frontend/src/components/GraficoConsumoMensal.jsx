@@ -1,13 +1,22 @@
 // GraficoConsumoMensal — gráfico de barras de consumo mensal por setor (CEO-249/253).
 // Recebe { meses: string[], setores: [{ nome, valores: number[] }] } do backend e
 // transforma no formato por-linha que o recharts espera.
+import { useMemo } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 import { EmptyState } from "../app/ui.jsx";
+import { tokenColor } from "../app/tokens.js";
 
-// Paleta de marca: bordô UFPE + tons de status do design system.
-const CORES = ["#990000", "#0b5cad", "#0a7d33", "#b35900"];
+// Tokens (theme.css) que compõem a paleta das séries: bordô primário + 3 tons de
+// status (info/ok/baixo). Resolvidos em runtime para seguir a marca sem cor
+// hardcoded; o fallback só entra em ambiente sem CSS computado (jsdom nos testes).
+const TOKENS_SERIE = [
+  ["--ufpe-bordo", "#990000"],
+  ["--info", "#0b5cad"],
+  ["--ok", "#0a7d33"],
+  ["--st-baixo", "#b35900"],
+];
 
 // "2026-05" → "mai/26" para rótulo curto no eixo X.
 const MESES_PT = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
@@ -29,6 +38,9 @@ function paraLinhas(meses, setores) {
 export default function GraficoConsumoMensal({ dados }) {
   const meses = dados?.meses ?? [];
   const setores = dados?.setores ?? [];
+
+  // Resolve as cores das séries a partir dos tokens (DOM/CSS já prontos no render).
+  const cores = useMemo(() => TOKENS_SERIE.map(([t, fb]) => tokenColor(t, fb)), []);
 
   // "Sem dados" = nenhuma série tem qualquer valor diferente de zero. Usa === 0
   // explícito (em vez de !v) para não confundir valores negativos com vazio.
@@ -62,7 +74,7 @@ export default function GraficoConsumoMensal({ dados }) {
           />
           <Legend wrapperStyle={{ fontSize: 13 }} />
           {setores.map((s, i) => (
-            <Bar key={s.nome} dataKey={s.nome} fill={CORES[i % CORES.length]} radius={[2, 2, 0, 0]} />
+            <Bar key={s.nome} dataKey={s.nome} fill={cores[i % cores.length]} radius={[2, 2, 0, 0]} />
           ))}
         </BarChart>
       </ResponsiveContainer>
